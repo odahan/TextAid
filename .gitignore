@@ -1,0 +1,17 @@
+# .NET build output
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
+.vs/
+
+# Local tools and generated packages
+.idea/
+.vscode/
+artifacts/
+publish/
+*.nupkg
+
+# TextAid user data and diagnostics
+TextAid.debug.log

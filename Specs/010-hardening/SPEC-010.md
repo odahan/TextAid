@@ -1,0 +1,66 @@
+# LOT-010 — V0.9 — Hardening and compatibility
+
+> Before working on this lot, read the repository root README.md.
+
+Parent: None
+Created: 2026-09-25T23:53:23
+
+## Objective
+
+Stabilize the feature set through repeatable tests and Windows application checks.
+
+## Context
+
+Source milestone: `docs/TextAid specification.md`, section 81; source-to-lot mapping: `docs/SOURCE-MAP.md`. This lot is part of the ordered V1 plan.
+
+## In scope
+
+Depends on LOT-009; no new feature wave.
+
+## Out of scope
+
+Post-V1 capabilities in source section 91, except where a narrower exclusion is stated above. Do not add features beyond this lot's requirements.
+
+## Requirements
+
+### REQ-010-001 — Resilience matrix
+
+Test busy clipboard, stopped Ollama, missing model, timeout, cancellation, invalid configuration/JSON, unreachable provider, closed/elevated source window, empty/long text, repeated trigger, Escape/Alt+F4, Debug on/off, and invalid locale.
+
+Source: `docs/TextAid specification.md`, sections 81, 85–87.
+
+### REQ-010-002 — Text and display matrix
+
+Test Unicode, emoji, CRLF/LF, very long text, and DPI at 100/125/150 percent across multiple monitors. If maxInputCharacters is configured, show actual and permitted counts and do not split input automatically.
+
+Source: `docs/TextAid specification.md`, sections 27, 70, 81.
+
+### REQ-010-003 — Application matrix
+
+Validate capture/window/Accept/replace in Notepad, Chromium textarea, Visual Studio, and VS Code; validate capture/window/Accept in Chromium contenteditable, Word, and Outlook, documenting replace behavior. Elevated process injection is not guaranteed. Document app-specific behavior before special handling.
+
+Source: `docs/TextAid specification.md`, sections 74, 81–82, 88.
+
+### REQ-010-004 — Test layers
+
+Run keyboard, template, configuration, fake-IChatClient, localization, and Windows platform tests. Keep live Ollama tests optional under an Integration category.
+
+Source: `docs/TextAid specification.md`, sections 83–87.
+
+### REQ-010-005 — Distribution rehearsal
+
+Repeat a clean single-file self-contained win-x64 publish and installation-free run; verify no required sidecar file or .NET runtime.
+
+Source: `docs/TextAid specification.md`, sections 9, 81, 90.
+
+## Important cases
+
+Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
+
+## Dependencies
+
+LOT-009 must be closed before this lot starts. R-001 through R-010 apply throughout.
+
+## Known constraints
+
+The source document is retained for traceability. If it conflicts with an active Pro-Spec requirement or rule, record a finding and obtain the required human decision before changing active intent.

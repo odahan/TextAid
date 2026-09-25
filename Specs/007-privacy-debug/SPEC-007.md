@@ -1,0 +1,60 @@
+# LOT-007 — V0.6 — Local-first privacy and debug
+
+> Before working on this lot, read the repository root README.md.
+
+Parent: None
+Created: 2026-09-25T23:53:23
+
+## Objective
+
+Enforce explicit data boundaries and provide opt-in diagnostics.
+
+## Context
+
+Source milestone: `docs/TextAid specification.md`, section 78; source-to-lot mapping: `docs/SOURCE-MAP.md`. This lot is part of the ordered V1 plan.
+
+## In scope
+
+Depends on LOT-006.
+
+## Out of scope
+
+Post-V1 capabilities in source section 91, except where a narrower exclusion is stated above. Do not add features beyond this lot's requirements.
+
+## Requirements
+
+### REQ-007-001 — Strict Local enforcement
+
+With Strict Local enabled, accept only localhost, 127.0.0.1, or ::1 endpoints and reject private-LAN and remote endpoints before any AI connection. No cloud fallback or telemetry is permitted.
+
+Source: `docs/TextAid specification.md`, sections 4, 78, 85.
+
+### REQ-007-002 — Optional debug file
+
+Debug is off initially and creates no log or persistent buffer. When enabled, create one text log for the current work session, truncate it at the start of a new debug session, append events simply, and avoid a logging package.
+
+Source: `docs/TextAid specification.md`, sections 55–59, 78.
+
+### REQ-007-003 — Log redaction
+
+Log technical metadata and exceptions only; never log API keys, secrets, complete clipboard contents, user input, generated output, or a prompt containing user input.
+
+Source: `docs/TextAid specification.md`, sections 58–59, 78.
+
+### REQ-007-004 — User-facing errors
+
+Map clipboard, configuration, provider, model, cancellation, source-window, paste, and localization failures to explicit user-facing errors instead of raw HTTP, COM, or Win32 exception names.
+
+Source: `docs/TextAid specification.md`, sections 60, 78.
+
+## Important cases
+
+Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
+
+## Dependencies
+
+LOT-006 must be closed before this lot starts. R-001 through R-010 apply throughout.
+
+## Known constraints
+
+The source document is retained for traceability. If it conflicts with an active Pro-Spec requirement or rule, record a finding and obtain the required human decision before changing active intent.
