@@ -32,7 +32,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-The required application, DPI, monitor, failure, and text cases are exercised and results recorded with named human validation.
+The required application, DPI, monitor, failure, text, both invocation paths, translation-direction, destination-change, and shortcut-reassignment cases are exercised and results recorded with named human validation.
 
 Method:
 Run the V0.9 matrix on Windows and record each required and exploratory outcome.

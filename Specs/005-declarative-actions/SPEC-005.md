@@ -47,13 +47,19 @@ Standard prompts MUST delimit selected text as input data and direct the model t
 
 Source: `docs/TextAid specification.md`, sections 38, 84.
 
+### REQ-005-005 — Translation parameters for quick invocation
+
+The built-in Translate action MUST accept an explicit destination language and preserve the original captured text as its input. Its action data and rendering path MUST support the later `Ctrl+C+T` entry point without adding a separate hard-coded translation implementation. Changing the destination in a session will mean a new single transformation of the original text, never translation of an earlier translated result. This lot does not yet activate `Ctrl+C+T`; the full shortcut and language-preference workflow belongs to LOT-008.
+
+Source: D-004, D-006, R-018; Olivier's quick-translation instruction.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-004 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-004 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

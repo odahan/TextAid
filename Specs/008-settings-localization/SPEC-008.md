@@ -53,13 +53,31 @@ Provide explicit Reload configuration and Reload actions commands; validate comp
 
 Source: `docs/TextAid specification.md`, sections 69, 79.
 
+### REQ-008-006 — Immediate translation shortcut
+
+The quick-translation binding, default `Ctrl+C+T`, MUST capture the original text and open one session with Translate selected and running immediately. It MUST NOT ask for an action or destination before starting. Determine the destination from the detected source language and the two Settings preferences: user language to preferred translation language; preferred translation language to user language; any other or uncertain detection to user language. Keep the normal-action binding, default `Ctrl+C+C`, on its existing action-choice path. Use the existing MAF/IChatClient transformation path and safe Replace/Copy transaction.
+
+Source: D-004, D-006, R-017, R-018; Olivier's quick-translation instruction.
+
+### REQ-008-007 — Translation destination and replacement state
+
+Show the selected destination in the quick-translation session and allow the user to choose another available language. A destination change MUST start a new translation of the original captured text, cancel or supersede pending work, and prevent stale output from replacing or copying the newer result. `Replace` and `Copy` MUST be unavailable while translation is pending, after a destination change, or after failure; enable them only for the current successful translation. `Copy` leaves the source unchanged and closes the session. `Cancel` and window close retain their existing behavior.
+
+Source: D-004, D-006, R-017, R-018; Olivier's quick-translation and result-action decisions.
+
+### REQ-008-008 — Language and shortcut Settings
+
+Expose the user language and preferred translation language as distinct, valid BCP-47 choices in Settings. Label the two shortcut controls Choose and Translate, explaining the defaults as `Ctrl+C`, then `C` for Choose, and `Ctrl+C`, then `T` for Translate. Let the user reassign either complete sequence, including its prefix, when it conflicts with another application. Apply valid changes to the keyboard recognizer safely and persist them. Reject unsupported or internally conflicting bindings with a clear explanation while retaining the active assignments. Settings MUST not misrepresent a shortcut as guaranteed to override a binding consumed by another application.
+
+Source: D-004 through D-007, R-015, R-018; Olivier's language-routing and shortcut instructions.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-007 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-007 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

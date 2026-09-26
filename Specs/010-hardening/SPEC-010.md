@@ -37,7 +37,7 @@ Source: `docs/TextAid specification.md`, sections 27, 70, 81.
 
 ### REQ-010-003 — Application matrix
 
-Validate capture/window/Accept/replace in Notepad, Chromium textarea, Visual Studio, and VS Code; validate capture/window/Accept in Chromium contenteditable, Word, and Outlook, documenting replace behavior. Elevated process injection is not guaranteed. Document app-specific behavior before special handling.
+Validate capture/window/Replace/Copy in Notepad, Chromium textarea, Visual Studio, and VS Code; validate capture/window/Replace/Copy in Chromium contenteditable, Word, and Outlook, documenting replacement behavior. Elevated process injection is not guaranteed. Document app-specific behavior before special handling.
 
 Source: `docs/TextAid specification.md`, sections 74, 81–82, 88.
 
@@ -53,13 +53,19 @@ Repeat a clean single-file self-contained win-x64 publish and installation-free 
 
 Source: `docs/TextAid specification.md`, sections 9, 81, 90.
 
+### REQ-010-006 — Invocation and translation regression
+
+Exercise both configured invocation paths, including default `Ctrl+C+C` action choice and default `Ctrl+C+T` immediate translation, across the compatibility matrix. Cover both preferred-language directions, a third or uncertain source language, manual destination change, pending and failed translations, stale completion after a destination change, Replace safety, Copy without source modification, shortcut reassignment, persistence, and internally conflicting bindings.
+
+Source: D-004, D-005, D-006, R-015, R-017, R-018; Olivier's later invocation and result-action decisions.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-009 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-009 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

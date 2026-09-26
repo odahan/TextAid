@@ -1,0 +1,18 @@
+LOT-002 interactive Windows probe, 2026-09-26T04:47:14+02:00
+Published EXE SHA-256: D9B7890D45B4CA458DEF74A533D940909586062EACF4477C7F4D6FC20DD19A4B
+
+Source form: TextAid integration test source, on second monitor.
+Source form bounds: 2020,100,2440,280
+Source monitor work area: 1920,0,3840,1080
+Session window bounds: 2540,280,3220,800
+Center offset: X=0, Y=0
+
+First process remained running: True
+Second process exited: True
+Source form was foreground at trigger: True
+Session visible after Ctrl+C+C: True
+Session count after repeating gesture while open: 1
+Session absent after WM_CLOSE: True
+Session count after another Ctrl+C+C: 1
+
+The temporary form and both launched processes were closed after the probe. This is technical evidence, not Olivier's HUMAN gate validation. The two monitors had 1920x1080 work areas; this probe does not establish behavior at mixed DPI.

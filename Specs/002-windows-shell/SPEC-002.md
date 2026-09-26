@@ -65,13 +65,22 @@ Make a Release win-x64 self-contained single-file publish with trimming disabled
 
 Source: `docs/TextAid specification.md`, sections 9, 43–45, 73.
 
+### REQ-002-008 — Canonical publish path and script
+
+Decision: D-001
+Replaces: None
+
+Create the root `publish.ps1` and make it produce the Release win-x64 self-contained single-file `TextAid.exe` in `src/TextAid.App/bin/Publish/`. Keep that directory as the canonical final executable location for later releases.
+
+Source: D-001 and R-011.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-001 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-001 must be closed before this lot starts. R-001 through R-013 apply throughout.
 
 ## Known constraints
 

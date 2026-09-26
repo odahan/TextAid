@@ -31,7 +31,7 @@ Source: `docs/TextAid specification.md`, sections 4–6, 75.
 
 ### REQ-004-002 — First transformation
 
-Complete Ctrl+C+C → Rewrite → local model → preview → Accept using one input, one instruction, one model call, and one result; do not add agent tools, memory, workflows, or streaming.
+Complete Ctrl+C+C → Rewrite → local model → preview → Replace or Copy using one input, one instruction, one model call, and one result; do not add agent tools, memory, workflows, or streaming.
 
 Source: `docs/TextAid specification.md`, sections 5, 75.
 
@@ -53,7 +53,7 @@ Validate success and failure paths described in the active requirements; use the
 
 ## Dependencies
 
-LOT-003 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-003 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

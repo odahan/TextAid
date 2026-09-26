@@ -47,7 +47,7 @@ Validate success and failure paths described in the active requirements; use the
 
 ## Dependencies
 
-LOT-008 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-008 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

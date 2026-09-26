@@ -32,7 +32,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-The named human accepts the candidate against each formal V1 release criterion, including the documented compatibility limits.
+The named human accepts the candidate against each formal V1 release criterion, including both invocation paths, quick-translation direction and destination changes, safe `Replace`, non-replacing `Copy`, configurable shortcuts, and the documented compatibility limits.
 
 Method:
 Review release evidence and exercise the candidate; record named, dated validation.

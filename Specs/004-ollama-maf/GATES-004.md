@@ -32,7 +32,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-The local Ollama Rewrite result appears and can safely replace selected text; stopped Ollama produces a usable error without crashing.
+The local Ollama Rewrite result appears and can be safely replaced into the source or copied without replacing it; stopped Ollama produces a usable error without crashing.
 
 Method:
 Run on Windows with a configured local model, then stop Ollama.

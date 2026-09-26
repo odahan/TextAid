@@ -25,15 +25,15 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-011-001 — End-to-end function
 
-Selection → Ctrl+C+C → one of eight actions → preview → Accept → correct replacement MUST work; Cancel MUST leave source unchanged.
+Selection → Ctrl+C+C → one of eight actions → preview → Replace → correct replacement MUST work; Copy MUST place the result in the clipboard and leave the source unchanged; Cancel MUST leave the source unchanged.
 
-Source: `docs/TextAid specification.md`, sections 89–90.
+Source: `docs/TextAid specification.md`, sections 89–90; D-006, R-017.
 
 ### REQ-011-002 — Interface and AI architecture
 
-Verify complete dark non-minimizable transaction UI, dark chrome, correct centering, only Accept/Cancel outcomes, all model calls through MAF/IChatClient, OllamaSharp default, and declarative actions without rebuild.
+Verify complete dark non-minimizable transaction UI, dark chrome, correct centering, explicit Replace/Copy/Cancel outcomes, all model calls through MAF/IChatClient, OllamaSharp default, and declarative actions without rebuild.
 
-Source: `docs/TextAid specification.md`, sections 89–90.
+Source: `docs/TextAid specification.md`, sections 89–90; D-006, R-017.
 
 ### REQ-011-003 — Provider, privacy, resilience
 
@@ -53,13 +53,19 @@ Keep V1 inside the one-transformation product definition. Treat source section 9
 
 Source: `docs/TextAid specification.md`, sections 91–96.
 
+### REQ-011-006 — Quick translation and configurable shortcuts
+
+The default `Ctrl+C+T` path MUST start translation immediately using the configured user and preferred translation languages, reverse direction when the source is in the preferred language, and use the user language for another or uncertain source language. Choosing another destination MUST translate the original text again. `Replace` and `Copy` MUST become available only for the latest successful translation and use their distinct safe actions. Both invocation shortcuts MUST be reassignable and persist; the normal-action shortcut MUST retain action choice. Document the default mnemonic as `Ctrl+C`, then `C` for Choose or `T` for Translate, and validate any Windows application limitations of configured gestures.
+
+Source: D-004 through D-007, R-015, R-017, R-018; Olivier's later invocation and result-action decisions.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-010 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-010 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

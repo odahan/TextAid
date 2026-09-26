@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Background}"/><SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource Surface}"/>
+  <SolidColorBrush x:Key="SurfaceAltBrush" Color="{StaticResource SurfaceAlt}"/><SolidColorBrush x:Key="ForegroundBrush" Color="{StaticResource Foreground}"/>
+  <SolidColorBrush x:Key="ForegroundMutedBrush" Color="{StaticResource ForegroundMuted}"/><SolidColorBrush x:Key="BorderBrush" Color="{StaticResource Border}"/>
+  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/><SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHover}"/>
+  <SolidColorBrush x:Key="AccentPressedBrush" Color="{StaticResource AccentPressed}"/><SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource Success}"/>
+  <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource Warning}"/><SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Error}"/>
+  <SolidColorBrush x:Key="DisabledBrush" Color="{StaticResource Disabled}"/><SolidColorBrush x:Key="SelectionBrush" Color="{StaticResource Selection}"/>
+  <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccent}"/><StaticResource x:Key="FocusBrush" ResourceKey="AccentBrush"/>
+  <StaticResource x:Key="ChromeBackgroundBrush" ResourceKey="BackgroundBrush"/>
+</ResourceDictionary>

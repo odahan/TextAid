@@ -11,7 +11,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-All eight built-in actions validate, and template tests cover variables, missing parameters, Unicode, literal braces, and instruction-bearing input.
+All eight built-in actions validate, and template tests cover variables, missing parameters, Unicode, literal braces, instruction-bearing input, and Translate with an explicit destination language and unchanged original input.
 
 Method:
 Run dotnet test -m:1 for Core and AI tests.

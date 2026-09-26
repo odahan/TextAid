@@ -10,6 +10,7 @@
 .idea/
 .vscode/
 artifacts/
+.nuget-scratch/
 publish/
 *.nupkg
 

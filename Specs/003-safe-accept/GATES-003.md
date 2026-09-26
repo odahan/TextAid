@@ -11,7 +11,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-Solution builds and deterministic platform tests pass.
+Solution builds and deterministic platform tests pass, including Copy without paste or focus restoration and Replace refusing an invalid source target.
 
 Method:
 Run dotnet build -m:1 and dotnet test -m:1.
@@ -32,10 +32,10 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-Capture → uppercase preview → Accept replaces the intended selection in Notepad, TestTarget, a Chromium browser, and Visual Studio or VS Code; Cancel and failure never paste elsewhere.
+Capture → uppercase preview → Replace replaces the intended selection in Notepad, TestTarget, a Chromium browser, and Visual Studio or VS Code. Copy puts the result in the clipboard, leaves the source unchanged, and closes the session. Cancel and failure never paste elsewhere.
 
 Method:
-Run the application matrix manually on Windows, including lost source window and modifier timeout.
+Run the application matrix manually on Windows, including Replace, Copy, Cancel, lost source window, and modifier timeout.
 
 Validated at: —
 Validated by: —

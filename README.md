@@ -20,6 +20,25 @@ Use `STATUS.md` to select the next `Planned` lot and check its dependencies. Onl
 
 Implement the active requirements of its `SPEC`; record new knowledge in its `FINDINGS`. Keep the result location, remaining work, blockers, and next action recoverable through `STATUS.md` and the lot artifacts. `HISTORY.md` records significant operations by append. Each V0.x should build and remain testable. For every `dotnet build` or `dotnet test`, pass `-m:1` explicitly.
 
+## Release publishing
+
+Run `./publish.ps1` from PowerShell. It publishes the self-contained win-x64 single-file Release build to `src/TextAid.App/bin/Publish/TextAid.exe` and verifies that this directory contains only the executable. This is the canonical final EXE location under D-001 and R-011.
+
+For each final EXE, plan a separate clean Windows x64 launch check when a machine is available and record it in `PORTABILITY-CHECKS.md`. Under D-002 and R-012, an unavailable second machine leaves that check deferred without blocking lot closure by itself. The publication and single-file requirements remain active; never report an untested binary as empirically verified on a second machine.
+
+## Builds in the restricted workspace
+
+The default NuGet scratch directory in the Windows profile can report an inaccessible lock under the Codex filesystem sandbox. A normal-access `dotnet restore` succeeds, so the project uses a writable scratch directory for sandboxed commands. Set it **before** the first restore, build, or test in the PowerShell session:
+
+```powershell
+$env:NUGET_SCRATCH = Join-Path (Get-Location) 'src\TextAid.App\obj\NuGetScratch'
+New-Item -ItemType Directory -Path $env:NUGET_SCRATCH -Force | Out-Null
+dotnet build TextAid.sln -m:1 -p:NuGetAudit=false
+dotnet test TextAid.sln -m:1 -p:NuGetAudit=false
+```
+
+Run `./publish.ps1` for Release; it sets and restores `NUGET_SCRATCH` automatically. See `AGENTS.md` for the agent workflow.
+
 ## Validating a lot
 
 Evaluate each active gate on an identifiable result. `AUTO` uses a deterministic check, `LLM` a documented semantic evaluation, and `HUMAN` a named, dated human validation. A gate is `PASS`, `FAIL`, `TO TEST`, or human-declared `N/A` with a ledger decision. Preserve previous evaluations in `Test history` before replacing them. Re-examine validation applicability after changes as required by protocol section 17.10.

@@ -47,13 +47,25 @@ Validate duplicate IDs, unknown action/profile/connection/schema/provider, malfo
 
 Source: `docs/TextAid specification.md`, sections 39–46, 69, 85.
 
+### REQ-006-005 — Translation language preferences
+
+Persist and validate a user language and a preferred translation language in versioned configuration, using distinct BCP-47 identifiers from the application language catalog. These values MUST be available to the later `Ctrl+C+T` direction decision and editable in LOT-008 Settings. Configuration reload MUST retain the previous valid values if the new language preferences are invalid. This lot does not yet activate the quick-translation shortcut.
+
+Source: D-004, D-006, R-018; Olivier's quick-translation instruction.
+
+### REQ-006-006 — Shortcut assignments
+
+Persist separate normal-action and quick-translation shortcut assignments, defaulting to `Ctrl+C+C` and `Ctrl+C+T`. Validate that both complete sequences are supported by the keyboard recognizer and do not conflict with each other. Invalid reload MUST preserve the previous valid assignments. LOT-008 exposes reassignment in Settings and activates the quick-translation binding.
+
+Source: D-005, R-015; Olivier's shortcut-reassignment instruction.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-005 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-005 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

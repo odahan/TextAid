@@ -1,4 +1,4 @@
-# LOT-003 — V0.2 — Safe Accept pipeline
+# LOT-003 — V0.2 — Safe result actions
 
 > Before working on this lot, read the repository root README.md.
 
@@ -7,7 +7,7 @@ Created: 2026-09-25T23:53:23
 
 ## Objective
 
-Prove replacement in the source application without AI.
+Prove explicit Replace and Copy outcomes without AI.
 
 ## Context
 
@@ -25,21 +25,21 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-003-001 — Transaction outcomes
 
-The session MUST end through Accept or Cancel only. X, Escape, and Alt+F4 mean Cancel. Cancel MUST leave the source unchanged and destroy the current session.
+The session MUST offer Replace, Copy, and Cancel for a completed result. X, Escape, and Alt+F4 mean Cancel. Cancel MUST leave the source unchanged and destroy the current session. Replace and Copy MUST be unavailable until the result is complete.
 
-Source: `docs/TextAid specification.md`, sections 19–22, 74.
+Source: `docs/TextAid specification.md`, sections 19–22, 74; D-006, R-017.
 
 ### REQ-003-002 — Captured target
 
-Accept MUST use the source HWND captured at invocation, never a newly sampled foreground window. Verify IsWindow and confirmed restoration/focus before synthetic paste.
+Replace MUST use the source HWND captured at invocation, never a newly sampled foreground window. Verify IsWindow and confirmed restoration/focus before synthetic paste.
 
-Source: `docs/TextAid specification.md`, sections 28–30, 74.
+Source: `docs/TextAid specification.md`, sections 28–30, 74; D-006, R-017.
 
 ### REQ-003-003 — Clipboard and paste
 
-Place the complete result in the clipboard, wait briefly for all Ctrl/Alt/Shift/Win keys to be released, and send Ctrl+V via SendInput only when safe. Never use SendKeys.SendWait.
+Replace MUST place the complete result in the clipboard, wait briefly for all Ctrl/Alt/Shift/Win keys to be released, and send Ctrl+V via SendInput only when safe. Copy MUST place the complete result in the clipboard, leave the source unchanged, perform no focus restoration or paste, and then close the session. Never use SendKeys.SendWait.
 
-Source: `docs/TextAid specification.md`, sections 29–32, 74.
+Source: `docs/TextAid specification.md`, sections 29–32, 74; D-006, R-017.
 
 ### REQ-003-004 — Safe failure
 
@@ -59,7 +59,7 @@ Validate success and failure paths described in the active requirements; use the
 
 ## Dependencies
 
-LOT-002 must be closed before this lot starts. R-001 through R-010 apply throughout.
+LOT-002 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
 

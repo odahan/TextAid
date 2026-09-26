@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+  <sys:String x:Key="ProductName">TextAid</sys:String><sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
+  <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String>
+  <sys:String x:Key="AcceptLabel">Accept</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
+  <sys:String x:Key="ShellMessage">AI transformation is available in a later version.</sys:String>
+  <sys:String x:Key="EnabledLabel">Disable</sys:String><sys:String x:Key="DisabledLabel">Enable</sys:String>
+  <sys:String x:Key="SettingsLabel">Settings</sys:String><sys:String x:Key="AboutLabel">About</sys:String><sys:String x:Key="ExitLabel">Exit</sys:String>
+  <sys:String x:Key="SettingsMessage">Configuration editing is coming in a later version.</sys:String>
+  <sys:String x:Key="ClipboardError">Unable to access the clipboard.</sys:String>
+  <sys:String x:Key="NoTextError">No text selected.</sys:String>
+  <sys:String x:Key="SourceWindowError">Unable to identify the source window.</sys:String>
+  <sys:String x:Key="SessionError">Unable to open the TextAid session.</sys:String>
+</ResourceDictionary>

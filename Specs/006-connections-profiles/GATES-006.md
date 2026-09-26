@@ -11,7 +11,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-Connection/profile resolution and listed invalid configurations are covered by passing deterministic tests.
+Connection/profile resolution, distinct persisted translation language preferences, default and reassigned shortcut persistence, shortcut conflicts, and listed invalid configurations are covered by passing deterministic tests.
 
 Method:
 Run dotnet test -m:1 for Core and AI tests.
