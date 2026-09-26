@@ -148,3 +148,10 @@ Actor: Olivier and Codex
 Operation: Olivier specified the memory aid for the default gestures and confirmed the English spelling **Choose**. Codex recorded D-007 and aligned the project description and planned Settings and V1 requirements with `Ctrl+C`, then `C` for Choose or `T` for Translate.
 Affected artifacts: `LEDGER.md`, `PROJECT.md`, `Specs/008-settings-localization/SPEC-008.md`, `Specs/011-v1-release/SPEC-011.md`, `STATUS.md`.
 Outcome: Shortcut behavior, reassignment rules, closed LOT-002, and the accepted executable remain unchanged. Later lots remain Planned; no gate result is claimed.
+
+## 2026-09-26 — LOT-002 separate-machine check completed after closure
+
+Actor: Olivier and Codex
+Operation: Olivier reported a successful test on a second Windows x64 machine and confirmed that the final LOT-002 EXE was copied alone, launched, and displayed About. Codex matched the still-published canonical EXE to SHA-256 `D9B7890D45B4CA458DEF74A533D940909586062EACF4477C7F4D6FC20DD19A4B` and updated the recurring portability register.
+Affected artifacts: `PORTABILITY-CHECKS.md`, `HISTORY.md`, `STATUS.md`.
+Outcome: The previously deferred check is PASS for the final LOT-002 EXE. The superseded older candidate remains untested. LOT-002 remains Closed; its original convergence and gate evaluations remain historical records of the closure state. No product code, publication, or later lot state changed.
