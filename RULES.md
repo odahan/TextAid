@@ -34,13 +34,14 @@ Rule: All application AI calls MUST pass through MAF and `Microsoft.Extensions.A
 Replaces: None
 Replaced by: None
 
-## R-005 — Local privacy boundary
+## R-005 — Deployment and privacy boundary
 
 Status: ACTIVE
 Source: Initial project rule; source sections 4, 48, 55–59, 90
-Rule: The initial configuration MUST enable Strict Local. In that mode only `localhost`, `127.0.0.1`, and `::1` are automatically local; private LAN addresses are remote. No remote AI call, cloud fallback, telemetry, or user-data egress is allowed. API keys MUST NOT be stored in clear text in `config.json`. With Debug off, no log or persistent trace is created; with Debug on, no secret, user text, result, or prompt containing user text is logged.
+Rule: The initial configuration MUST include a **This device only** connection and accept only `localhost`, `127.0.0.1`, and `::1` for that connection; its model traffic cannot leave the current machine. **On-premises** MAY use an endpoint explicitly configured by the user on an administered network; the application MUST clearly state that it cannot verify ownership, routing, or data handling of that endpoint. **External** is required for an Internet-hosted provider and requires deliberate user configuration. All three connection categories may coexist; an action's selected model profile determines the one used for an invocation. No category may use a cloud fallback or telemetry implicitly. API keys MUST NOT be stored in clear text in `config.json`. With Debug off, no log or persistent trace is created; with Debug on, no secret, user text, result, or prompt containing user text is logged.
 Replaces: None
 Replaced by: None
+Decision: D-010
 
 ## [OBSOLETE 2026-09-26] R-006 — Safe source replacement
 
@@ -155,4 +156,31 @@ Source: D-006; Olivier's 2026-09-26 decision, retaining D-004's language routing
 Scope: Planned LOT-005 through LOT-011; the quick-translation entry point becomes active in LOT-008.
 Rule: The quick-translation shortcut (default `Ctrl+C+T`) MUST start Translate immediately without an action or destination question. Detect the language of the original captured text: user language → preferred translation language; preferred translation language → user language; other or uncertain language → user language. The user MAY choose another destination in the session; this starts a new translation of the original text and supersedes any pending result. `Replace` and `Copy` MUST remain unavailable until the current translation succeeds, then perform their distinct R-017 actions. The normal-action shortcut (default `Ctrl+C+C`) MUST retain its action-choice behavior. The two configured language preferences MUST be valid and distinct.
 Replaces: R-014
+Replaced by: None
+
+## R-019 — Action-selected AI profile
+
+Status: ACTIVE
+Source: D-009; Olivier's 2026-09-26 decision
+Scope: LOT-005, LOT-006, LOT-009, and later V1 lots
+Rule: Every action, including a built-in action supplied by TextAid, MUST be a declarative editable action definition and MUST resolve to one configured model profile. An action definition includes its name, prompt template, optional temperature override, and profile reference. The selected profile may use This device only, On-premises, or an explicitly configured OpenAI-compatible External connection. An action must never cause a silent provider fallback; endpoint use remains subject to the explicit R-005 deployment category.
+Replaces: None
+Replaced by: None
+
+## R-020 — Action output-language default with session override
+
+Status: ACTIVE
+Source: D-013; Olivier's 2026-09-26 decision
+Scope: LOT-005, LOT-006, LOT-008, and later V1 lots
+Rule: An action definition MAY specify an output-language default as a valid BCP-47 language or **Unchanged**. That value determines the initial generation language for its session. The main TextAid session MUST always let the user select a different available output language before generation; the user selection overrides the action default for that invocation without modifying the action definition.
+Replaces: None
+Replaced by: None
+
+## R-021 — Supplementary user instructions per invocation
+
+Status: ACTIVE
+Source: D-014; Olivier's 2026-09-26 decision
+Scope: LOT-005, LOT-008, and later V1 lots
+Rule: Every declarative action definition MUST contain an `askForUserInstructions` flag. When the flag is set, TextAid MUST require a themed modal supplementary-instructions dialog before issuing the normal-action model request. The normal session MUST always offer an Instructions control, allowing optional supplementary instructions for any selected action. The instruction text is scoped to one invocation, is combined with the action prompt only at Process time, and MUST NOT persist into the action definition or a later session. Cancelling the dialog MUST not invoke the model. This rule MUST NOT delay the R-018 quick Translate route: `Ctrl+C+T` starts translation immediately without action selection or an instructions dialog.
+Replaces: None
 Replaced by: None

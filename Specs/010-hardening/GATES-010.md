@@ -53,7 +53,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-No wrong-window paste, prohibited log content, or Strict Local escape remains in the candidate.
+No wrong-window paste, prohibited log content, or deployment-mode boundary escape remains in the candidate.
 
 Method:
 Review failure reproductions and evidence from LOT-003, LOT-007, and current regression.

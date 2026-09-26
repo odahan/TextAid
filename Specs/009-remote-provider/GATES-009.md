@@ -11,7 +11,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-Provider factory, environment authentication, missing credentials, and Strict Local conflict tests pass without needing live remote credentials.
+Provider factory, environment authentication, missing credentials, and deployment-mode classification tests pass without needing live remote credentials.
 
 Method:
 Run dotnet test -m:1 with a fake IChatClient or local test endpoint.
@@ -32,7 +32,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-A deliberately configured remote profile works only when Strict Local is disabled, and the connection mode is clear to the user.
+A deliberately configured External profile works only in External mode, and the selected deployment mode is clear to the user.
 
 Method:
 Exercise with an authorized test account and inspect configuration for absence of clear-text secrets.

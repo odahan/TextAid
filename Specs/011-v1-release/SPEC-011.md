@@ -37,7 +37,7 @@ Source: `docs/TextAid specification.md`, sections 89–90; D-006, R-017.
 
 ### REQ-011-003 — Provider, privacy, resilience
 
-Verify optional remote provider, Strict Local loopback enforcement, no telemetry/log when Debug is off, no sensitive debug content when on, clean failure when Ollama is unavailable, and no paste on failed source restoration.
+Verify optional External provider, This device only loopback enforcement, On-premises disclosure, no telemetry/log when Debug is off, no sensitive debug content when on, clean failure when Ollama is unavailable, and no paste on failed source restoration.
 
 Source: `docs/TextAid specification.md`, sections 89–90.
 

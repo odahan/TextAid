@@ -25,7 +25,7 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-008-001 — Settings sections
 
-Provide dark-themed General, AI Connections, Models/Profiles, Actions, Language, and Debug sections. Include enable/disable, double-copy delay, Strict Local, endpoint/authentication/test, model settings, action list/open folder/reload, language selection, and debug log controls.
+Provide dark-themed General, AI Connections, Models/Profiles, Actions, Language, and Debug sections. AI Connections contains three independent tabs: This device only, On-premises, and External. Include enable/disable, double-copy delay, endpoint/authentication/test, model settings, action list/open folder/reload, language selection, and debug log controls. The tabs may all be configured simultaneously; an action profile selects the active connection for that action.
 
 Source: `docs/TextAid specification.md`, sections 61–68, 79.
 
@@ -70,6 +70,24 @@ Source: D-004, D-006, R-017, R-018; Olivier's quick-translation and result-actio
 Expose the user language and preferred translation language as distinct, valid BCP-47 choices in Settings. Label the two shortcut controls Choose and Translate, explaining the defaults as `Ctrl+C`, then `C` for Choose, and `Ctrl+C`, then `T` for Translate. Let the user reassign either complete sequence, including its prefix, when it conflicts with another application. Apply valid changes to the keyboard recognizer safely and persist them. Reject unsupported or internally conflicting bindings with a clear explanation while retaining the active assignments. Settings MUST not misrepresent a shortcut as guaranteed to override a binding consumed by another application.
 
 Source: D-004 through D-007, R-015, R-018; Olivier's language-routing and shortcut instructions.
+
+### REQ-008-009 — Actions management
+
+Provide an Actions Settings page that lists every action, including TextAid-supplied actions, and permits creation and editing. The editor exposes name, model profile, temperature, prompt template, and output-language default (Unchanged or a supported language). Profile choices visibly identify their This device only, On-premises, or External connection category. Validation errors must retain the last valid action configuration.
+
+Source: D-012, R-019.
+
+### REQ-008-010 — Main-session output-language override
+
+The main TextAid session MUST display a combo of available output languages for an action invocation. It initializes from the action default, but a user-selected language overrides that value for the current generation only. A changed language starts a new one-shot transformation from the original captured text and prevents an older result from being copied or replaced.
+
+Source: D-013, R-020.
+
+### REQ-008-011 — User-instructions editor and session control
+
+The Actions editor MUST expose an English checkbox labelled **Ask for user instructions** bound to `askForUserInstructions`. The normal Choose session MUST include an **Instructions** control that opens the supplementary-instructions dialog for the currently selected action. If an action requires instructions and none were supplied through that control, Process MUST open the same dialog before that model request. The dialog is modal, themed, editable, and its value applies only to the current invocation. This control and requirement MUST NOT delay the immediate `Ctrl+C+T` quick Translate invocation.
+
+Source: D-014, R-021.
 
 ## Important cases
 

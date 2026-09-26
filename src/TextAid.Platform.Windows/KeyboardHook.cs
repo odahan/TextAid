@@ -14,6 +14,7 @@ public sealed class KeyboardHook : IDisposable
     private readonly DoubleCopyDetector detector = new(TimeSpan.FromMilliseconds(450));
     private readonly HookProcedure callback;
     private nint handle;
+    private uint clipboardSequenceBeforeCopy;
 
     public KeyboardHook()
     {
@@ -24,7 +25,8 @@ public sealed class KeyboardHook : IDisposable
         if (handle == 0) throw new System.ComponentModel.Win32Exception();
     }
 
-    public event Action<nint>? Triggered;
+    /// <summary>Raised after a double-copy gesture and indicates whether its first copy changed the clipboard.</summary>
+    public event Action<nint, bool>? Triggered;
 
     private nint OnKeyboard(int code, nint message, nint data)
     {
@@ -33,10 +35,12 @@ public sealed class KeyboardHook : IDisposable
             int key = Marshal.ReadInt32(data);
             if (message == WmKeyDown || message == WmSysKeyDown)
             {
-                if (detector.KeyDown(key, DateTimeOffset.UtcNow))
+                bool triggered = detector.KeyDown(key, DateTimeOffset.UtcNow);
+                if (key == 0x43 && !triggered) clipboardSequenceBeforeCopy = GetClipboardSequenceNumber();
+                if (triggered)
                 {
                     nint source = GetForegroundWindow();
-                    Triggered?.Invoke(source);
+                    Triggered?.Invoke(source, GetClipboardSequenceNumber() != clipboardSequenceBeforeCopy);
                 }
             }
             else if (message == WmKeyUp || message == WmSysKeyUp) detector.KeyUp(key);
@@ -61,6 +65,8 @@ public sealed class KeyboardHook : IDisposable
     private static extern nint CallNextHookEx(nint hook, int code, nint message, nint data);
     [DllImport("user32.dll")]
     private static extern nint GetForegroundWindow();
+    [DllImport("user32.dll")]
+    private static extern uint GetClipboardSequenceNumber();
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
     private static extern nint GetModuleHandle(string? moduleName);
 }

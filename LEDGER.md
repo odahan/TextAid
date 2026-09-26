@@ -151,3 +151,117 @@ Add REQ-003-006 and refine the active HUMAN walkthrough gate to include readable
 
 Replaces: None
 Replaced by: None
+
+## D-009 — OpenAI-compatible profiles selected by action
+
+Date: 2026-09-26T21:25:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-004 instruction
+Related: R-004, R-005, R-019, LOT-005, LOT-006, LOT-009
+
+Decision:
+V1 must support an explicitly configured OpenAI-compatible remote AI connection in addition to local Ollama. Each declarative action selects the model profile it uses, so actions such as Translate can remain local while a long-form expansion action can explicitly select a remote OpenAI-compatible profile. Remote selection must remain visible in configuration and must never become a silent fallback.
+
+Reason:
+Olivier wants action-specific cost, latency, and capability choices while preserving a clear local-first default.
+
+Consequences:
+Add R-019. LOT-005 adds the action `profileId` reference; LOT-006 resolves and validates action profiles; LOT-009 implements the OpenAI-compatible provider, authentication, and Strict Local opt-in. LOT-004 remains local-Ollama only and is not expanded with a remote provider.
+
+Replaces: None
+Replaced by: None
+
+## D-010 — Deployment-mode nomenclature and on-premises access
+
+Date: 2026-09-26T21:40:00+02:00
+Decided by: Olivier
+Source: Olivier's confirmed deployment-boundary instruction during LOT-004
+Related: R-005, R-019, LOT-004, LOT-006, LOT-007, LOT-008, LOT-009, LOT-010, LOT-011
+
+Decision:
+Replace the overloaded term “Strict Local” with three explicit deployment modes: **This device only**, **On-premises**, and **External**. This device only permits loopback endpoints and guarantees that model traffic does not leave the current machine. On-premises permits a user-declared endpoint on an administered network; TextAid must not claim that it can independently verify the endpoint's ownership, routing, or data handling. External denotes an Internet-hosted provider and requires deliberate configuration. A private-LAN address must not be automatically classified as trusted merely because it is private.
+
+Reason:
+Olivier wants to use an Ollama server on a network machine when appropriate, without conflating that controlled choice with either same-device execution or an Internet-hosted service.
+
+Consequences:
+Revise R-005, the project glossary, and the planned privacy, remote-provider, hardening, and release requirements. The active LOT-004 implementation continues to enforce the most restrictive This device only boundary; the On-premises and External configuration UX, persistence, disclosure, and validation are assigned to LOT-006 through LOT-009. Reevaluate G-004-001 after its visible terminology update; no human gate result is invalidated.
+
+Replaces: None
+Replaced by: None
+
+## D-011 — Concurrent connection tabs and action-selected profile
+
+Date: 2026-09-26T22:30:00+02:00
+Decided by: Olivier
+Source: Olivier's confirmed Settings architecture instruction during LOT-004
+Related: R-005, R-019, LOT-005, LOT-006, LOT-008, LOT-009
+
+Decision:
+Settings will expose three independent tabs: **This device only**, **On-premises**, and **External**. Each connection category may be configured and retained at the same time. There is no global deployment-mode switch that changes every action. Instead, each action selects a model profile, and that profile selects the configured connection used for its invocation.
+
+Reason:
+Olivier needs local, network-managed, and external AI configurations to coexist, with an intentional provider choice tailored to each action.
+
+Consequences:
+Refine R-005. LOT-006 persists the three connection categories and profile resolution. LOT-008 delivers the three Settings tabs. LOT-005 action data and LOT-009 External provider implementation retain their `profileId` route. LOT-004 continues to expose only the This device only setup until the later configuration model is implemented.
+
+Replaces: None
+Replaced by: None
+
+## D-012 — Built-in and user actions share one editable model
+
+Date: 2026-09-26T22:38:00+02:00
+Decided by: Olivier
+Source: Olivier's Actions-page instruction during LOT-004
+Related: R-019, LOT-005, LOT-006, LOT-008
+
+Decision:
+Actions supplied with TextAid are not special code paths: they use the same declarative action format as user-created actions. The future Actions Settings page lists all existing actions and lets the user create or edit them. Each action exposes a name, model profile (representing This device only, On-premises, or External and its selected model), temperature, and prompt template.
+
+Reason:
+Olivier wants users to inspect and tailor built-in behavior as readily as their own actions, while retaining a transparent per-action provider choice.
+
+Consequences:
+Refine R-019 and LOT-005 action data. LOT-006 resolves the action's profile and temperature override. LOT-008 supplies the Actions management page, including built-in actions. No special hard-coded transform path is permitted after LOT-005.
+
+Replaces: None
+Replaced by: None
+
+## D-013 — Action output-language default and session override
+
+Date: 2026-09-26T22:43:00+02:00
+Decided by: Olivier
+Source: Olivier's action-language instruction during LOT-004
+Related: R-020, LOT-005, LOT-006, LOT-008
+
+Decision:
+Each action may define an output language as either a BCP-47 language or **Unchanged**. This setting supplies the initial generation-language choice for the action. The main TextAid session always exposes a language combo, allowing the user to select a different generation language for the current invocation. That selection overrides the action default without changing the saved action.
+
+Reason:
+Olivier wants predictable defaults for actions while retaining an immediate per-use language choice.
+
+Consequences:
+LOT-005 action data adds the output-language field; LOT-006 validates it against the language catalog; LOT-008 adds the main-session language combo and enforces the one-invocation override behavior. The existing quick-translation routing remains a specialized later invocation rule and must continue to create a fresh transformation from the original text when its destination changes.
+
+Replaces: None
+Replaced by: None
+
+## D-014 — Per-action supplementary user instructions
+
+Date: 2026-09-26T23:30:00+02:00
+Decided by: Olivier
+Source: Olivier's programmable-action and session-instructions instruction during LOT-004
+Related: R-019, R-021, LOT-005, LOT-008
+
+Decision:
+Every declarative action gains an `askForUserInstructions` checkbox. When selected, Process first opens a modal, themed dialog in which the user supplies supplementary instructions; no model call occurs until that dialog is confirmed. The normal TextAid session also always offers an Instructions control so the user can provide optional guidance for any action. The user may edit the session text, choose an action, add or revise instructions, then explicitly select Process. All three values are snapshotted for one request only. This applies to the normal Choose flow (`Ctrl+C+C`) only: the quick Translate flow (`Ctrl+C+T`) starts translation immediately and must never be delayed by action choice or an instructions dialog. Its result remains editable/reconfigurable afterward, including destination-language changes.
+
+Reason:
+Olivier wants actions to request essential per-use context when needed, without preventing ad-hoc guidance for otherwise self-contained actions.
+
+Consequences:
+LOT-005 adds the flag, prompt composition, editable text, action selection, and explicit Process semantics for the normal action flow. LOT-008 exposes the checkbox in the Actions editor and the Instructions dialog/control in the normal session, while retaining R-018's immediate `Ctrl+C+T` translation route. The current LOT-004 Rewrite-only screen does not yet have declarative actions, so it remains an interim implementation.
+
+Replaces: None
+Replaced by: None

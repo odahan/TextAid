@@ -25,9 +25,33 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-006-001 — Typed configuration
 
-Implement ConnectionDefinition, ModelProfile, AiClientFactory, and ProfileResolver. Resolve Action → ModelProfile → Connection → IChatClient → MAF; keep provider-specific options opaque to Core.
+Implement ConnectionDefinition, ModelProfile, AiClientFactory, and ProfileResolver. Resolve Action → ModelProfile → Connection → IChatClient → MAF; keep provider-specific options opaque to Core. Action `profileId` determines the selected ModelProfile.
 
 Source: `docs/TextAid specification.md`, sections 39–43, 77.
+
+### REQ-006-007 — Action-profile validation
+
+Validate every action `profileId` and resolve it before an invocation starts. Preserve a visible local default profile, and do not silently substitute a different profile when the referenced profile is unavailable or invalid.
+
+Source: D-009, R-019.
+
+### REQ-006-008 — Concurrent connection categories
+
+Persist independent This device only, On-premises, and External connection definitions concurrently. A ModelProfile chooses one connection; no global mode may replace the selected profile for unrelated actions.
+
+Source: D-011, R-005, R-019.
+
+### REQ-006-009 — Action generation overrides
+
+Resolve an action's selected profile and optional temperature override for each invocation. Reject an action whose profile is unavailable or whose override is out of the supported range; do not silently substitute another profile or temperature.
+
+Source: D-012, R-019.
+
+### REQ-006-010 — Action-language validation
+
+Validate each action output-language default against the supported language catalog, permitting the explicit **Unchanged** value. Invalid action-language data must not replace the last valid configuration.
+
+Source: D-013, R-020.
 
 ### REQ-006-002 — Default configuration
 

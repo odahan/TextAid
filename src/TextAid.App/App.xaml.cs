@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using TextAid.Core;
+using TextAid.AI;
 using TextAid.Platform.Windows;
 
 namespace TextAid.App;
@@ -13,8 +14,12 @@ public partial class App : Application
     private KeyboardHook? hook;
     private TrayIcon? tray;
     private MainWindow? sessionWindow;
+    private SettingsWindow? settingsWindow;
+    private StartupNoticeWindow? startupNoticeWindow;
+    private AboutWindow? aboutWindow;
     private Mutex? instanceMutex;
     private readonly ResultActions resultActions = new(new Win32ResultActions());
+    private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
     private bool enabled = true;
     private bool capturing;
 
@@ -32,17 +37,43 @@ public partial class App : Application
 
         UserConfiguration.EnsureCreated();
         hook = new KeyboardHook();
-        hook.Triggered += source => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source)));
+        hook.Triggered += (source, hasCopiedText) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText)));
         using Stream icon = GetResourceStream(new Uri("pack://application:,,,/TextAid;component/Assets/TextAid.ico")).Stream;
         tray = new TrayIcon(icon);
         tray.Clicked += () => Dispatcher.BeginInvoke(ShowTrayMenu);
+        Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
     }
 
-    private async Task CaptureWithFeedbackAsync(nint source)
+    private async Task CheckInitialProviderAsync()
     {
         try
         {
-            await CaptureAsync(source);
+            TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
+            var factory = new OllamaChatClientFactory();
+            bool running = await factory.TestConnectionAsync(settings.Endpoint, CancellationToken.None);
+            if (!running || (await factory.GetLocalModelNamesAsync(settings.Endpoint, CancellationToken.None)).Count == 0) ShowStartupNotice();
+        }
+        catch
+        {
+            ShowStartupNotice();
+        }
+    }
+
+    private void ShowStartupNotice()
+    {
+        if (startupNoticeWindow is { IsVisible: true }) return;
+        if (settingsWindow is not null || aboutWindow is not null) return;
+        startupNoticeWindow = new StartupNoticeWindow();
+        startupNoticeWindow.SettingsRequested += (_, _) => ShowSettings();
+        startupNoticeWindow.Closed += (_, _) => startupNoticeWindow = null;
+        startupNoticeWindow.ShowDialog();
+    }
+
+    private async Task CaptureWithFeedbackAsync(nint source, bool hasCopiedText)
+    {
+        try
+        {
+            await CaptureAsync(source, hasCopiedText);
         }
         catch (Exception)
         {
@@ -50,7 +81,8 @@ public partial class App : Application
         }
     }
 
-    private async Task CaptureAsync(nint source)
+    /// <summary>Opens a transformation session from a verified copy gesture or as an empty manual entry.</summary>
+    private async Task CaptureAsync(nint source, bool hasCopiedText)
     {
         if (!enabled || capturing || sessionWindow is not null) return;
         capturing = true;
@@ -58,33 +90,69 @@ public partial class App : Application
         {
             string? text;
             bool failed = false;
-            if (source == 0)
-            {
-                text = string.Empty;
-                failed = true;
-            }
-            else
+            if (hasCopiedText)
             {
                 try { text = await ClipboardReader.ReadUnicodeTextAsync(CancellationToken.None); }
                 catch (InvalidOperationException) { text = string.Empty; failed = true; }
             }
+            else text = string.Empty;
             bool noText = !failed && string.IsNullOrWhiteSpace(text);
-            var session = new InvocationSession(source, text ?? string.Empty)
+            nint safeSource = noText ? 0 : source;
+            var session = new InvocationSession(safeSource, text ?? string.Empty)
             {
-                State = failed || noText ? InvocationState.Failed : InvocationState.Ready
+                State = failed ? InvocationState.Failed : InvocationState.Ready
             };
-            if (session.State == InvocationState.Ready)
-            {
-                session.OutputText = session.InputText.ToUpperInvariant();
-                session.State = InvocationState.ResultReady;
-            }
-            string key = source == 0 ? "SourceWindowError" : failed ? "ClipboardError" : noText ? "NoTextError" : "ShellMessage";
-            sessionWindow = new MainWindow(session, ReplaceOutput, CopyResult, (string)FindResource(key));
+            string key = failed ? "ClipboardError" : noText ? "EnterTextMessage" : "ReadyToProcessMessage";
+            sessionWindow = new MainWindow(session, ReplaceOutput, CopyResult, StartTransformation, (string)FindResource(key));
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
         }
         finally { capturing = false; }
+    }
+
+    private async Task TransformAsync(InvocationSession session, MainWindow window)
+    {
+        try
+        {
+            string inputText = session.InputText;
+            TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
+            if (!settings.HasModel)
+            {
+                window.ShowFailure((string)FindResource("NoModelError"));
+                return;
+            }
+
+            string output = await transformationService.TransformAsync(
+                new TextTransformationRequest(
+                    inputText,
+                    "Rewrite the user's text for clarity and natural phrasing. Return only the rewritten text.",
+                    settings),
+                session.Cancellation.Token);
+            if (!window.IsLoaded) return;
+            window.ShowResult(output);
+        }
+        catch (OperationCanceledException) when (session.Cancellation.IsCancellationRequested)
+        {
+            // Closing the session is a normal cancellation path.
+        }
+        catch (OperationCanceledException)
+        {
+            window.ShowFailure((string)FindResource("TransformationTimeoutError"));
+        }
+        catch (Exception)
+        {
+            window.ShowFailure((string)FindResource("TransformationError"));
+        }
+    }
+
+    /// <summary>Starts a user-requested transformation from the editable session input.</summary>
+    private void StartTransformation(MainWindow window, InvocationSession session)
+    {
+        if (string.IsNullOrWhiteSpace(session.InputText) || session.State == InvocationState.Transforming) return;
+        session.State = InvocationState.Transforming;
+        window.ShowTransforming((string)FindResource("TransformingMessage"));
+        _ = TransformAsync(session, window);
     }
 
     private void CopyResult(MainWindow window, InvocationSession session)
@@ -145,18 +213,55 @@ public partial class App : Application
         var toggle = new MenuItem { Header = Label(enabled ? "EnabledLabel" : "DisabledLabel"), Style = itemStyle };
         toggle.Click += (_, _) => enabled = !enabled;
         var settings = new MenuItem { Header = Label("SettingsLabel"), Style = itemStyle };
-        settings.Click += (_, _) => new SettingsWindow().Show();
+        settings.Click += (_, _) => ShowSettings();
+        var open = new MenuItem { Header = Label("OpenLabel"), Style = itemStyle };
+        open.Click += (_, _) => _ = CaptureWithFeedbackAsync(0, hasCopiedText: false);
         var about = new MenuItem { Header = Label("AboutLabel"), Style = itemStyle };
-        about.Click += (_, _) => new AboutWindow().Show();
+        about.Click += (_, _) => ShowAbout();
         var exit = new MenuItem { Header = Label("ExitLabel"), Style = itemStyle };
         exit.Click += (_, _) => Shutdown();
         menu.Items.Add(toggle);
         menu.Items.Add(new Separator { Style = separatorStyle });
+        menu.Items.Add(open);
         menu.Items.Add(settings);
         menu.Items.Add(about);
         menu.Items.Add(new Separator { Style = separatorStyle });
         menu.Items.Add(exit);
         menu.IsOpen = true;
+    }
+
+    private void ShowSettings()
+    {
+        if (settingsWindow is { IsVisible: true })
+        {
+            settingsWindow.Activate();
+            settingsWindow.Topmost = true;
+            settingsWindow.Topmost = false;
+            settingsWindow.Focus();
+            return;
+        }
+
+        if (startupNoticeWindow is not null || aboutWindow is not null) return;
+
+        settingsWindow = new SettingsWindow();
+        settingsWindow.Closed += (_, _) => settingsWindow = null;
+        settingsWindow.ShowDialog();
+    }
+
+    private void ShowAbout()
+    {
+        if (aboutWindow is { IsVisible: true })
+        {
+            aboutWindow.Activate();
+            aboutWindow.Focus();
+            return;
+        }
+
+        if (settingsWindow is not null || startupNoticeWindow is not null) return;
+
+        aboutWindow = new AboutWindow();
+        aboutWindow.Closed += (_, _) => aboutWindow = null;
+        aboutWindow.ShowDialog();
     }
 
     protected override void OnExit(ExitEventArgs e)

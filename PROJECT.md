@@ -25,11 +25,12 @@ V1 excludes chat, autonomous agents, RAG, MCP, workflows, conversation memory, t
 
 ## Stable functional characteristics
 
-- One selected text, one transformation, one model invocation, one result.
+- One editable session text, one selected action, one model invocation, one result. The text may originate from a selection, typing, or paste; the user starts Process explicitly.
 - A destination change in the quick-translation session starts a new translation of the original captured text; only the latest successful result may be used for replacement.
 - The main window is a short-lived transaction with `Replace`, `Copy`, and `Cancel` outcomes and at most one active session.
-- Local model use works without a remote server. Strict Local allows loopback endpoints only.
+- Local model use works without a remote server. This device only allows loopback endpoints only; On-premises permits a user-configured administered-network endpoint, and External denotes Internet-hosted use.
 - The user can add an action without recompiling the application.
+- An action may require supplementary user instructions before Process; the user may also enter optional instructions for any action. These instructions apply to one invocation only.
 - The product remains small enough to be explained as: “TextAid captures selected text, applies one configurable AI transformation through MAF, and optionally replaces the original text.”
 
 ## Glossary
@@ -38,5 +39,7 @@ V1 excludes chat, autonomous agents, RAG, MCP, workflows, conversation memory, t
 - **Connection:** provider type, endpoint, and authentication method.
 - **Model profile:** connection, model, generation settings, and provider-specific options.
 - **Invocation session:** captured text, source window, selected action, result, and transaction state.
-- **Strict Local:** mode that forbids model traffic beyond the local machine.
+- **This device only:** mode that forbids model traffic beyond the local machine.
+- **On-premises:** a user-declared endpoint on an administered network; the application cannot independently verify its ownership or routing.
+- **External:** an Internet-hosted endpoint deliberately enabled by the user.
 - **MAF:** Microsoft Agent Framework, the sole application AI middleware.

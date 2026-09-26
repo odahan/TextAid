@@ -25,7 +25,7 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-005-001 — Action data
 
-Implement ActionDefinition, ActionLoader, and ActionValidator using versioned JSON. Migrate Rewrite and supply Translate, Correct, Rewrite, Shorten, Expand, Simplify, Change tone, and Summarize as built-in action data.
+Implement ActionDefinition, ActionLoader, and ActionValidator using versioned JSON. Migrate Rewrite and supply Translate, Correct, Rewrite, Shorten, Expand, Simplify, Change tone, and Summarize as built-in action data. Built-in and user-created actions share the same editable format and no built-in action has a dedicated C# execution path.
 
 Source: `docs/TextAid specification.md`, sections 34–36, 76.
 
@@ -52,6 +52,36 @@ Source: `docs/TextAid specification.md`, sections 38, 84.
 The built-in Translate action MUST accept an explicit destination language and preserve the original captured text as its input. Its action data and rendering path MUST support the later `Ctrl+C+T` entry point without adding a separate hard-coded translation implementation. Changing the destination in a session will mean a new single transformation of the original text, never translation of an earlier translated result. This lot does not yet activate `Ctrl+C+T`; the full shortcut and language-preference workflow belongs to LOT-008.
 
 Source: D-004, D-006, R-018; Olivier's quick-translation instruction.
+
+### REQ-005-006 — Action profile reference
+
+Each ActionDefinition MUST declare a `profileId` that identifies the model profile to use. Built-in action data may select the local default profile; the remote profile implementation remains LOT-009 work. An unknown profile is invalid action data.
+
+Source: D-009, R-019.
+
+### REQ-005-007 — Editable action fields
+
+Each ActionDefinition MUST include a user-visible name, a prompt template, a `profileId`, and an optional temperature override. The profile reference represents the selected This device only, On-premises, or External model profile; action data must not embed a provider endpoint or credential. The same schema applies to every built-in and user-created action.
+
+Source: D-012, R-019.
+
+### REQ-005-008 — Output-language default
+
+Each ActionDefinition MUST define an output-language default as either **Unchanged** or a BCP-47 language identifier. This is data, not a separate translation action implementation, and it becomes the initial value of the later session language selector.
+
+Source: D-013, R-020.
+
+### REQ-005-009 — User-instructions flag
+
+Each ActionDefinition MUST include an `askForUserInstructions` boolean. When true, TextAid MUST collect additional user instructions in a dialog before it begins that action's model call. Cancelling that dialog MUST leave the session unchanged and MUST NOT call a provider. The supplementary instruction is invocation-only data and MUST NOT modify the action definition.
+
+Source: D-014, R-021.
+
+### REQ-005-010 — Editable session and action choice
+
+The normal TextAid session MUST keep its input text editable regardless of whether it originated from a selection, manual typing, or a paste. It MUST let the user select an available action, optionally enter supplementary instructions, and explicitly start one Process operation. The request must use a snapshot of the editable text, selected action, and supplementary instruction at the moment Process starts.
+
+Source: D-014, R-021.
 
 ## Important cases
 

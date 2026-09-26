@@ -23,9 +23,11 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ## Requirements
 
-### REQ-007-001 — Strict Local enforcement
+### REQ-007-001 — Deployment-mode enforcement
 
-With Strict Local enabled, accept only localhost, 127.0.0.1, or ::1 endpoints and reject private-LAN and remote endpoints before any AI connection. No cloud fallback or telemetry is permitted.
+In This device only mode, accept only localhost, 127.0.0.1, or ::1 endpoints before any AI connection. On-premises accepts only a user-declared network endpoint and must explain that TextAid cannot verify its ownership or routing. External is required for Internet-hosted providers. No cloud fallback or telemetry is permitted in any mode.
+
+Source: D-010, R-005.
 
 Source: `docs/TextAid specification.md`, sections 4, 78, 85.
 

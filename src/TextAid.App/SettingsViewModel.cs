@@ -1,0 +1,108 @@
+using System.Collections.ObjectModel;
+using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using TextAid.AI;
+using TextAid.Core;
+
+namespace TextAid.App;
+
+/// <summary>Represents the outcome of an explicit Ollama connection check.</summary>
+public enum ConnectionTestState
+{
+    NotTested,
+    Testing,
+    Ready,
+    Failed
+}
+
+/// <summary>Edits the local-only Ollama connection and generation settings.</summary>
+public sealed partial class SettingsViewModel : ObservableObject
+{
+    private readonly OllamaChatClientFactory chatClientFactory = new();
+
+    [ObservableProperty] private string endpoint = "http://127.0.0.1:11434";
+    [ObservableProperty] private string? selectedModel;
+    [ObservableProperty] private string temperatureText = "0.2";
+    [ObservableProperty] private string contextSizeText = "8192";
+    [ObservableProperty] private string timeoutSecondsText = "120";
+    [ObservableProperty] private ThinkingMode selectedThinking = ThinkingMode.Off;
+    [ObservableProperty] private string status = "Load the models installed in your local Ollama instance.";
+    [ObservableProperty] private bool isLoadingModels;
+    [ObservableProperty] private ConnectionTestState connectionState = ConnectionTestState.NotTested;
+
+    public ObservableCollection<string> Models { get; } = [];
+    public IReadOnlyList<ThinkingMode> ThinkingModes { get; } = Enum.GetValues<ThinkingMode>();
+    public event EventHandler? Saved;
+
+    /// <summary>Loads persisted settings and attempts local model discovery.</summary>
+    public async Task InitializeAsync()
+    {
+        try
+        {
+            TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
+            Endpoint = settings.Endpoint;
+            SelectedModel = settings.Model;
+            TemperatureText = settings.Temperature.ToString(CultureInfo.InvariantCulture);
+            ContextSizeText = settings.ContextSize.ToString(CultureInfo.InvariantCulture);
+            TimeoutSecondsText = ((int)settings.Timeout.TotalSeconds).ToString(CultureInfo.InvariantCulture);
+            SelectedThinking = settings.Thinking;
+            await LoadModelsAsync();
+        }
+        catch (Exception exception) { Status = exception.Message; }
+    }
+
+    [RelayCommand]
+    private async Task LoadModelsAsync()
+    {
+        IsLoadingModels = true;
+        try
+        {
+            IReadOnlyList<string> models = await chatClientFactory.GetLocalModelNamesAsync(Endpoint.Trim(), CancellationToken.None);
+            Models.Clear();
+            foreach (string model in models) Models.Add(model);
+            Status = models.Count == 0 ? "Ollama is available, but no local models were found. Install one with 'ollama pull <model>'." : "Choose a local model, then save your settings.";
+        }
+        catch
+        {
+            Models.Clear();
+            Status = "TextAid could not reach Ollama. Check the local endpoint and that Ollama is running.";
+        }
+        finally { IsLoadingModels = false; }
+    }
+
+    [RelayCommand]
+    private async Task TestConnectionAsync()
+    {
+        ConnectionState = ConnectionTestState.Testing;
+        Status = "Testing the local Ollama connection…";
+        try
+        {
+            bool isRunning = await chatClientFactory.TestConnectionAsync(Endpoint.Trim(), CancellationToken.None);
+            ConnectionState = isRunning ? ConnectionTestState.Ready : ConnectionTestState.Failed;
+            Status = isRunning ? "Ollama is available at this endpoint." : "Ollama did not accept a connection at this endpoint.";
+        }
+        catch
+        {
+            ConnectionState = ConnectionTestState.Failed;
+            Status = "TextAid could not reach Ollama. Check the endpoint and that Ollama is running.";
+        }
+    }
+
+    [RelayCommand]
+    private void Save()
+    {
+        try
+        {
+            if (!float.TryParse(TemperatureText, NumberStyles.Float, CultureInfo.InvariantCulture, out float temperature)) throw new ArgumentException("Temperature must be a number between 0 and 2.");
+            if (!int.TryParse(ContextSizeText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contextSize)) throw new ArgumentException("Context size must be a whole number.");
+            if (!int.TryParse(TimeoutSecondsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds)) throw new ArgumentException("Timeout must be a whole number of seconds.");
+            if (string.IsNullOrWhiteSpace(SelectedModel)) throw new ArgumentException("Choose a local Ollama model before saving.");
+
+            UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
+            Status = "Local Ollama settings saved.";
+            Saved?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception exception) { Status = exception.Message; }
+    }
+}

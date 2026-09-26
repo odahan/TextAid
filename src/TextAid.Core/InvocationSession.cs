@@ -17,7 +17,7 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
 {
     public Guid Id { get; } = Guid.NewGuid();
     public nint SourceWindow { get; } = sourceWindow;
-    public string InputText { get; } = inputText;
+    public string InputText { get; set; } = inputText;
     public string? ActionId { get; set; }
     public IReadOnlyDictionary<string, string> Parameters { get; } = new Dictionary<string, string>();
     public string? OutputText { get; set; }

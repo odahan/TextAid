@@ -219,6 +219,115 @@ Operation: Olivier explicitly accepted the proposed TOTAL convergence and closur
 Affected artifacts: `Specs/003-safe-accept/CONVERGENCE-003.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: LOT-003 is Closed. The identified V0.2 EXE has both active gates PASS, all six active requirements satisfied, and all four findings resolved locally. LOT-004 remains Planned and requires a separate human start decision.
 
+## 2026-09-26 — LOT-004 started
+
+Operation: Olivier explicitly started LOT-004, V0.3 — MAF and local Ollama.
+
+Outcome: `STATUS.md` records LOT-004 as In-progress. Implementation and gate evaluation are pending; no acceptance or closure is implied.
+
+## 2026-09-26 — First LOT-004 implementation candidate
+
+Operation: Added the non-streaming Rewrite path through `MafTextTransformationService`, Microsoft Agent Framework's `ChatClientAgent`, the `IChatClient` boundary, and an `OllamaSharp.OllamaApiClient` factory. The app reads the configured local endpoint, model, temperature, and timeout; it displays explicit no-model, timeout, and provider-failure messages. A visible indeterminate local-model progress bar is present while the call is pending and result actions stay disabled. Added five deterministic fake-client tests for request/response, cancellation, provider error, empty output, and timeout.
+
+Outcome: G-004-001 is PASS for the working-tree candidate: the solution builds without warnings or errors and all 19 discovered AI and Windows tests pass. G-004-002 remains TO TEST because it requires Olivier's live local-Ollama walkthrough, including stopped-provider behavior. LOT-004 remains In-progress.
+
+## 2026-09-26 — Local Ollama settings and action-profile direction
+
+Operation: Replaced the placeholder Settings page with a local Ollama configuration page. It discovers installed models through OllamaSharp, stores the selected model, endpoint, temperature, context size, and timeout in the existing local profile, and validates the Strict Local loopback boundary. The transformation path passes the configured context size as Ollama's `num_ctx` option. Olivier also decided that later declarative actions select a model profile and that V1 includes an explicit OpenAI-compatible remote provider.
+
+Outcome: The current LOT-004 candidate builds with 0 warnings and 0 errors; the five AI fake-client tests and fourteen Windows tests pass. G-004-001 remains PASS after reevaluation. D-009/R-019 refine the planned LOT-005, LOT-006, and LOT-009 work without changing LOT-004's local-only scope. G-004-002 remains TO TEST.
+
+## 2026-09-26 — Deployment modes clarified
+
+Operation: Olivier confirmed the replacement of “Strict Local” by This device only, On-premises, and External. Codex recorded D-010, revised R-005 and future-lot requirements, and aligned the current local Settings terminology with This device only.
+
+Outcome: The active LOT-004 candidate retains its loopback-only behavior, now accurately labelled This device only. On-premises and External implementation is deliberately deferred to the planned profiles, privacy, settings, and remote-provider lots. No human gate result is invalidated.
+
+## 2026-09-26 — LOT-004 published for local validation
+
+Operation: Ran the root `publish.ps1` to create the current V0.3 candidate at the canonical single-file path.
+
+Outcome: `src/TextAid.App/bin/Publish/` contains only `TextAid.exe`, SHA-256 `53F6B2A89464EE4979BB39EEA5A62E4E52B5A4299409633A380A5CCA74B3F383`. The separate-machine check is recorded as deferred; Olivier will perform the local Ollama human walkthrough next.
+
+## 2026-09-26 — Concurrent provider configuration decided
+
+Operation: Olivier decided that This device only, On-premises, and External connections are retained concurrently in separate Settings tabs. Codex recorded D-011 and aligned the privacy, profiles, and Settings specifications.
+
+Outcome: The selected model profile remains the sole action-specific route to a provider. The new V0.3 candidate is published at the canonical path; provider-tab implementation remains assigned to LOT-006 and LOT-008.
+
+## 2026-09-26 — Unified editable action model decided
+
+Operation: Olivier decided that TextAid-supplied actions and user-created actions share one editable declarative schema. Codex recorded D-012 and refined the actions, profiles, and Settings requirements.
+
+Outcome: LOT-005 will eliminate special built-in execution paths; LOT-006 resolves an action's profile and temperature override; LOT-008 supplies the management UI for all actions. LOT-004 remains focused on its first Rewrite path.
+
+## 2026-09-26 — Action output-language default decided
+
+Operation: Olivier decided that actions carry an Unchanged or BCP-47 output-language default, while the main session always permits a per-invocation language override. Codex recorded D-013 and refined the affected action, profile, and Settings requirements.
+
+Outcome: The action definition supplies the initial generation language; the later main-session combo overrides it without mutating saved action data. LOT-004 remains unchanged.
+
+## 2026-09-26 — LOT-004 local walkthrough substantially validated
+
+Actor: Olivier and Codex
+Operation: Olivier validated the configured local transformation, its displayed result, Copy, Replace, and the graceful stopped-Ollama path on the published V0.3 candidate. Olivier deferred the separate no-Ollama-machine launch check. He also reported mismatched preview typography, non-exclusive Settings/About dialogs, and a likely ineffective thinking switch.
+Affected artifacts: `Specs/004-ollama-maf/GATES-004.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The prior V0.3 EXE SHA-256 `871F31EE5D3B8782BE1127FB1B2DF3B4462F6A9EBE3D49DF7D56A04464A06C33` has a successful core local walkthrough. A follow-up candidate corrects the reported UI and thinking issues; it awaits publication and a focused human retest.
+
+## 2026-09-26 — LOT-004 typography, modality, and thinking correction published
+
+Actor: Codex
+Operation: Set an explicit identical 14-point text size for captured and generated text, made Settings, About, and the missing-provider notice mutually exclusive modal dialogs, and mapped the stored thinking choice to MAF's `ReasoningOptions` (`Off` maps to `None`). Added fake-client assertions for Off and High reasoning choices.
+Affected artifacts: `src/TextAid.AI/MafTextTransformationService.cs`, `src/TextAid.App/App.xaml.cs`, `src/TextAid.App/MainWindow.xaml`, `src/TextAid.App/StartupNoticeWindow.xaml.cs`, `tests/TextAid.AI.Tests/MafTextTransformationServiceTests.cs`, `Specs/004-ollama-maf/GATES-004.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The solution built with 0 warnings and 0 errors; 6 AI fake-client tests and 14 Platform.Windows tests passed. `publish.ps1` produced the sole 178,355,119-byte V0.3 EXE at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `81720DC9AF212B625B45052674A3D53A5503C0CB5C00B696D1B2DDA213820FFC`. Focused human retest remains required for this distinct binary; the clean no-Ollama-machine portability case remains deferred.
+
+## 2026-09-26 — LOT-004 thinking correction validated
+
+Actor: Olivier
+Operation: Olivier validated the typography and modal-dialog corrections and exercised a local transformation with thinking Off.
+Affected artifacts: `Specs/004-ollama-maf/GATES-004.md`, `HISTORY.md`.
+Outcome: Olivier reports an instantaneous response with thinking Off, providing live confirmation that the setting is now reaching the configured Ollama model. The no-Ollama-machine startup check remains deferred.
+
+## 2026-09-26 — LOT-004 tray Open fallback published
+
+Actor: Codex
+Operation: Added Open to the tray menu. It starts a transformation from clipboard text without requiring Ctrl+C+C, while deliberately disabling Replace because no trustworthy source window exists; Copy stays available.
+Affected artifacts: `src/TextAid.App/App.xaml.cs`, `src/TextAid.App/MainViewModel.cs`, `src/TextAid.App/Strings.xaml`, `Specs/004-ollama-maf/GATES-004.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The solution built with 0 warnings and 0 errors; 6 AI fake-client tests and 14 Platform.Windows tests passed. `publish.ps1` produced the sole 178,355,119-byte V0.3 EXE at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `EB801C88B5BFCB930E0920B8167FE04117462A545F1D47E6E4AE86F14F9F8DBF`.
+
+## 2026-09-26 — Per-action supplementary instructions decided
+
+Operation: Olivier decided that declarative actions may require supplementary user instructions, while every normal session also exposes an optional Instructions control. Text remains editable, the user selects an action and optional instructions, then starts Process explicitly.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/008-settings-localization/SPEC-008.md`.
+Outcome: D-014 and R-021 assign action data/runtime semantics to LOT-005 and Actions editor/session controls to LOT-008. LOT-004 remains the interim Rewrite-only implementation.
+
+## 2026-09-26 — LOT-004 manual-entry candidate published
+
+Actor: Codex
+Operation: Revised tray Open and double-copy-without-selection to open the same focused, editable empty session rather than consume prior clipboard text. Added the Process control; its request snapshots the current editable text.
+Affected artifacts: `src/TextAid.App/App.xaml.cs`, `src/TextAid.App/MainViewModel.cs`, `src/TextAid.App/MainWindow.xaml`, `src/TextAid.App/MainWindow.xaml.cs`, `src/TextAid.App/Strings.xaml`, `src/TextAid.Core/InvocationSession.cs`, `src/TextAid.Platform.Windows/KeyboardHook.cs`, `Specs/004-ollama-maf/GATES-004.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The solution built with 0 warnings and 0 errors; 6 AI fake-client tests and 14 Platform.Windows tests passed. `publish.ps1` produced the sole 178,355,631-byte V0.3 EXE at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `7D71903867D39B77A0E94A94EF3C8A98FEE3C154840F24139F859CB08DE0AA3E`.
+
+## 2026-09-26 — LOT-004 explicit Process flow published
+
+Actor: Codex
+Operation: Aligned valid-selection entry with the manual-entry path: every session now waits for the user to review or edit text and choose Process before a model request. This leaves a single session flow ready for upcoming action selection and supplementary-instructions controls.
+Affected artifacts: `src/TextAid.App/App.xaml.cs`, `src/TextAid.App/Strings.xaml`, `Specs/004-ollama-maf/GATES-004.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The solution built with 0 warnings and 0 errors; 6 AI fake-client tests and 14 Platform.Windows tests passed. `publish.ps1` produced the sole 178,355,631-byte V0.3 EXE at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `2280762B84063F78B89AAED76CB1E9D3752EB237C2B8D26300CF4A40F3295A72`.
+
+## 2026-09-26 — Quick Translate immediacy reaffirmed
+
+Operation: Olivier clarified that the explicit editable Process flow applies to normal `Ctrl+C+C` actions only. `Ctrl+C+T` must retain its immediate Translate behavior, with later optional corrections and destination-language changes.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/008-settings-localization/SPEC-008.md`, `HISTORY.md`.
+Outcome: D-014/R-021 are constrained by the existing R-018 quick-translation rule; no LOT-004 code or published executable changes.
+
+## 2026-09-27 — LOT-004 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly validated and accepted LOT-004.
+Affected artifacts: `Specs/004-ollama-maf/GATES-004.md`, `Specs/004-ollama-maf/CONVERGENCE-004.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: The V0.3 EXE SHA-256 `2280762B84063F78B89AAED76CB1E9D3752EB237C2B8D26300CF4A40F3295A72` has both active gates PASS. No LOT-004 finding was recorded. LOT-004 is Closed with TOTAL convergence; the separate clean-machine check remains deferred under R-012.
+
 ## 2026-09-26 — LOT-003 Replace retest passed in common applications
 
 Actor: Olivier and Codex

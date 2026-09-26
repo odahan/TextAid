@@ -35,11 +35,17 @@ Support None and BearerFromEnvironment, resolving the named environment variable
 
 Source: `docs/TextAid specification.md`, sections 48, 80.
 
-### REQ-009-003 — Strict Local conflict
+### REQ-009-003 — External mode requirement
 
-Reject a remote endpoint while Strict Local is enabled; any use of a remote provider MUST require deliberate configuration and disabling Strict Local.
+Reject an Internet-hosted endpoint unless External mode is selected deliberately. This device only accepts loopback endpoints. On-premises permits only a user-declared administered-network endpoint and must not claim that TextAid has verified the endpoint's ownership or routing.
 
-Source: `docs/TextAid specification.md`, sections 4, 47–48, 80.
+Source: D-010, R-005; retained source sections 4, 47–48, 80.
+
+### REQ-009-004 — OpenAI-compatible connection
+
+Implement an explicitly configured OpenAI-compatible connection through IChatClient and the existing MAF path. Its endpoint, model, and named Bearer environment variable are configuration values; an action may select its ModelProfile through `profileId`. The remote profile must be visible to the user and must never be chosen as an implicit fallback.
+
+Source: D-009, R-019.
 
 ## Important cases
 

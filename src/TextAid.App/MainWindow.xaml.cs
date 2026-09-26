@@ -9,10 +9,10 @@ namespace TextAid.App;
 /// <summary>Hosts one short-lived invocation and places it on the source monitor.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(InvocationSession session, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, string status)
+    public MainWindow(InvocationSession session, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, string status)
     {
         InitializeComponent();
-        DataContext = new MainViewModel(session, () => replace(this, session), () => copy(this, session), Close, status);
+        DataContext = new MainViewModel(session, () => replace(this, session), () => copy(this, session), () => process(this, session), Close, status);
 
         SourceInitialized += (_, _) =>
         {
@@ -26,6 +26,7 @@ public partial class MainWindow : Window
             Topmost = true;
             Activate();
             Focus();
+            InputEditor.Focus();
             Topmost = false;
         };
         PreviewKeyDown += (_, args) =>
@@ -42,4 +43,10 @@ public partial class MainWindow : Window
 
     /// <summary>Shows a safe operation failure and leaves only cancellation available.</summary>
     public void ShowFailure(string message) => ((MainViewModel)DataContext).ShowFailure(message);
+
+    /// <summary>Shows the completed transformation and enables the safe result actions.</summary>
+    public void ShowResult(string output) => ((MainViewModel)DataContext).ShowResult(output);
+
+    /// <summary>Refreshes the view when processing starts from the editable input.</summary>
+    public void ShowTransforming(string message) => ((MainViewModel)DataContext).ShowTransforming(message);
 }
