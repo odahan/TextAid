@@ -6,7 +6,8 @@ public enum InvocationState
     Ready,
     Transforming,
     ResultReady,
-    Accepted,
+    Replaced,
+    Copied,
     Cancelled,
     Failed
 }

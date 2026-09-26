@@ -132,3 +132,22 @@ Use Choose and Translate consistently in Settings shortcut labels, help/document
 
 Replaces: None
 Replaced by: None
+
+## D-008 — Resizable split result review
+
+Date: 2026-09-26T19:42:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-003 visual-review instruction
+Related: LOT-003, REQ-003-006, G-003-002
+
+Decision:
+The LOT-003 session MUST present the captured text and transformed text in a 50/50 side-by-side layout. The window MUST be resizable, and the two panels MUST continue to divide the available width equally as it is resized. The status message MUST occupy its own non-overlapping row.
+
+Reason:
+The vertical layout mixes the preview and status content and does not provide enough usable space to compare source and transformed text.
+
+Consequences:
+Add REQ-003-006 and refine the active HUMAN walkthrough gate to include readable, elastic 50/50 review. Preserve the prior G-003-002 definition in its history. This decision applies only to the active LOT-003 result; no closed result or global rule changes.
+
+Replaces: None
+Replaced by: None

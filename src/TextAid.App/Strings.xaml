@@ -1,8 +1,8 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
   <sys:String x:Key="ProductName">TextAid</sys:String><sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
   <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String>
-  <sys:String x:Key="AcceptLabel">Accept</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
-  <sys:String x:Key="ShellMessage">AI transformation is available in a later version.</sys:String>
+  <sys:String x:Key="ReplaceLabel">Replace</sys:String><sys:String x:Key="CopyLabel">Copy</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
+  <sys:String x:Key="ShellMessage">Review the uppercase preview, then choose Replace, Copy, or Cancel. Replace may be unavailable for applications running as administrator.</sys:String>
   <sys:String x:Key="EnabledLabel">Disable</sys:String><sys:String x:Key="DisabledLabel">Enable</sys:String>
   <sys:String x:Key="SettingsLabel">Settings</sys:String><sys:String x:Key="AboutLabel">About</sys:String><sys:String x:Key="ExitLabel">Exit</sys:String>
   <sys:String x:Key="SettingsMessage">Configuration editing is coming in a later version.</sys:String>
@@ -10,4 +10,10 @@
   <sys:String x:Key="NoTextError">No text selected.</sys:String>
   <sys:String x:Key="SourceWindowError">Unable to identify the source window.</sys:String>
   <sys:String x:Key="SessionError">Unable to open the TextAid session.</sys:String>
+  <sys:String x:Key="ClipboardWriteError">Unable to copy the result to the clipboard. You can cancel this session.</sys:String>
+  <sys:String x:Key="InvalidTargetError">The original window is no longer available. The result remains in the clipboard; you can cancel this session.</sys:String>
+  <sys:String x:Key="FocusFailedError">TextAid could not safely restore the original window. The result remains in the clipboard; you can cancel this session.</sys:String>
+  <sys:String x:Key="ModifiersPressedError">Release Ctrl, Alt, Shift, and Windows keys, then try again. The result remains in the clipboard.</sys:String>
+  <sys:String x:Key="PasteFailedError">TextAid could not paste safely. The result remains in the clipboard; you can cancel this session.</sys:String>
+  <sys:String x:Key="ElevatedApplicationNote">Replace may be unavailable for applications running as administrator. Copy remains available.</sys:String>
 </ResourceDictionary>

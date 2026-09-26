@@ -14,6 +14,7 @@ public partial class App : Application
     private TrayIcon? tray;
     private MainWindow? sessionWindow;
     private Mutex? instanceMutex;
+    private readonly ResultActions resultActions = new(new Win32ResultActions());
     private bool enabled = true;
     private bool capturing;
 
@@ -72,12 +73,63 @@ public partial class App : Application
             {
                 State = failed || noText ? InvocationState.Failed : InvocationState.Ready
             };
+            if (session.State == InvocationState.Ready)
+            {
+                session.OutputText = session.InputText.ToUpperInvariant();
+                session.State = InvocationState.ResultReady;
+            }
             string key = source == 0 ? "SourceWindowError" : failed ? "ClipboardError" : noText ? "NoTextError" : "ShellMessage";
-            sessionWindow = new MainWindow(session, (string)FindResource(key));
+            sessionWindow = new MainWindow(session, ReplaceOutput, CopyResult, (string)FindResource(key));
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
+            sessionWindow.Activate();
         }
         finally { capturing = false; }
+    }
+
+    private void CopyResult(MainWindow window, InvocationSession session)
+    {
+        if (!TryCopyToClipboard(session.OutputText, window)) return;
+        resultActions.Copy();
+        session.State = InvocationState.Copied;
+        window.Close();
+    }
+
+    private void ReplaceOutput(MainWindow window, InvocationSession session)
+    {
+        if (!TryCopyToClipboard(session.OutputText, window)) return;
+
+        ReplaceResult outcome = resultActions.TryReplace(session.SourceWindow);
+        if (outcome == ReplaceResult.Replaced)
+        {
+            session.State = InvocationState.Replaced;
+            window.Close();
+            return;
+        }
+
+        window.ShowFailure((string)FindResource(outcome switch
+        {
+            ReplaceResult.InvalidTarget => "InvalidTargetError",
+            ReplaceResult.FocusFailed => "FocusFailedError",
+            ReplaceResult.ModifiersStillPressed => "ModifiersPressedError",
+            ReplaceResult.PasteFailed => "PasteFailedError",
+            _ => "PasteFailedError"
+        }));
+    }
+
+    private bool TryCopyToClipboard(string? text, MainWindow window)
+    {
+        if (string.IsNullOrEmpty(text)) return false;
+        try
+        {
+            Clipboard.SetText(text);
+            return true;
+        }
+        catch (Exception)
+        {
+            window.ShowFailure((string)FindResource("ClipboardWriteError"));
+            return false;
+        }
     }
 
     private void ShowTrayMenu()

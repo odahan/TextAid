@@ -53,6 +53,12 @@ Create the non-distributed WPF TextAid.TestTarget with single-line and multiline
 
 Source: `docs/TextAid specification.md`, sections 74, 82.
 
+### REQ-003-006 — Elastic 50/50 review layout
+
+The session MUST present captured text and transformed text side by side in equally sized panels. The window MUST be resizable while preserving the equal split, and its status message MUST have an independent, non-overlapping display row.
+
+Source: D-008.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.

@@ -155,3 +155,73 @@ Actor: Olivier and Codex
 Operation: Olivier reported a successful test on a second Windows x64 machine and confirmed that the final LOT-002 EXE was copied alone, launched, and displayed About. Codex matched the still-published canonical EXE to SHA-256 `D9B7890D45B4CA458DEF74A533D940909586062EACF4477C7F4D6FC20DD19A4B` and updated the recurring portability register.
 Affected artifacts: `PORTABILITY-CHECKS.md`, `HISTORY.md`, `STATUS.md`.
 Outcome: The previously deferred check is PASS for the final LOT-002 EXE. The superseded older candidate remains untested. LOT-002 remains Closed; its original convergence and gate evaluations remain historical records of the closure state. No product code, publication, or later lot state changed.
+
+## 2026-09-26 — LOT-003 started
+
+Actor: Olivier and Codex
+Operation: Olivier instructed Codex to perform LOT-003 after the completed bootstrap and with no other active lot.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-003 moved from Planned to In-progress. Its active work is the explicit Replace, Copy, and Cancel transaction behavior, including safe use of the captured source window and the non-distributed Windows test target.
+
+## 2026-09-26 — LOT-003 V0.2 candidate prepared
+
+Actor: Codex
+Operation: Implemented the temporary uppercase preview, Replace/Copy/Cancel result actions, guarded native replacement using the invocation-time HWND, and the WPF test target. Replaced the former Windows Forms test target with the specified single-line and multiline TextBox, RichTextBox, focus-change control, and visible focus event display.
+Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/InvocationSession.cs`, `src/TextAid.Platform.Windows/ResultActions.cs`, `tests/TextAid.Platform.Windows.Tests/ResultActionsTests.cs`, `tools/TextAid.TestTarget/`, `Specs/003-safe-accept/`.
+Outcome: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` passed with zero warnings/errors and `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 13 platform tests. `publish.ps1` produced the sole V0.2 `TextAid.exe` (SHA-256 `0AFC77FACD4C50B002DC1AFF44A58EFE421F1B174B066CBF6C056CC9DB6765A0`) in the canonical directory. G-003-001 is PASS; the required Olivier Windows safety walkthrough, G-003-002, remains TO TEST.
+
+## 2026-09-26 — LOT-003 modifier safety coverage strengthened
+
+Actor: Codex
+Operation: Added a deterministic pressed-modifier timeout test and expanded the Win32 modifier check to include generic Ctrl, Alt, and Shift virtual keys as well as their left/right variants and Windows keys. Rebuilt, retested, and republished the candidate.
+Affected artifacts: `src/TextAid.Platform.Windows/ResultActions.cs`, `tests/TextAid.Platform.Windows.Tests/ResultActionsTests.cs`, `Specs/003-safe-accept/GATES-003.md`, `HISTORY.md`.
+Outcome: The solution rebuilt with zero warnings/errors and all 14 platform tests passed. The superseding V0.2 EXE is the sole 173,662,859-byte file at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `A38B39129C90093E99AF5EE6AD89BD8B3F782B20CAB8A60C024BCDC38B3C0B6E`. G-003-001 remains PASS; G-003-002 remains TO TEST pending Olivier's Windows walkthrough.
+
+## 2026-09-26 — LOT-003 corrections prepared from Olivier's walkthrough
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed Cancel, close, capture, and uppercase transformation but reported failed Replace and an overlapping preview/status display. He decided on an elastic 50/50 review layout (D-008). Codex separated the status row, made the session resizable with equal-width panels, and strengthened native source-focus restoration before paste.
+Affected artifacts: `LEDGER.md`, `Specs/003-safe-accept/`, `src/TextAid.App/MainWindow.xaml`, `src/TextAid.Platform.Windows/ResultActions.cs`.
+Outcome: The corrected source builds with zero warnings/errors and the 14 platform tests pass. The prior published EXE is running (PID 43160), so it locks the canonical Publish file and prevents final publication. G-003-001 returns to TO TEST until the corrected EXE is published and identified; G-003-002 remains TO TEST.
+
+## 2026-09-26 — LOT-003 corrected candidate published
+
+Actor: Codex
+Operation: After Olivier closed the resident previous candidate, published the focus-restoration and elastic-layout correction with the canonical root script.
+Affected artifacts: `src/TextAid.App/bin/Publish/TextAid.exe`, `Specs/003-safe-accept/GATES-003.md`, `HISTORY.md`.
+Outcome: The canonical directory contains exactly one 173,663,371-byte V0.2 EXE, SHA-256 `6DB09596045AD8824E3865F4DD7583E06285401DA51416B8FA7B0DBEE8E8F0A0`. G-003-001 is again PASS. F-003-002 and G-003-002 remain open for Olivier's retest of Replace; the visual correction is locally resolved and also awaits human review.
+
+## 2026-09-26 — LOT-003 native paste and foreground correction prepared
+
+Actor: Codex
+Operation: Diagnosed Olivier's “could not paste safely” message as an undersized x64 native `INPUT` interop layout passed to `SendInput`. Added the full union layout and explicit session activation/temporary topmost behavior to prevent the session from opening behind other windows.
+Affected artifacts: `src/TextAid.Platform.Windows/ResultActions.cs`, `src/TextAid.App/App.xaml.cs`, `src/TextAid.App/MainWindow.xaml.cs`, `Specs/003-safe-accept/`.
+Outcome: The corrected source builds with zero warnings/errors and the 14 platform tests pass. The prior EXE remains running (PID 12540) and locks the Publish output, so G-003-001 is TO TEST until the new EXE is published. F-003-002 is resolved locally and awaits Olivier's retest; G-003-002 remains TO TEST.
+
+## 2026-09-26 — LOT-003 native paste correction published
+
+Actor: Codex
+Operation: Published the final native-interoperability and foreground correction after Olivier closed the previous resident EXE.
+Affected artifacts: `src/TextAid.App/bin/Publish/TextAid.exe`, `Specs/003-safe-accept/GATES-003.md`, `HISTORY.md`.
+Outcome: The canonical directory contains exactly one 173,663,371-byte V0.2 EXE, SHA-256 `55D5C9C4E6C859204991AC20D2587A0CA6C3A0866765AD063FE742D8AA58A52D`. G-003-001 is PASS. Olivier's retest of Replace and session foreground visibility remains required for G-003-002.
+
+## 2026-09-26 — LOT-003 ready for closure
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed all remaining Windows walkthrough cases. Codex recorded G-003-002 HUMAN PASS, reviewed all six active requirements and four terminal findings, prepared the proposed TOTAL convergence, and moved LOT-003 to Ready-to-close.
+Affected artifacts: `Specs/003-safe-accept/GATES-003.md`, `Specs/003-safe-accept/FINDINGS-003.md`, `Specs/003-safe-accept/CONVERGENCE-003.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: G-003-001 and G-003-002 PASS on V0.2 EXE SHA-256 `55D5C9C4E6C859204991AC20D2587A0CA6C3A0866765AD063FE742D8AA58A52D`; no active requirement has an unresolved deviation and no finding remains OPEN. LOT-003 awaits Olivier's explicit acceptance or refusal of the proposed TOTAL convergence and closure.
+
+## 2026-09-26 — LOT-003 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly accepted the proposed TOTAL convergence and closure of LOT-003.
+Affected artifacts: `Specs/003-safe-accept/CONVERGENCE-003.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-003 is Closed. The identified V0.2 EXE has both active gates PASS, all six active requirements satisfied, and all four findings resolved locally. LOT-004 remains Planned and requires a separate human start decision.
+
+## 2026-09-26 — LOT-003 Replace retest passed in common applications
+
+Actor: Olivier and Codex
+Operation: Olivier retested the final corrected V0.2 EXE in Notepad, Visual Studio, Chrome, and Edge.
+Affected artifacts: `Specs/003-safe-accept/GATES-003.md`, `Specs/003-safe-accept/FINDINGS-003.md`, `HISTORY.md`.
+Outcome: Replace succeeds in all four reported applications, confirming the corrected `SendInput` path. G-003-002 remains TO TEST for the unreported TestTarget, Copy, controlled-failure, and layout/foreground conditions.
