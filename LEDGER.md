@@ -516,3 +516,22 @@ Record F-006-002 as deferred to LOT-008. LOT-006 may close after its gates pass 
 
 Replaces: None
 Replaced by: None
+
+## D-028 — Transform-session branding, status guidance, and application menu
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's post-closure LOT-006 refinement instruction
+Related: R-007, R-030, LOT-006, LOT-008
+
+Decision:
+The transform-session header displays the real `Logo-final.png` asset instead of a TextAid text title. Its guidance message explicitly tells the user to choose Process or use a preset. The header also exposes an application-menu icon that opens the same application menu available from the tray icon.
+
+Reason:
+Olivier wants the session to show the established brand, make the preset path discoverable, and offer application navigation without requiring tray access.
+
+Consequences:
+LOT-006 is reopened for this contained correction. The shared menu behavior must remain consistent between the header and tray; LOT-008 retains its later broader menu and Actions-page work.
+
+Replaces: None
+Replaced by: None

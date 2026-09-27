@@ -11,9 +11,12 @@ namespace TextAid.App;
 /// <summary>Hosts one short-lived invocation and places it on the source monitor.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status)
+    private readonly Action showApplicationMenu;
+
+    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status)
     {
         InitializeComponent();
+        this.showApplicationMenu = showApplicationMenu ?? throw new ArgumentNullException(nameof(showApplicationMenu));
         DataContext = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status);
 
         SourceInitialized += (_, _) =>
@@ -76,4 +79,6 @@ public partial class MainWindow : Window
         button.ContextMenu = menu;
         menu.IsOpen = true;
     }
+
+    private void OnShowApplicationMenu(object sender, RoutedEventArgs e) => showApplicationMenu();
 }

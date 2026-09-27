@@ -7,8 +7,8 @@
   <sys:String x:Key="InstructionsLabel">Instructions</sys:String><sys:String x:Key="InstructionsTitle">Supplementary instructions</sys:String><sys:String x:Key="InstructionsMessage">Optional guidance for this one transformation.</sys:String><sys:String x:Key="SaveLabel">Save</sys:String>
   <sys:String x:Key="TransformingMessage">Transforming your text with the local model…</sys:String>
   <sys:String x:Key="TransformingLabel">Local model is working</sys:String>
-  <sys:String x:Key="EnterTextMessage">Enter or paste text, then choose Process.</sys:String>
-  <sys:String x:Key="ReadyToProcessMessage">Review or edit the text, then choose Process.</sys:String>
+  <sys:String x:Key="EnterTextMessage">Enter or paste text, then choose Process or use a preset.</sys:String>
+  <sys:String x:Key="ReadyToProcessMessage">Review or edit the text, then choose Process or use a preset.</sys:String>
   <sys:String x:Key="NoModelError">Select a local Ollama model in Settings before running a transformation.</sys:String>
   <sys:String x:Key="TransformationTimeoutError">The local model did not respond in time. You can cancel this session and try again.</sys:String>
   <sys:String x:Key="TransformationError">TextAid could not complete the local transformation. Check that Ollama is running and try again.</sys:String>

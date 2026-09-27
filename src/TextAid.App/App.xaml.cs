@@ -112,7 +112,7 @@ public partial class App : Application
             string key = failed ? "ClipboardError" : noText ? "EnterTextMessage" : "ReadyToProcessMessage";
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
             IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
-            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
+            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
