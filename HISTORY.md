@@ -44,6 +44,55 @@ Operation: Olivier confirmed that the contained reopening work is complete, incl
 Affected artifacts: `Specs/006-connections-profiles/GATES-006.md`, `Specs/006-connections-profiles/CONVERGENCE-006.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors; `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests. Both LOT-006 gates remain PASS, and Olivier authorized reclosure.
 
+## 2026-09-27 — LOT-007 privacy and debug candidate prepared
+
+Actor: Olivier and Codex
+Operation: Olivier started LOT-007 and clarified that recoverable failures should use a short, model-generated suggestion when an eligible configured Ollama model is available, while always retaining deterministic recovery guidance. Codex added opt-in session logging with a privacy-first metadata boundary, debug Settings controls, explicit error mapping, and deterministic privacy tests.
+Affected artifacts: `STATUS.md`, `Specs/007-privacy-debug/GATES-007.md`, `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`.
+Outcome: The automatic privacy gate passed after a zero-warning build and 50 passing tests. Root `publish.ps1` produced `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `996944993ED48AB158C3393E609B5A5EBB4976CDD8365B4212FB42E349D294A1`. G-007-002 remains TO TEST pending Olivier's visual privacy walkthrough.
+
+## 2026-09-27 — Sole active configuration resolves every action
+
+Actor: Olivier and Codex
+Operation: Olivier clarified that an intentional one-provider setup resolves every action to its sole active valid eligible configuration, visibly naming any category promotion or downgrade. Multiple eligible configurations remain an explicit action-profile choice, and runtime failures retain the existing user-controlled downward fallback. Codex recorded D-029, revised R-027 and R-029, and added resolver coverage.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/007-privacy-debug/`, `src/TextAid.Core/ProfileResolver.cs`, `tests/TextAid.Core.Tests/`.
+Outcome: Build completed with 0 warnings and 0 errors; 6 AI, 32 Core, and 14 Windows tests passed. Root `publish.ps1` produced the superseding LOT-007 candidate at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `83A93C84132E5778A8480FD8A4B22BE75DBBD46D985DA1DD69EEC064794C7D05`.
+
+## 2026-09-27 — LOT-007 diagnostic trace made actionable
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed Debug-file creation and persistence, then reported that an all-connections-inactive failure was not identifiable in the trace and requested direct folder access. Codex added categorized user-facing failure events, exception type/HRESULT/protocol/native-code/stack diagnostics, safe inner-exception structure, and an Open debug-log folder command. Untrusted exception messages and data remain excluded to prevent reflected secret or user-text logging.
+Affected artifacts: `Specs/007-privacy-debug/`, `src/TextAid.Core/DebugSessionLog.cs`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`.
+Outcome: Build completed with 0 warnings and 0 errors; 6 AI, 32 Core, and 14 Windows tests passed. Root `publish.ps1` produced the superseding LOT-007 candidate at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `7E9D8BDDB0AEC60BB4D87F49275C30ED53A003812F3B116B4AA38C4F2C7134D9`.
+
+## 2026-09-27 — User-controlled Full log added
+
+Actor: Olivier and Codex
+Operation: Olivier decided that the persistent safe Debug mode needs a separately enabled persistent Full log for difficult diagnostics. Codex recorded D-030, added the conditional Full log setting and red status indicator, expanded the local log to include input, prompt, output, and exception message diagnostics only in that mode, and retained credential redaction in every mode. The Debug page explains that logs are never transmitted automatically and that the user may obfuscate passages before manually sharing one.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/007-privacy-debug/`, `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`.
+Outcome: Build completed with 0 warnings and 0 errors; 6 AI, 33 Core, and 14 Windows tests passed. Root `publish.ps1` produced the superseding LOT-007 candidate at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `1FCC13BC0B72CF8771A75EC9F23D909BBC47FF3F4B427737E783193056800E87`.
+
+## 2026-09-27 — Full log warning made persistent in the main session
+
+Actor: Olivier and Codex
+Operation: Olivier requested that the Full log warning remain visible in the bottom-left corner of the main session instead of only on the Debug Settings page. Codex added the red indicator and live synchronization with the Debug/Full log editor; saving applies the persisted mode and cancelling restores the saved state.
+Affected artifacts: `src/TextAid.App/MainWindow.xaml`, `src/TextAid.App/MainWindow.xaml.cs`, `src/TextAid.App/MainViewModel.cs`, `src/TextAid.App/SettingsWindow.xaml.cs`, `src/TextAid.App/App.xaml.cs`.
+Outcome: Build completed with 0 warnings and 0 errors; 6 AI, 33 Core, and 14 Windows tests passed. Root `publish.ps1` produced the superseding LOT-007 candidate at `src/TextAid.App/bin/Publish/TextAid.exe`, SHA-256 `2EBBCDCD4A554FAA8A6EAA0B88174315558370D8EAF4039AD05BBF0ED6FE989B`.
+
+## 2026-09-27 — LOT-007 human validation completed
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed that all LOT-007 behavior passes on the current published candidate, including safe Debug, persistent Full log, credential redaction, categorized diagnostics, folder access, and the main-session indicator synchronization.
+Affected artifacts: `Specs/007-privacy-debug/GATES-007.md`, `Specs/007-privacy-debug/CONVERGENCE-007.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: Both active LOT-007 gates are PASS. TOTAL convergence is prepared and awaits Olivier's explicit closure decision.
+
+## 2026-09-27 — LOT-007 accepted and closed
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly accepted the prepared LOT-007 TOTAL convergence and authorized closure.
+Affected artifacts: `Specs/007-privacy-debug/CONVERGENCE-007.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-007 is Closed. G-007-001 AUTO and G-007-002 HUMAN are PASS; F-007-001 is resolved.
+
 ## 2026-09-25 — Pro-Spec project initialized
 
 Actor: Codex

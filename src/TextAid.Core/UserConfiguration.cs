@@ -19,6 +19,7 @@ public static class UserConfiguration
             {
                 schemaVersion = 1,
                 debugMode = false,
+                fullDebugMode = false,
                 userLanguage = "en",
                 preferredTranslationLanguage = "fr",
                 shortcuts = new { normalAction = "Ctrl+C+C", quickTranslation = "Ctrl+C+T" },
@@ -40,6 +41,40 @@ public static class UserConfiguration
         }
         else UpgradeVersionOneConfiguration(path);
         return path;
+    }
+
+    /// <summary>Returns whether the user explicitly enabled the diagnostic log.</summary>
+    public static bool LoadDebugMode()
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        return root["debugMode"]?.GetValue<bool>() ?? false;
+    }
+
+    /// <summary>Persists the opt-in diagnostic setting without creating a log itself.</summary>
+    public static void SaveDebugMode(bool enabled)
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        root["debugMode"] = enabled;
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    /// <summary>Returns whether the user enabled the persistent full diagnostic log.</summary>
+    public static bool LoadFullDebugMode()
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        return root["fullDebugMode"]?.GetValue<bool>() ?? false;
+    }
+
+    /// <summary>Persists the full diagnostic preference independently of the Debug on/off switch.</summary>
+    public static void SaveFullDebugMode(bool enabled)
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        root["fullDebugMode"] = enabled;
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
     /// <summary>Returns the persisted visible action folder, preferring the directory beside the executable.</summary>
@@ -285,6 +320,7 @@ public static class UserConfiguration
         if (root["preferredTranslationLanguage"] is null) { root["preferredTranslationLanguage"] = "fr"; changed = true; }
         if (root["shortcuts"] is null) { root["shortcuts"] = new JsonObject { ["normalAction"] = "Ctrl+C+C", ["quickTranslation"] = "Ctrl+C+T" }; changed = true; }
         if (root["actionPresets"] is null) { root["actionPresets"] = new JsonArray("correct", "rewrite", "summarize", "translate"); changed = true; }
+        if (root["fullDebugMode"] is null) { root["fullDebugMode"] = false; changed = true; }
         if (changed) File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
@@ -349,6 +385,9 @@ public static class UserConfiguration
 
     /// <summary>Returns the current user's TextAid application-data directory.</summary>
     public static string GetUserDataDirectory() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TextAid");
+
+    /// <summary>Returns the current user's local TextAid data directory for machine-local diagnostics.</summary>
+    public static string GetLocalUserDataDirectory() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TextAid");
 
     /// <summary>Determines whether a host is restricted to the current device.</summary>
     public static bool IsLoopbackHost(string host) =>

@@ -38,10 +38,10 @@ Replaced by: None
 
 Status: ACTIVE
 Source: Initial project rule; source sections 4, 48, 55–59, 90
-Rule: The initial configuration MUST include a **This device only** connection and accept only `localhost`, `127.0.0.1`, and `::1` for that connection; its model traffic cannot leave the current machine. **On-premises** MAY use an endpoint explicitly configured by the user on an administered network; the application MUST clearly state that it cannot verify ownership, routing, or data handling of that endpoint. **External** is required for an Internet-hosted provider and requires deliberate user configuration. All three connection categories may coexist; an action's selected model profile determines the one used for an invocation. No category may use a cloud fallback or telemetry implicitly. API keys MUST NOT be stored in clear text in `config.json`. With Debug off, no log or persistent trace is created; with Debug on, no secret, user text, result, or prompt containing user text is logged.
+Rule: The initial configuration MUST include a **This device only** connection and accept only `localhost`, `127.0.0.1`, and `::1` for that connection; its model traffic cannot leave the current machine. **On-premises** MAY use an endpoint explicitly configured by the user on an administered network; the application MUST clearly state that it cannot verify ownership, routing, or data handling of that endpoint. **External** is required for an Internet-hosted provider and requires deliberate user configuration. All three connection categories may coexist; an action's selected model profile determines the one used for an invocation. No category may use a cloud fallback or telemetry implicitly. API keys MUST NOT be stored in clear text in `config.json`. With Debug off, no log or persistent trace is created. Safe Debug never logs credentials, user text, result, or a prompt containing user text. A separately enabled persistent Full log may record that diagnostic text locally, but MUST never log authentication credentials of any kind, including API keys, Bearer tokens, passwords, or DPAPI-protected secrets; it is never transmitted automatically.
 Replaces: None
 Replaced by: None
-Decision: D-010
+Decision: D-010, D-030
 
 ## [OBSOLETE 2026-09-26] R-006 — Safe source replacement
 
@@ -233,12 +233,12 @@ Rule: Release publishing MUST produce a self-contained single `TextAid.exe` for 
 Replaces: R-025
 Replaced by: None
 
-## R-027 — Explicit configuration downgrade
+## R-027 — Explicit configuration fallback and sole-configuration promotion
 
 Status: ACTIVE
-Source: D-022
+Source: D-022, D-029
 Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
-Rule: An action whose requested On-premises or External configuration category does not exist or is not configured MUST downgrade automatically and visibly: External → On-premises → This device only, and On-premises → This device only. An action with no requested remote category MUST use This device only. Every automatic downgrade MUST name the unavailable requested category and the selected category in the user-facing status. A configured connection that is invalid, including a malformed endpoint or missing required credential, MUST first show an explicit configuration error and then offer the user a downgrade to the next eligible lower category. After an eligible connection has been selected, provider or LLM unavailability during the invocation MUST first show an explicit provider failure and then offer the same user-controlled downgrade. Declining the offer leaves the invocation failed; accepting it starts a new invocation using the selected category and states that selection in the status. This explicit behavior is the only exception to R-005 and R-022's ban on silent fallback.
+Rule: If exactly one active, valid, eligible connection configuration exists at initial resolution, TextAid MUST automatically and visibly use that sole configuration for every action whose requested configuration is absent, inactive, or otherwise not configured. Where the requested category differs, the status MUST name both the requested category and the selected sole category; this is an automatic downgrade or promotion. Otherwise, an action whose requested On-premises or External configuration category does not exist or is not configured MUST downgrade automatically and visibly: External → On-premises → This device only, and On-premises → This device only. Every automatic downgrade MUST name the unavailable requested category and the selected category in the user-facing status. If two or more active eligible configurations exist, TextAid MUST not infer an upward route and MUST direct the user to select an appropriate profile for the action. A configured connection that is invalid, including a malformed endpoint or missing required credential, MUST first show an explicit configuration error and then offer the user a downgrade to the next eligible lower category. After an eligible provider or LLM later fails to respond, TextAid MUST first show that provider failure and then offer the same user-controlled downgrade; it MUST NOT promote upward. Declining the offer leaves the invocation failed; accepting it starts a new invocation using the selected lower category and states that selection in the status. These explicit automatic and user-approved behaviors are the only exceptions to R-005 and R-022's ban on silent fallback.
 Replaces: None
 Replaced by: None
 
@@ -254,9 +254,9 @@ Replaced by: None
 ## R-029 — Independent connection activation
 
 Status: ACTIVE
-Source: D-024
+Source: D-024, D-029
 Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
-Rule: Each This device only, On-premises, and External connection MUST have a persisted Active yes/no state. An inactive connection remains retained but is treated as not configured for R-027 resolution. Users MAY activate any subset of the three categories, including External alone. An action with no requested remote category still requests This device only and MUST NOT select a higher category when the local connection is inactive.
+Rule: Each This device only, On-premises, and External connection MUST have a persisted Active yes/no state. An inactive connection remains retained but is treated as not configured for R-027 resolution. Users MAY activate any subset of the three categories, including External alone. An action with no requested remote category initially requests This device only; if that category is unavailable and one active valid eligible configuration is the sole choice, R-027 promotes visibly to it. Multiple active eligible configurations require the user to select an appropriate action profile.
 Replaces: None
 Replaced by: None
 

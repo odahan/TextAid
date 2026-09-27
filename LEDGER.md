@@ -19,6 +19,48 @@ Add global rule R-011, LOT-002 requirement REQ-002-008, and AUTO gate G-002-004;
 Replaces: None
 Replaced by: None
 
+## D-029 — Single-configuration promotion for action profiles
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-007 privacy and UX clarification
+Related: R-005, R-022, R-027, R-029, LOT-006, LOT-007, LOT-009, LOT-010, LOT-011
+
+Decision:
+At invocation resolution only, if exactly one active, valid, eligible connection configuration exists, TextAid automatically and visibly uses that sole configuration for every action whose requested configuration is absent, inactive, or otherwise not configured. An action whose requested category differs is automatically downgraded or promoted to that sole choice; the status names both the requested category and the selected sole category. This includes requests for This device only and On-premises when External is the sole active eligible configuration.
+
+If two or more active eligible configurations exist, TextAid does not infer an upward route. It fails with clear guidance to select an appropriate active profile for the action. If no eligible configuration exists, it fails with configuration guidance. A malformed connection, unreadable secret, unavailable model, provider failure, timeout, or other runtime failure never triggers an upward switch; the existing explicit failure and user-controlled downward-downgrade behavior remains unchanged.
+
+Reason:
+An intentional cloud-only or network-only setup should operate every standard action without requiring the user to edit all action profiles that normally select This device only. Where multiple choices exist, silently selecting a more remote provider would obscure a meaningful privacy and cost choice.
+
+Consequences:
+R-027 and R-029 are revised. LOT-007 implements and tests the resolution outcome and visible status. LOT-009 applies the behavior once the External provider is executable. LOT-010 and LOT-011 cover cloud-only and network-only regression. The closed LOT-006 candidate remains historically accepted; this later behavior is delivered in LOT-007.
+
+Replaces: None
+Replaced by: None
+
+## D-030 — User-controlled full diagnostic logging
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-007 diagnostic clarification
+Related: R-005, LOT-007, LOT-010, LOT-011
+
+Decision:
+TextAid retains the existing safe Debug log as the default opt-in diagnostic mode. When Debug is enabled, the user may separately enable a persistent **Full log** mode. Full log records the diagnostic text that safe mode omits, including clipboard/input text, prompts, generated output, and raw exception messages, so that an IT professional or diagnostic AI can investigate a difficult failure. Full log remains a local file and is never transmitted automatically. The Debug page must explain that the user can manually obfuscate sensitive passages in a text editor before sharing the file for support.
+
+No authentication credential may ever be written, including API keys, Bearer tokens, passwords, or DPAPI-protected secrets. Full log has a visible red **Full log** indicator while active. The Full log choice persists with Debug; disabling Debug prevents log creation regardless of the persisted Full log preference.
+
+Reason:
+Safe diagnostics are appropriate by default, but some hard failures require enough context for a qualified person or AI to determine their cause. The user deliberately controls this trade-off and decides whether to share the locally stored file.
+
+Consequences:
+R-005 and LOT-007 debug requirements are revised. LOT-007 adds the persisted mode, red indicator, credential redaction, explanatory disclosure, and deterministic redaction coverage. LOT-010 and LOT-011 validate the two modes and ensure no credential is logged.
+
+Replaces: None
+Replaced by: None
+
 ## D-002 — Separate-machine verification is deferred when unavailable
 
 Date: 2026-09-26T04:32:06+02:00

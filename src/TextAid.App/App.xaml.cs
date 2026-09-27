@@ -23,6 +23,7 @@ public partial class App : Application
     private bool enabled = true;
     private bool capturing;
     private string? actionsDirectory;
+    private DebugSessionLog debugLog = DebugSessionLog.Start(false, false, Path.GetTempPath());
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -37,6 +38,7 @@ public partial class App : Application
         }
 
         UserConfiguration.EnsureCreated();
+        ConfigureDebugLog();
         actionsDirectory = UserConfiguration.EnsureActionsDirectory();
         ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
         new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
@@ -45,6 +47,7 @@ public partial class App : Application
         using Stream icon = GetResourceStream(new Uri("pack://application:,,,/TextAid;component/Assets/TextAid.ico")).Stream;
         tray = new TrayIcon(icon);
         tray.Clicked += () => Dispatcher.BeginInvoke(ShowTrayMenu);
+        debugLog.Write("application-started");
         Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
     }
 
@@ -62,6 +65,7 @@ public partial class App : Application
         }
         catch
         {
+            debugLog.Write("startup-provider-check-failed");
             ShowStartupNotice();
         }
     }
@@ -82,8 +86,9 @@ public partial class App : Application
         {
             await CaptureAsync(source, hasCopiedText);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            debugLog.WriteException("capture", exception);
             tray?.ShowError((string)FindResource("SessionError"));
         }
     }
@@ -97,22 +102,32 @@ public partial class App : Application
         {
             string? text;
             bool failed = false;
+            string? failureMessage = null;
             if (hasCopiedText)
             {
                 try { text = await ClipboardReader.ReadUnicodeTextAsync(CancellationToken.None); }
-                catch (InvalidOperationException) { text = string.Empty; failed = true; }
+                catch (InvalidOperationException exception)
+                {
+                    debugLog.WriteException("clipboard-read", exception);
+                    text = string.Empty;
+                    failed = true;
+                    failureMessage = await GetRecoveryMessageAsync(UserFacingFailure.Clipboard);
+                }
             }
             else text = string.Empty;
+            debugLog.Write("capture-completed", ("hasCopiedText", hasCopiedText), ("inputLength", text?.Length ?? 0));
+            debugLog.WriteFullText("clipboard-input", text);
             bool noText = !failed && string.IsNullOrWhiteSpace(text);
             nint safeSource = noText ? 0 : source;
             var session = new InvocationSession(safeSource, text ?? string.Empty)
             {
                 State = failed ? InvocationState.Failed : InvocationState.Ready
             };
-            string key = failed ? "ClipboardError" : noText ? "EnterTextMessage" : "ReadyToProcessMessage";
+            string status = failed ? failureMessage! : noText ? (string)FindResource("EnterTextMessage") : (string)FindResource("ReadyToProcessMessage");
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
             IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
-            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
+            bool isFullLogActive = UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode();
+            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, status, isFullLogActive);
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
@@ -134,7 +149,8 @@ public partial class App : Application
         {
             if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Profile is null || resolution.Connection is null)
             {
-                window.ShowFailure(resolution.Status);
+                debugLog.Write("configuration-rejected", ("requestedCategory", resolution.RequestedCategory));
+                window.ShowFailure(await GetRecoveryMessageAsync(UserFacingFailure.Configuration, resolution.Status));
                 return;
             }
 
@@ -145,6 +161,7 @@ public partial class App : Application
             }
 
             window.ShowTransforming(resolution.Status);
+            debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
             if (!resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
                 throw new NotSupportedException($"The {resolution.Connection.Provider} provider will be available in LOT-009.");
             TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
@@ -153,6 +170,8 @@ public partial class App : Application
             string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
             if (!string.IsNullOrWhiteSpace(supplementaryInstructions))
                 instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
+            debugLog.WriteFullText("transformation-input", inputText);
+            debugLog.WriteFullText("transformation-prompt", instruction);
             string output = await transformationService.TransformAsync(
                 new TextTransformationRequest(
                     inputText,
@@ -160,11 +179,14 @@ public partial class App : Application
                     settings),
                 session.Cancellation.Token);
             if (!window.IsLoaded) return;
+            debugLog.Write("transformation-completed", ("outputLength", output.Length));
+            debugLog.WriteFullText("transformation-output", output);
             window.ShowResult(output);
         }
         catch (OperationCanceledException) when (session.Cancellation.IsCancellationRequested)
         {
             // Closing the session is a normal cancellation path.
+            debugLog.Write("transformation-cancelled");
         }
         catch (OperationCanceledException)
         {
@@ -172,7 +194,11 @@ public partial class App : Application
         }
         catch (Exception exception)
         {
-            string failure = exception is NotSupportedException ? exception.Message : (string)FindResource("TransformationError");
+            debugLog.WriteException("transformation", exception);
+            UserFacingFailure failureKind = exception is InvalidOperationException invalid && invalid.Message.Contains("model", StringComparison.OrdinalIgnoreCase)
+                ? UserFacingFailure.Model
+                : UserFacingFailure.Provider;
+            string failure = await GetRecoveryMessageAsync(failureKind);
             await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure);
         }
     }
@@ -185,6 +211,7 @@ public partial class App : Application
         ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
         if (action is null)
         {
+            debugLog.Write("user-facing-failure", ("category", UserFacingFailure.Configuration));
             window.ShowFailure("The selected action is no longer available.");
             return;
         }
@@ -267,6 +294,7 @@ public partial class App : Application
             ReplaceResult.PasteFailed => "PasteFailedError",
             _ => "PasteFailedError"
         }));
+        debugLog.Write("user-facing-failure", ("category", outcome is ReplaceResult.InvalidTarget or ReplaceResult.FocusFailed ? UserFacingFailure.SourceWindow : UserFacingFailure.Paste));
     }
 
     private bool TryCopyToClipboard(string? text, MainWindow window)
@@ -279,6 +307,8 @@ public partial class App : Application
         }
         catch (Exception)
         {
+            debugLog.Write("clipboard-write-failed");
+            debugLog.Write("user-facing-failure", ("category", UserFacingFailure.Clipboard));
             window.ShowFailure((string)FindResource("ClipboardWriteError"));
             return false;
         }
@@ -328,7 +358,17 @@ public partial class App : Application
         if (startupNoticeWindow is not null || aboutWindow is not null) return;
 
         settingsWindow = new SettingsWindow();
-        settingsWindow.Closed += (_, _) => settingsWindow = null;
+        settingsWindow.FullLogActivityChanged += active => sessionWindow?.SetFullLogActive(active);
+        settingsWindow.SettingsSaved += (_, _) =>
+        {
+            ConfigureDebugLog();
+            sessionWindow?.SetFullLogActive(UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode());
+        };
+        settingsWindow.Closed += (_, _) =>
+        {
+            sessionWindow?.SetFullLogActive(UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode());
+            settingsWindow = null;
+        };
         settingsWindow.ShowDialog();
     }
 
@@ -350,10 +390,68 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        debugLog.Write("application-stopped");
+        debugLog.Dispose();
         hook?.Dispose();
         tray?.Dispose();
         instanceMutex?.ReleaseMutex();
         instanceMutex?.Dispose();
         base.OnExit(e);
+    }
+
+    private void ConfigureDebugLog()
+    {
+        debugLog.Dispose();
+        debugLog = DebugSessionLog.Start(UserConfiguration.LoadDebugMode(), UserConfiguration.LoadFullDebugMode(), UserConfiguration.GetLocalUserDataDirectory());
+    }
+
+    /// <summary>Returns a short model-generated recovery suggestion when an eligible Ollama profile is available.</summary>
+    private async Task<string> GetRecoveryMessageAsync(UserFacingFailure failure, string? context = null)
+    {
+        string fallback = UserFacingErrorMapper.GetMessage(failure);
+        debugLog.Write("user-facing-failure", ("category", failure));
+        string prefix = string.IsNullOrWhiteSpace(context) ? fallback : $"{context} {fallback}";
+        if (!TryGetGuidanceSettings(out TextTransformationSettings? settings) || settings is null) return prefix;
+
+        try
+        {
+            const string instruction = "Give one brief, practical recovery step for this TextAid problem category. Do not request, repeat, or infer user text, secrets, API keys, endpoints, prompts, or exception details. Return one sentence only.";
+            string guidance = await transformationService.TransformAsync(
+                new TextTransformationRequest(failure.ToString(), instruction, settings),
+                CancellationToken.None);
+            string singleSentence = guidance.ReplaceLineEndings(" ").Trim();
+            if (singleSentence.Length > 240) singleSentence = singleSentence[..240].TrimEnd() + "…";
+            debugLog.Write("recovery-guidance-generated", ("failure", failure));
+            return string.IsNullOrWhiteSpace(singleSentence) ? prefix : $"{prefix} Suggested next step: {singleSentence}";
+        }
+        catch (Exception exception)
+        {
+            debugLog.WriteException("recovery-guidance", exception);
+            return prefix;
+        }
+    }
+
+    /// <summary>Selects the active local Ollama configuration, or the sole active Ollama configuration, for recovery guidance.</summary>
+    private static bool TryGetGuidanceSettings(out TextTransformationSettings? settings)
+    {
+        settings = null;
+        try
+        {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            var candidates = configuration.Connections
+                .Where(connection => connection.IsEnabled && connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+                .Select(connection => new { Connection = connection, Profile = configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId.Equals(connection.Id, StringComparison.OrdinalIgnoreCase)) })
+                .Where(candidate => candidate.Profile is not null && !string.IsNullOrWhiteSpace(candidate.Profile.Model) && Uri.TryCreate(candidate.Connection.Endpoint, UriKind.Absolute, out _))
+                .ToArray();
+            var selected = candidates.FirstOrDefault(candidate => candidate.Connection.Category == ConnectionCategory.ThisDeviceOnly)
+                ?? (candidates.Length == 1 ? candidates[0] : null);
+            if (selected is null || selected.Profile is null) return false;
+            settings = CreateTransformationSettings(selected.Profile, selected.Connection);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

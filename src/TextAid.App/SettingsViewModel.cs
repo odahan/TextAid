@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TextAid.AI;
@@ -39,10 +41,16 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool localEnabled = true;
     [ObservableProperty] private bool networkEnabled;
     [ObservableProperty] private bool externalEnabled;
+    [ObservableProperty] private bool debugEnabled;
+    [ObservableProperty] private bool fullDebugEnabled;
 
     public ObservableCollection<string> Models { get; } = [];
     public IReadOnlyList<ThinkingMode> ThinkingModes { get; } = Enum.GetValues<ThinkingMode>();
     public event EventHandler? Saved;
+    public bool IsFullLogActive => DebugEnabled && FullDebugEnabled;
+
+    partial void OnDebugEnabledChanged(bool value) => OnPropertyChanged(nameof(IsFullLogActive));
+    partial void OnFullDebugEnabledChanged(bool value) => OnPropertyChanged(nameof(IsFullLogActive));
 
     /// <summary>Loads persisted settings and attempts local model discovery.</summary>
     public async Task InitializeAsync()
@@ -69,9 +77,14 @@ public sealed partial class SettingsViewModel : ObservableObject
             ExternalEndpoint = external?.Endpoint ?? string.Empty;
             ExternalModel = externalProfile?.Model ?? string.Empty;
             ExternalEnabled = external?.IsEnabled ?? false;
+            DebugEnabled = UserConfiguration.LoadDebugMode();
+            FullDebugEnabled = UserConfiguration.LoadFullDebugMode();
             await LoadModelsAsync();
         }
-        catch (Exception exception) { Status = exception.Message; }
+        catch (Exception)
+        {
+            Status = UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration);
+        }
     }
 
     [RelayCommand]
@@ -124,11 +137,37 @@ public sealed partial class SettingsViewModel : ObservableObject
             UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
             UserConfiguration.SaveRemoteConnectionSettings(NetworkEndpoint, NetworkModel, NetworkSecret, ExternalEndpoint, ExternalModel, ExternalSecret);
             UserConfiguration.SaveConnectionActivation(LocalEnabled, NetworkEnabled, ExternalEnabled);
+            UserConfiguration.SaveDebugMode(DebugEnabled);
+            UserConfiguration.SaveFullDebugMode(FullDebugEnabled);
             NetworkSecret = string.Empty;
             ExternalSecret = string.Empty;
-            Status = "Connection settings saved. Any supplied secrets are protected in your Windows user profile.";
+            Status = DebugEnabled && FullDebugEnabled
+                ? "Settings saved. Full diagnostic logging is enabled locally; credentials are always redacted."
+                : DebugEnabled
+                ? "Settings saved. Debug logging is enabled for this session and records technical metadata only."
+                : "Settings saved. Debug logging is disabled; no new diagnostic log is created.";
             Saved?.Invoke(this, EventArgs.Empty);
         }
-        catch (Exception exception) { Status = exception.Message; }
+        catch (Exception)
+        {
+            Status = UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration);
+        }
+    }
+
+    /// <summary>Opens the local directory that holds the optional diagnostic log.</summary>
+    [RelayCommand]
+    private void OpenDebugFolder()
+    {
+        try
+        {
+            string directory = UserConfiguration.GetLocalUserDataDirectory();
+            Directory.CreateDirectory(directory);
+            Process.Start(new ProcessStartInfo { FileName = directory, UseShellExecute = true });
+            Status = "Opened the local TextAid debug-log folder.";
+        }
+        catch (Exception)
+        {
+            Status = UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration);
+        }
     }
 }

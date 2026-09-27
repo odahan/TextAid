@@ -109,14 +109,17 @@
                 </StackPanel>
                 <TextBlock MinHeight="22" Text="{Binding Status}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap"/>
             </StackPanel>
-            <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                <Button Content="{DynamicResource NewLabel}" Command="{Binding NewCommand}" MinWidth="82" Margin="0,0,8,0"/>
-                <Button Content="{DynamicResource InstructionsLabel}" Command="{Binding InstructionsCommand}" MinWidth="106" Margin="0,0,8,0"/>
-                <Button Content="{DynamicResource ProcessLabel}" Command="{Binding ProcessCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96" Margin="0,0,8,0"/>
-                <Button Content="{DynamicResource CancelLabel}" Command="{Binding CancelCommand}" MinWidth="96" Margin="0,0,8,0"/>
-                <Button Content="{DynamicResource CopyLabel}" Command="{Binding CopyCommand}" MinWidth="96" Margin="0,0,8,0"/>
-                <Button Content="{DynamicResource ReplaceLabel}" Command="{Binding ReplaceCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96"/>
-            </StackPanel>
+            <Grid Grid.Row="6" Margin="0,16,0,0">
+                <TextBlock Text="● Full log" Foreground="{DynamicResource ErrorBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Visibility="{Binding IsFullLogActive, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="{DynamicResource NewLabel}" Command="{Binding NewCommand}" MinWidth="82" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource InstructionsLabel}" Command="{Binding InstructionsCommand}" MinWidth="106" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource ProcessLabel}" Command="{Binding ProcessCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource CancelLabel}" Command="{Binding CancelCommand}" MinWidth="96" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource CopyLabel}" Command="{Binding CopyCommand}" MinWidth="96" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource ReplaceLabel}" Command="{Binding ReplaceCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Border>
 </Window>

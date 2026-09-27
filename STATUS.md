@@ -10,7 +10,7 @@
 | LOT-004 | — | [V0.3 — MAF and local Ollama](Specs/004-ollama-maf/SPEC-004.md) | Closed | — | Olivier accepted TOTAL convergence on the V0.3 EXE; both gates PASS and no findings were recorded. See `CONVERGENCE-004.md`. |
 | LOT-005 | — | [V0.4 — Declarative actions](Specs/005-declarative-actions/SPEC-005.md) | Closed | — | Olivier accepted TOTAL convergence; both gates PASS. |
 | LOT-006 | — | [V0.5 — Connections and profiles](Specs/006-connections-profiles/SPEC-006.md) | Closed | — | Olivier confirmed the contained transform-session branding, status-guidance, and shared-menu corrections are complete and authorized reclosure on 2026-09-27. Both gates remain PASS; see `CONVERGENCE-006.md`. |
-| LOT-007 | — | [V0.6 — Local-first privacy and debug](Specs/007-privacy-debug/SPEC-007.md) | Planned | — | No result yet. Start after LOT-006 closes. |
+| LOT-007 | — | [V0.6 — Local-first privacy and debug](Specs/007-privacy-debug/SPEC-007.md) | Closed | — | Olivier accepted TOTAL convergence on 2026-09-27. Both gates PASS; safe and Full log diagnostics, credential redaction, and the visible Full log indicator are complete. See `CONVERGENCE-007.md`. |
 | LOT-008 | — | [V0.7 — Settings and localization](Specs/008-settings-localization/SPEC-008.md) | Planned | — | No result yet. Start after LOT-007 closes. |
 | LOT-009 | — | [V0.8 — Optional remote provider](Specs/009-remote-provider/SPEC-009.md) | Planned | — | No result yet. Start after LOT-008 closes. |
 | LOT-010 | — | [V0.9 — Hardening and compatibility](Specs/010-hardening/SPEC-010.md) | Planned | — | No result yet. Start after LOT-009 closes. |

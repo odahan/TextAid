@@ -11,8 +11,9 @@ public sealed class MainViewModel : ObservableObject
     private string inputText;
     private ActionDefinition? selectedAction;
     private readonly Action processPreset;
+    private bool isFullLogActive;
 
-    public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action close, string status)
+    public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action close, string status, bool isFullLogActive)
     {
         Session = session;
         inputText = session.InputText;
@@ -21,6 +22,7 @@ public sealed class MainViewModel : ObservableObject
         selectedAction = Actions.FirstOrDefault(action => action.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase)) ?? Actions.FirstOrDefault();
         Session.ActionId = selectedAction?.Id;
         Status = status;
+        this.isFullLogActive = isFullLogActive;
         processPreset = process;
         ReplaceCommand = new RelayCommand(replace, () => CanReplaceResult);
         CopyCommand = new RelayCommand(copy, () => CanUseResult);
@@ -58,6 +60,11 @@ public sealed class MainViewModel : ObservableObject
     }
     public string? OutputText => Session.OutputText;
     public string Status { get; private set; }
+    public bool IsFullLogActive
+    {
+        get => isFullLogActive;
+        private set => SetProperty(ref isFullLogActive, value);
+    }
     public bool IsTransforming => Session.State == InvocationState.Transforming;
     public bool CanUseResult => Session.State == InvocationState.ResultReady && !string.IsNullOrEmpty(Session.OutputText);
     public bool CanReplaceResult => CanUseResult && Session.SourceWindow != 0;
@@ -163,6 +170,9 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
+
+    /// <summary>Updates the visible Full log warning when the Settings toggles change.</summary>
+    public void SetFullLogActive(bool active) => IsFullLogActive = active;
 
     private ActionDefinition? FindAction(string? actionId) => Actions.FirstOrDefault(action => action.Id.Equals(actionId, StringComparison.OrdinalIgnoreCase));
 }

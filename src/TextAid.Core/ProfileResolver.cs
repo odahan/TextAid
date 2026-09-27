@@ -5,6 +5,7 @@ public enum ProfileResolutionKind
 {
     Selected,
     AutomaticallyDowngraded,
+    AutomaticallyPromoted,
     UserConfirmationRequired,
     Failed
 }
@@ -43,6 +44,24 @@ public sealed class ProfileResolver
             return ResolveMissingCategory(ConnectionCategory.ThisDeviceOnly, $"The requested profile '{requestedProfileId}' has no configured connection.");
 
         ValidationResult validation = Validate(requestedProfile, requestedConnection);
+        IReadOnlyList<Candidate> eligibleConnections = FindEligibleConnectionCandidates();
+        if (eligibleConnections.Count == 1 && (validation.IsValid || validation.IsNotConfigured))
+        {
+            Candidate soleCandidate = eligibleConnections[0];
+            if (validation.IsValid && soleCandidate.Connection.Id.Equals(requestedConnection.Id, StringComparison.OrdinalIgnoreCase) && soleCandidate.Profile.Id.Equals(requestedProfile.Id, StringComparison.OrdinalIgnoreCase))
+                return new ProfileResolution(ProfileResolutionKind.Selected, requestedProfile, requestedConnection, $"Using {Display(requestedConnection.Category)} configuration.", requestedConnection.Category, requestedConnection.Category);
+
+            ProfileResolutionKind kind = soleCandidate.Connection.Category > requestedConnection.Category
+                ? ProfileResolutionKind.AutomaticallyPromoted
+                : ProfileResolutionKind.AutomaticallyDowngraded;
+            string reason = validation.IsValid
+                ? $"The action requested {Display(requestedConnection.Category)} configuration."
+                : $"The requested {Display(requestedConnection.Category)} configuration is unavailable: {validation.Message}";
+            return new ProfileResolution(kind, soleCandidate.Profile, soleCandidate.Connection,
+                $"{reason} Using the only active {Display(soleCandidate.Connection.Category)} configuration instead.",
+                requestedConnection.Category, soleCandidate.Connection.Category);
+        }
+
         if (validation.IsValid)
             return new ProfileResolution(ProfileResolutionKind.Selected, requestedProfile, requestedConnection, $"Using {Display(requestedConnection.Category)} configuration.", requestedConnection.Category, requestedConnection.Category);
 
@@ -62,7 +81,12 @@ public sealed class ProfileResolver
     private ProfileResolution ResolveMissingCategory(ConnectionCategory requestedCategory, string reason)
     {
         Candidate? fallback = FindEligibleLowerCandidate(requestedCategory);
-        if (fallback is null) return Failure($"{reason} No lower configuration is available.");
+        if (fallback is null)
+        {
+            if (FindEligibleConnectionCandidates().Count > 1)
+                return Failure($"{reason} Multiple active configurations are available. Select an appropriate profile for this action in Settings.");
+            return Failure($"{reason} No eligible configuration is available. Review the connection and model settings.");
+        }
         return new ProfileResolution(ProfileResolutionKind.AutomaticallyDowngraded, fallback.Profile, fallback.Connection,
             $"{reason} Using {Display(fallback.Connection.Category)} configuration instead.", requestedCategory, fallback.Connection.Category);
     }
@@ -89,6 +113,19 @@ public sealed class ProfileResolver
         }
 
         return null;
+    }
+
+    private IReadOnlyList<Candidate> FindEligibleConnectionCandidates()
+    {
+        var candidates = new List<Candidate>();
+        foreach (ConnectionDefinition connection in configuration.Connections)
+        {
+            ModelProfile? profile = configuration.Profiles.FirstOrDefault(profile =>
+                profile.ConnectionId.Equals(connection.Id, StringComparison.OrdinalIgnoreCase) && Validate(profile, connection).IsValid);
+            if (profile is not null) candidates.Add(new Candidate(profile, connection));
+        }
+
+        return candidates;
     }
 
     private ValidationResult Validate(ModelProfile profile, ConnectionDefinition connection)
