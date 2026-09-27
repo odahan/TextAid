@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
     <EmbeddedResource Include="../../assets/actions/*.json" LogicalName="TextAid.Core.Actions.%(Filename).json" />
   </ItemGroup>
 

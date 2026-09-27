@@ -232,3 +232,39 @@ Scope: LOT-005 and later releases; no retroactive change to closed results.
 Rule: Release publishing MUST produce a self-contained single `TextAid.exe` for win-x64 with trimming disabled. The executable MUST embed the default action definitions as resources. On first run it MUST create the visible `actions` directory beside the executable without overwriting existing files; if that directory cannot be created or written, it MUST silently create and persist an `actions` subdirectory beside `config.json` instead. The future Actions page opens the persisted directory. No .NET runtime, installer, or pre-deployed sidecar action data is required for distribution.
 Replaces: R-025
 Replaced by: None
+
+## R-027 — Explicit configuration downgrade
+
+Status: ACTIVE
+Source: D-022
+Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
+Rule: An action whose requested On-premises or External configuration category does not exist or is not configured MUST downgrade automatically and visibly: External → On-premises → This device only, and On-premises → This device only. An action with no requested remote category MUST use This device only. Every automatic downgrade MUST name the unavailable requested category and the selected category in the user-facing status. A configured connection that is invalid, including a malformed endpoint or missing required credential, MUST first show an explicit configuration error and then offer the user a downgrade to the next eligible lower category. After an eligible connection has been selected, provider or LLM unavailability during the invocation MUST first show an explicit provider failure and then offer the same user-controlled downgrade. Declining the offer leaves the invocation failed; accepting it starts a new invocation using the selected category and states that selection in the status. This explicit behavior is the only exception to R-005 and R-022's ban on silent fallback.
+Replaces: None
+Replaced by: None
+
+## R-028 — Per-user DPAPI secret storage
+
+Status: ACTIVE
+Source: D-023
+Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
+Rule: A secret required by an On-premises or External LLM connection MUST be stored separately from `config.json` under the current user's TextAid application-data directory and protected by Windows DPAPI with `DataProtectionScope.CurrentUser`. Versioned configuration MUST retain only an opaque secret reference. A secret MUST NOT be stored beside the executable, in the `actions` directory, in action JSON, or in logs. Missing or unreadable required secrets make that configured connection invalid and follow R-027's error-then-user-offered downgrade path.
+Replaces: None
+Replaced by: None
+
+## R-029 — Independent connection activation
+
+Status: ACTIVE
+Source: D-024
+Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
+Rule: Each This device only, On-premises, and External connection MUST have a persisted Active yes/no state. An inactive connection remains retained but is treated as not configured for R-027 resolution. Users MAY activate any subset of the three categories, including External alone. An action with no requested remote category still requests This device only and MUST NOT select a higher category when the local connection is inactive.
+Replaces: None
+Replaced by: None
+
+## R-030 — One-click action presets without usage tracking
+
+Status: ACTIVE
+Source: D-025
+Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
+Rule: The normal session MUST expose four persisted one-click action presets, defaulting in order to Correct, Rewrite, Summarize, and Translate, while retaining the complete action combo box. A preset displays only its assigned action name and immediately selects and processes that action; the ordinary combo box selects only. The Quick actions group uses the alternate surface. Each preset MUST have an adjacent borderless pencil affordance for selecting its action from the current action list. Preset assignments are user configuration and MUST NOT cause action-use tracking, frequency ordering, telemetry, or automatic reordering.
+Replaces: None
+Replaced by: None

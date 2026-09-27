@@ -400,3 +400,119 @@ LOT-005 adds the New button and safe reset behavior. The reset session follows t
 
 Replaces: None
 Replaced by: None
+
+## D-022 — Explicit configuration downgrade boundaries
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 planning clarifications
+Related: R-005, R-022, R-027, LOT-006, LOT-009, LOT-010, LOT-011
+
+Decision:
+TextAid performs a visible, downward-only configuration downgrade when the requested category does not exist or is not configured. An External request resolves External, then On-premises, then This device only. An On-premises request resolves On-premises, then This device only. An action with no requested remote category resolves This device only. The status message must state each automatic downgrade.
+
+When a configured connection is invalid, including a malformed endpoint or a required credential that is absent, TextAid first displays the specific configuration error and then offers the user a downgrade to the next eligible lower category. Once an eligible provider has been selected, a provider or LLM non-response first displays the provider failure and then offers the same user-controlled downgrade. It never switches automatically in either case. A declined offer leaves the invocation failed; an accepted offer starts a new invocation on the chosen lower category and names it in the status.
+
+Reason:
+Olivier wants resilient local-first behavior when optional network or cloud configurations have not been set up, and guided recovery rather than a dead end when a configured provider is invalid or fails.
+
+Consequences:
+LOT-006 implements and tests the resolver, the error-then-offer contract, and invocation-status messages. LOT-009 uses the same contract when its External provider is added. R-005 and R-022 retain their prohibition on *silent* fallback; R-027 defines the explicit automatic and user-approved exceptions. No closed result changes.
+
+Replaces: None
+Replaced by: None
+
+## D-023 — DPAPI-protected per-user LLM secrets
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 opening instruction
+Related: R-005, R-028, LOT-006, LOT-009, LOT-010, LOT-011
+
+Decision:
+Secrets entered for On-premises or External LLM configurations are stored separately from `config.json` under the current user's TextAid application-data directory. Windows DPAPI with `DataProtectionScope.CurrentUser` protects each value. The versioned configuration stores an opaque reference only; no secret is stored beside the executable, in the visible action data, or in logs.
+
+Reason:
+Olivier requires encrypted per-user secret persistence rather than clear-text configuration or deployment-adjacent secret files.
+
+Consequences:
+LOT-006 implements the vault boundary and deterministic tests. LOT-009 consumes the boundary for remote authentication instead of requiring an environment-variable-only secret path. A missing or unreadable required secret is an invalid configured connection under D-022.
+
+Replaces: None
+Replaced by: None
+
+## D-024 — Independent active state for each connection
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 implementation clarification
+Related: R-027, R-029, LOT-006, LOT-008, LOT-009
+
+Decision:
+Each This device only, On-premises, and External connection exposes a persisted **Active** yes/no setting. Inactive configurations remain saved but are treated as not configured for resolution and automatic downgrade. A user may therefore choose a cloud-only, local-only, or mixed configuration without needing to configure every category.
+
+Reason:
+Olivier wants the downgrade model to represent deliberate provider availability rather than assuming every connection category is configured.
+
+Consequences:
+LOT-006 persists, exposes, and resolves the active state. LOT-008 retains the setting in its future fuller Settings design. No action without an explicit remote category may switch upward to cloud when This device only is inactive.
+
+Replaces: None
+Replaced by: None
+
+## D-025 — Four configurable one-click action presets
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 UX instruction
+Related: R-022, R-030, LOT-006, LOT-008
+
+Decision:
+The normal session retains its complete action combo box and adds four persisted one-click presets. Their defaults are Correct, Rewrite, Summarize, and Translate. Each preset has an adjacent, explicit edit icon that opens the available action list and assigns one action to that slot. TextAid does not record usage or reorder actions by inferred frequency.
+
+Reason:
+Olivier wants immediate access to the actions a user values most without delaying adoption until usage history exists or making the complete action list inaccessible.
+
+Consequences:
+LOT-006 persists and displays the presets. LOT-008 must retain the configuration in its future Actions experience. No action telemetry is added.
+
+Replaces: None
+Replaced by: None
+
+## D-026 — Preset presentation and immediate invocation
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 preset refinement
+Related: R-030, LOT-006
+
+Decision:
+Preset buttons show only their assigned action name, not a slot label. The adjacent pencil is a borderless visible icon that opens the action list. The Quick actions group is displayed on the alternate surface. Clicking a preset selects and immediately processes its assigned action; selecting an action from the ordinary combo box continues to select only.
+
+Reason:
+Olivier wants a visually light, direct-access path for the most-used actions while preserving deliberate Process behavior for the general selector.
+
+Consequences:
+LOT-006 updates the session controls and corrects the pencil menu invocation. No usage tracking or automatic action ordering is introduced.
+
+Replaces: None
+Replaced by: None
+
+## D-027 — Defer action-language consistency to the language workflow
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-006 acceptance instruction
+Related: R-020, LOT-006, LOT-008
+
+Decision:
+The observed inconsistency where some actions retain the input language and others may generate English is not a blocking LOT-006 defect. It is deferred until LOT-008 delivers the user-language and preferred-translation-language Settings, output-language selection in the main session, and the related generation workflow.
+
+Reason:
+The application does not yet expose the language configuration or output-language controls needed to define and validate a coherent user-visible language policy.
+
+Consequences:
+Record F-006-002 as deferred to LOT-008. LOT-006 may close after its gates pass and Olivier accepts it. LOT-008 must address and validate the behavior.
+
+Replaces: None
+Replaced by: None

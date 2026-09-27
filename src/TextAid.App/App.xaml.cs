@@ -38,7 +38,8 @@ public partial class App : Application
 
         UserConfiguration.EnsureCreated();
         actionsDirectory = UserConfiguration.EnsureActionsDirectory();
-        new ActionLoader(actionsDirectory: actionsDirectory).Load();
+        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
         hook = new KeyboardHook();
         hook.Triggered += (source, hasCopiedText) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText)));
         using Stream icon = GetResourceStream(new Uri("pack://application:,,,/TextAid;component/Assets/TextAid.ico")).Stream;
@@ -51,6 +52,9 @@ public partial class App : Application
     {
         try
         {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            ConnectionDefinition localConnection = configuration.Connections.Single(connection => connection.Category == ConnectionCategory.ThisDeviceOnly);
+            if (!localConnection.IsEnabled) return;
             TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
             var factory = new OllamaChatClientFactory();
             bool running = await factory.TestConnectionAsync(settings.Endpoint, CancellationToken.None);
@@ -106,8 +110,9 @@ public partial class App : Application
                 State = failed ? InvocationState.Failed : InvocationState.Ready
             };
             string key = failed ? "ClipboardError" : noText ? "EnterTextMessage" : "ReadyToProcessMessage";
-            IReadOnlyList<ActionDefinition> actions = new ActionLoader(actionsDirectory: actionsDirectory).Load();
-            sessionWindow = new MainWindow(session, actions, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
+            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
@@ -117,14 +122,32 @@ public partial class App : Application
 
     private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions)
     {
+        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
+        ProfileResolution resolution = resolver.Resolve(action.ProfileId);
+        await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution);
+    }
+
+    private async Task TransformWithResolutionAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution resolution)
+    {
         try
         {
-            TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
-            if (!settings.HasModel)
+            if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Profile is null || resolution.Connection is null)
             {
-                window.ShowFailure((string)FindResource("NoModelError"));
+                window.ShowFailure(resolution.Status);
                 return;
             }
+
+            if (resolution.Kind == ProfileResolutionKind.UserConfirmationRequired && !ConfirmDowngrade(window, resolution.Status))
+            {
+                window.ShowFailure("The configuration downgrade was cancelled.");
+                return;
+            }
+
+            window.ShowTransforming(resolution.Status);
+            if (!resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException($"The {resolution.Connection.Provider} provider will be available in LOT-009.");
+            TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
 
             if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
             string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
@@ -145,11 +168,12 @@ public partial class App : Application
         }
         catch (OperationCanceledException)
         {
-            window.ShowFailure((string)FindResource("TransformationTimeoutError"));
+            await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, (string)FindResource("TransformationTimeoutError"));
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            window.ShowFailure((string)FindResource("TransformationError"));
+            string failure = exception is NotSupportedException ? exception.Message : (string)FindResource("TransformationError");
+            await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure);
         }
     }
 
@@ -157,7 +181,8 @@ public partial class App : Application
     private void StartTransformation(MainWindow window, InvocationSession session)
     {
         if (string.IsNullOrWhiteSpace(session.InputText) || session.State == InvocationState.Transforming) return;
-        ActionDefinition? action = new ActionLoader(actionsDirectory: actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
+        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
         if (action is null)
         {
             window.ShowFailure("The selected action is no longer available.");
@@ -171,6 +196,34 @@ public partial class App : Application
         window.ShowTransforming((string)FindResource("TransformingMessage"));
         _ = TransformAsync(session, window, inputSnapshot, action, instructionsSnapshot);
     }
+
+    private static TextTransformationSettings CreateTransformationSettings(ModelProfile profile, ConnectionDefinition connection)
+    {
+        int contextSize = profile.ProviderOptions.TryGetValue("num_ctx", out object? value) && int.TryParse(value?.ToString(), out int parsed) ? parsed : 8192;
+        ThinkingMode thinking = profile.ProviderOptions.TryGetValue("think", out object? think) && Enum.TryParse(think?.ToString(), true, out ThinkingMode parsedThinking) ? parsedThinking : ThinkingMode.Off;
+        return new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, thinking);
+    }
+
+    private async Task OfferProviderFailureDowngradeAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution usedResolution, string providerFailure)
+    {
+        if (usedResolution.Connection is null)
+        {
+            window.ShowFailure(providerFailure);
+            return;
+        }
+
+        ProfileResolution downgrade = resolver.OfferDowngradeAfterProviderFailure(usedResolution.Connection.Category, providerFailure);
+        if (downgrade.Kind == ProfileResolutionKind.UserConfirmationRequired && ConfirmDowngrade(window, downgrade.Status))
+        {
+            await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, downgrade);
+            return;
+        }
+
+        window.ShowFailure(downgrade.Kind == ProfileResolutionKind.Failed ? downgrade.Status : providerFailure);
+    }
+
+    private static bool ConfirmDowngrade(Window owner, string message) =>
+        MessageBox.Show(owner, message, "TextAid", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
 
     /// <summary>Opens the optional per-invocation instructions editor without changing action data.</summary>
     private void EditInstructions(MainWindow window, InvocationSession session) => TryCollectInstructions(window, session);

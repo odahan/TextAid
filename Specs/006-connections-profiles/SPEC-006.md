@@ -29,9 +29,9 @@ Implement ConnectionDefinition, ModelProfile, AiClientFactory, and ProfileResolv
 
 Source: `docs/TextAid specification.md`, sections 39–43, 77.
 
-### REQ-006-007 — Action-profile validation
+### REQ-006-007 — Requested configuration and eligibility
 
-Validate every action `profileId` and resolve it before an invocation starts. Preserve a visible local default profile, and do not silently substitute a different profile when the referenced profile is unavailable or invalid.
+Validate every action `profileId` and resolve its requested configuration before an invocation starts. Preserve a visible local default profile. A requested configuration that does not exist or is not configured is ineligible and MUST enter the configured automatic downgrade sequence. A present configuration that is invalid (for example, malformed endpoint or a required credential is missing) MUST first show an explicit configuration error, then offer the user a downgrade to the next eligible category; it MUST NOT downgrade automatically.
 
 Source: D-009, D-015, R-022.
 
@@ -43,7 +43,7 @@ Source: D-011, D-015, R-005, R-022.
 
 ### REQ-006-009 — Action generation overrides
 
-Resolve an action's selected profile and optional temperature override for each invocation. Reject an action whose profile is unavailable or whose override is out of the supported range; do not silently substitute another profile or temperature.
+Resolve an action's selected profile and optional temperature override for each invocation. An absent or unconfigured requested profile category follows REQ-006-011. Reject an invalid profile definition or an override outside the supported range. For an invalid configured connection, show the error and offer the user the downgrade described by REQ-006-011; never silently substitute a profile or temperature.
 
 Source: D-012, D-015, R-022.
 
@@ -82,6 +82,32 @@ Source: D-004, D-006, R-018; Olivier's quick-translation instruction.
 Persist separate normal-action and quick-translation shortcut assignments, defaulting to `Ctrl+C+C` and `Ctrl+C+T`. Validate that both complete sequences are supported by the keyboard recognizer and do not conflict with each other. Invalid reload MUST preserve the previous valid assignments. LOT-008 exposes reassignment in Settings and activates the quick-translation binding.
 
 Source: D-005, R-015; Olivier's shortcut-reassignment instruction.
+
+### REQ-006-011 — Explicit downgrade resolution and status
+
+Resolve configurations in this order: Local actions use This device only. An On-premises request uses On-premises when it exists and is configured; otherwise it automatically downgrades to This device only. An External request uses External when it exists and is configured; otherwise it automatically downgrades to On-premises when it exists and is configured, then to This device only. Every automatic downgrade MUST be stated in the invocation status, naming both the unavailable requested category and the selected category.
+
+A configured connection is eligible only after its structural validation and required credential validation succeed. If a requested configured connection is invalid, including a malformed endpoint or missing required secret, show an explicit configuration status and then offer the user the next eligible lower category. If the selected eligible provider or LLM later fails to respond, show that provider failure and then offer the same user-controlled downgrade. A declined offer leaves the current invocation failed; an accepted offer starts a new invocation using the selected lower category and states that selection in the status.
+
+Source: D-022, R-027.
+
+### REQ-006-012 — User-profile secret vault
+
+Allow On-premises and External configurations that require a secret to receive it through the application configuration workflow. Store each secret separately from `config.json` under the current user's TextAid application-data directory, encrypted with Windows DPAPI using `DataProtectionScope.CurrentUser`. Configuration retains only an opaque secret reference and never the secret value. Secrets MUST NOT be created beside the executable, in action JSON, or in logs. Missing or unreadable required secrets make the corresponding configured connection invalid and follow REQ-006-011's error-then-user-offered downgrade path.
+
+Source: D-023, R-028.
+
+### REQ-006-013 — Independent connection activation
+
+Every This device only, On-premises, and External connection has a persisted **Active** setting. Inactive connections are retained but treated as not configured by resolution and therefore participate in the automatic downgrade path. The user may activate only External and operate cloud-only, activate only This device only, or combine any categories. An action that requests no remote category still requests This device only; if that connection is inactive, the invocation reports that no eligible local configuration is available.
+
+Source: D-024, R-029.
+
+### REQ-006-014 — Configurable one-click action presets
+
+Persist four ordered action-preset references in versioned configuration. Default them to Correct, Rewrite, Summarize, and Translate. The normal session displays all four as one-click action buttons while retaining the complete action combo box. A preset button displays only its assigned action name and immediately starts that action; choosing an action in the combo does not start processing. The Quick actions area and presets use the alternate surface. Each preset has an adjacent borderless pencil edit affordance that opens the current action list and saves the selected action for that preset. No action-use tracking, frequency ordering, or telemetry is permitted.
+
+Source: D-025, D-026, R-030.
 
 ## Important cases
 

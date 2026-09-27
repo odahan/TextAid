@@ -7,9 +7,10 @@ namespace TextAid.Core;
 /// <summary>Creates the local configuration on first launch without persisting user text.</summary>
 public static class UserConfiguration
 {
+    private static ConfigurationSnapshot? activeConfiguration;
     public static string EnsureCreated()
     {
-        string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TextAid");
+        string directory = GetUserDataDirectory();
         Directory.CreateDirectory(directory);
         string path = Path.Combine(directory, "config.json");
         if (!File.Exists(path))
@@ -17,14 +18,27 @@ public static class UserConfiguration
             var config = new
             {
                 schemaVersion = 1,
-                strictLocal = true,
                 debugMode = false,
-                trigger = new { type = "doubleCopy", maximumDelayMs = 450 },
-                connections = new[] { new { id = "ollama-local", provider = "ollama", endpoint = "http://127.0.0.1:11434" } },
-                profiles = new[] { new { id = "local-default", connectionId = "ollama-local", model = "", temperature = 0.2, timeoutSeconds = 120, providerOptions = new { think = false, num_ctx = 8192 } } }
+                userLanguage = "en",
+                preferredTranslationLanguage = "fr",
+                shortcuts = new { normalAction = "Ctrl+C+C", quickTranslation = "Ctrl+C+T" },
+                actionPresets = new[] { "correct", "rewrite", "summarize", "translate" },
+                connections = new object[]
+                {
+                    new { id = "ollama-local", category = "ThisDeviceOnly", provider = "ollama", endpoint = "http://127.0.0.1:11434", isEnabled = true, authentication = "None", secretReference = (string?)null },
+                    new { id = "ollama-network", category = "OnPremises", provider = "ollama", endpoint = "", isEnabled = false, authentication = "None", secretReference = (string?)null },
+                    new { id = "openai-external", category = "External", provider = "openai-compatible", endpoint = "", isEnabled = false, authentication = "ApiKey", secretReference = "external-api-key" }
+                },
+                profiles = new object[]
+                {
+                    new { id = "local-default", connectionId = "ollama-local", model = "", temperature = 0.2, timeoutSeconds = 120, providerOptions = new { think = false, num_ctx = 8192 } },
+                    new { id = "network-default", connectionId = "ollama-network", model = "", temperature = 0.2, timeoutSeconds = 120, providerOptions = new { } },
+                    new { id = "external-default", connectionId = "openai-external", model = "", temperature = 0.2, timeoutSeconds = 120, providerOptions = new { } }
+                }
             };
             File.WriteAllText(path, JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true }));
         }
+        else UpgradeVersionOneConfiguration(path);
         return path;
     }
 
@@ -65,6 +79,96 @@ public static class UserConfiguration
         return new TextTransformationSettings(endpoint, model, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, ReadThinkingMode(profile));
     }
 
+    /// <summary>Loads and validates the complete versioned connection and profile configuration.</summary>
+    public static ConfigurationSnapshot LoadConfiguration()
+    {
+        try
+        {
+            ConfigurationSnapshot configuration = LoadConfigurationCore();
+            activeConfiguration = configuration;
+            return configuration;
+        }
+        catch when (activeConfiguration is not null)
+        {
+            return activeConfiguration;
+        }
+    }
+
+    private static ConfigurationSnapshot LoadConfigurationCore()
+    {
+        string path = EnsureCreated();
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+        JsonElement root = document.RootElement;
+        int schemaVersion = root.GetProperty("schemaVersion").GetInt32();
+        if (schemaVersion != 1) throw new InvalidOperationException("The TextAid configuration version is not supported.");
+
+        var connections = new List<ConnectionDefinition>();
+        foreach (JsonElement item in root.GetProperty("connections").EnumerateArray())
+        {
+            string id = item.GetProperty("id").GetString() ?? string.Empty;
+            ConnectionCategory category = ReadEnum(item, "category", id.Equals("ollama-local", StringComparison.OrdinalIgnoreCase) ? ConnectionCategory.ThisDeviceOnly : ConnectionCategory.OnPremises);
+            AuthenticationKind authentication = ReadEnum(item, "authentication", AuthenticationKind.None);
+            connections.Add(new ConnectionDefinition(
+                id,
+                category,
+                item.GetProperty("provider").GetString() ?? string.Empty,
+                item.GetProperty("endpoint").GetString() ?? string.Empty,
+                item.TryGetProperty("isEnabled", out JsonElement isEnabled) ? isEnabled.GetBoolean() : category == ConnectionCategory.ThisDeviceOnly,
+                authentication,
+                item.TryGetProperty("secretReference", out JsonElement secretReference) ? secretReference.GetString() : null));
+        }
+
+        var profiles = new List<ModelProfile>();
+        foreach (JsonElement item in root.GetProperty("profiles").EnumerateArray())
+        {
+            var options = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+            if (item.TryGetProperty("providerOptions", out JsonElement providerOptions) && providerOptions.ValueKind == JsonValueKind.Object)
+            {
+                foreach (JsonProperty option in providerOptions.EnumerateObject()) options[option.Name] = option.Value.ToString();
+            }
+
+            profiles.Add(new ModelProfile(
+                item.GetProperty("id").GetString() ?? string.Empty,
+                item.GetProperty("connectionId").GetString() ?? string.Empty,
+                item.GetProperty("model").GetString() ?? string.Empty,
+                item.GetProperty("temperature").GetSingle(),
+                TimeSpan.FromSeconds(item.GetProperty("timeoutSeconds").GetInt32()),
+                options));
+        }
+
+        string userLanguage = root.TryGetProperty("userLanguage", out JsonElement userLanguageElement) ? userLanguageElement.GetString() ?? "en" : "en";
+        string preferredLanguage = root.TryGetProperty("preferredTranslationLanguage", out JsonElement preferredLanguageElement) ? preferredLanguageElement.GetString() ?? "fr" : "fr";
+        string normalShortcut = root.TryGetProperty("shortcuts", out JsonElement shortcuts) && shortcuts.TryGetProperty("normalAction", out JsonElement normal) ? normal.GetString() ?? "Ctrl+C+C" : "Ctrl+C+C";
+        string translationShortcut = root.TryGetProperty("shortcuts", out shortcuts) && shortcuts.TryGetProperty("quickTranslation", out JsonElement translation) ? translation.GetString() ?? "Ctrl+C+T" : "Ctrl+C+T";
+        var configuration = new ConfigurationSnapshot(schemaVersion, connections, profiles, userLanguage, preferredLanguage, normalShortcut, translationShortcut);
+        ValidateConfiguration(configuration);
+        return configuration;
+    }
+
+    /// <summary>Validates the cross-reference and user-preference invariants of a configuration snapshot.</summary>
+    public static void ValidateConfiguration(ConfigurationSnapshot configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        EnsureUnique(configuration.Connections.Select(connection => connection.Id), "connection");
+        EnsureUnique(configuration.Profiles.Select(profile => profile.Id), "profile");
+        if (!configuration.Profiles.Any(profile => profile.Id.Equals("local-default", StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("The local default profile is missing.");
+        foreach (ModelProfile profile in configuration.Profiles)
+        {
+            if (!configuration.Connections.Any(connection => connection.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException($"Profile '{profile.Id}' references an unknown connection.");
+            if (profile.Temperature is < 0 or > 2 || profile.Timeout <= TimeSpan.Zero)
+                throw new InvalidOperationException($"Profile '{profile.Id}' has invalid generation settings.");
+        }
+
+        ValidateLanguage(configuration.UserLanguage, "user language");
+        ValidateLanguage(configuration.PreferredTranslationLanguage, "preferred translation language");
+        if (configuration.UserLanguage.Equals(configuration.PreferredTranslationLanguage, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The user and preferred translation languages must be distinct.");
+        if (!IsSupportedShortcut(configuration.NormalShortcut) || !IsSupportedShortcut(configuration.TranslationShortcut) || configuration.NormalShortcut.Equals(configuration.TranslationShortcut, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The configured shortcuts must be valid and distinct.");
+    }
+
     /// <summary>Saves the local Ollama connection and generation options without storing user text.</summary>
     public static void SaveTransformationSettings(TextTransformationSettings settings)
     {
@@ -87,14 +191,146 @@ public static class UserConfiguration
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
+    /// <summary>Saves optional On-premises and External endpoints while placing supplied secrets in the DPAPI vault.</summary>
+    public static void SaveRemoteConnectionSettings(string networkEndpoint, string networkModel, string? networkSecret, string externalEndpoint, string externalModel, string? externalSecret)
+    {
+        ValidateOptionalEndpoint(networkEndpoint, ConnectionCategory.OnPremises);
+        ValidateOptionalEndpoint(externalEndpoint, ConnectionCategory.External);
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
+        JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
+        SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", networkEndpoint, networkModel, networkSecret, "network-api-key");
+        SaveRemoteConnection(connections, profiles, "openai-external", "external-default", externalEndpoint, externalModel, externalSecret, "external-api-key");
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    /// <summary>Persists whether each independently configured connection may participate in resolution.</summary>
+    public static void SaveConnectionActivation(bool localEnabled, bool networkEnabled, bool externalEnabled)
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
+        SetConnectionActivation(connections, "ollama-local", localEnabled);
+        SetConnectionActivation(connections, "ollama-network", networkEnabled);
+        SetConnectionActivation(connections, "openai-external", externalEnabled);
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    /// <summary>Persists the distinct user-language and keyboard-sequence preferences.</summary>
+    public static void SaveUserPreferences(string userLanguage, string preferredTranslationLanguage, string normalShortcut, string translationShortcut)
+    {
+        var proposed = new ConfigurationSnapshot(1, [
+            new ConnectionDefinition("validation-local", ConnectionCategory.ThisDeviceOnly, "ollama", "http://127.0.0.1:11434", false, AuthenticationKind.None, null)],
+            [new ModelProfile("local-default", "validation-local", string.Empty, 0.2f, TimeSpan.FromSeconds(120), new Dictionary<string, object?>())],
+            userLanguage, preferredTranslationLanguage, normalShortcut, translationShortcut);
+        ValidateConfiguration(proposed);
+
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        root["userLanguage"] = userLanguage;
+        root["preferredTranslationLanguage"] = preferredTranslationLanguage;
+        root["shortcuts"] = new JsonObject { ["normalAction"] = normalShortcut, ["quickTranslation"] = translationShortcut };
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    /// <summary>Loads the four persisted action-preset references in their displayed order.</summary>
+    public static IReadOnlyList<string> LoadActionPresetIds()
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        return root["actionPresets"]?.AsArray().Select(item => item?.GetValue<string>() ?? string.Empty).Take(4).ToArray()
+            ?? ["correct", "rewrite", "summarize", "translate"];
+    }
+
+    /// <summary>Persists the action selected for one of the four quick presets.</summary>
+    public static void SaveActionPreset(int slot, string actionId)
+    {
+        if (slot is < 1 or > 4) throw new ArgumentOutOfRangeException(nameof(slot));
+        ArgumentException.ThrowIfNullOrWhiteSpace(actionId);
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        JsonArray presets = root["actionPresets"]?.AsArray() ?? new JsonArray();
+        while (presets.Count < 4) presets.Add(new[] { "correct", "rewrite", "summarize", "translate" }[presets.Count]);
+        presets[slot - 1] = actionId;
+        root["actionPresets"] = presets;
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
     private static void ValidateLocalSettings(TextTransformationSettings settings)
     {
         if (!Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out Uri? endpoint) || endpoint.Scheme is not "http" and not "https")
             throw new ArgumentException("Enter a valid HTTP Ollama endpoint.", nameof(settings));
-        if (!IsLocalHost(endpoint.Host)) throw new ArgumentException("This device only allows localhost, 127.0.0.1, or ::1.", nameof(settings));
+        if (!IsLoopbackHost(endpoint.Host)) throw new ArgumentException("This device only allows localhost, 127.0.0.1, or ::1.", nameof(settings));
         if (settings.Temperature is < 0 or > 2) throw new ArgumentException("Temperature must be between 0 and 2.", nameof(settings));
         if (settings.Timeout <= TimeSpan.Zero) throw new ArgumentException("Timeout must be greater than zero.", nameof(settings));
         if (settings.ContextSize < 512) throw new ArgumentException("Context size must be at least 512 tokens.", nameof(settings));
+    }
+
+    private static void UpgradeVersionOneConfiguration(string path)
+    {
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
+        JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
+        bool changed = false;
+        changed |= AddConnectionIfMissing(connections, "ollama-network", "OnPremises", "ollama", "", false, "None", null);
+        changed |= AddConnectionIfMissing(connections, "openai-external", "External", "openai-compatible", "", false, "ApiKey", "external-api-key");
+        foreach (JsonObject connection in connections.OfType<JsonObject>())
+        {
+            if (connection["isEnabled"] is null) { connection["isEnabled"] = connection["category"]?.GetValue<string>() == "ThisDeviceOnly"; changed = true; }
+        }
+        changed |= AddProfileIfMissing(profiles, "network-default", "ollama-network");
+        changed |= AddProfileIfMissing(profiles, "external-default", "openai-external");
+        if (root["userLanguage"] is null) { root["userLanguage"] = "en"; changed = true; }
+        if (root["preferredTranslationLanguage"] is null) { root["preferredTranslationLanguage"] = "fr"; changed = true; }
+        if (root["shortcuts"] is null) { root["shortcuts"] = new JsonObject { ["normalAction"] = "Ctrl+C+C", ["quickTranslation"] = "Ctrl+C+T" }; changed = true; }
+        if (root["actionPresets"] is null) { root["actionPresets"] = new JsonArray("correct", "rewrite", "summarize", "translate"); changed = true; }
+        if (changed) File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    private static bool AddConnectionIfMissing(JsonArray connections, string id, string category, string provider, string endpoint, bool isEnabled, string authentication, string? secretReference)
+    {
+        if (connections.Any(item => item?["id"]?.GetValue<string>()?.Equals(id, StringComparison.OrdinalIgnoreCase) == true)) return false;
+        connections.Add(new JsonObject { ["id"] = id, ["category"] = category, ["provider"] = provider, ["endpoint"] = endpoint, ["isEnabled"] = isEnabled, ["authentication"] = authentication, ["secretReference"] = secretReference });
+        return true;
+    }
+
+    private static bool AddProfileIfMissing(JsonArray profiles, string id, string connectionId)
+    {
+        if (profiles.Any(item => item?["id"]?.GetValue<string>()?.Equals(id, StringComparison.OrdinalIgnoreCase) == true)) return false;
+        profiles.Add(new JsonObject { ["id"] = id, ["connectionId"] = connectionId, ["model"] = "", ["temperature"] = 0.2, ["timeoutSeconds"] = 120, ["providerOptions"] = new JsonObject() });
+        return true;
+    }
+
+    private static void SetConnectionActivation(JsonArray connections, string id, bool isEnabled)
+    {
+        JsonObject connection = connections.FirstOrDefault(item => item?["id"]?.GetValue<string>()?.Equals(id, StringComparison.OrdinalIgnoreCase) == true)?.AsObject()
+            ?? throw new InvalidOperationException($"The '{id}' connection is missing.");
+        connection["isEnabled"] = isEnabled;
+    }
+
+    private static void SaveRemoteConnection(JsonArray connections, JsonArray profiles, string connectionId, string profileId, string endpoint, string model, string? secret, string secretReference)
+    {
+        JsonObject connection = connections.FirstOrDefault(item => item?["id"]?.GetValue<string>()?.Equals(connectionId, StringComparison.OrdinalIgnoreCase) == true)?.AsObject()
+            ?? throw new InvalidOperationException($"The '{connectionId}' connection is missing.");
+        JsonObject profile = profiles.FirstOrDefault(item => item?["id"]?.GetValue<string>()?.Equals(profileId, StringComparison.OrdinalIgnoreCase) == true)?.AsObject()
+            ?? throw new InvalidOperationException($"The '{profileId}' profile is missing.");
+        connection["endpoint"] = endpoint.Trim();
+        profile["model"] = model.Trim();
+        if (string.IsNullOrWhiteSpace(secret)) return;
+
+        new DpapiSecretVault().SetSecret(secretReference, secret);
+        connection["authentication"] = "ApiKey";
+        connection["secretReference"] = secretReference;
+    }
+
+    private static void ValidateOptionalEndpoint(string endpoint, ConnectionCategory category)
+    {
+        if (string.IsNullOrWhiteSpace(endpoint)) return;
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? parsed) || parsed.Scheme is not "http" and not "https")
+            throw new ArgumentException($"Enter a valid HTTP endpoint for {category}.", nameof(endpoint));
+        if (category == ConnectionCategory.ThisDeviceOnly && !IsLoopbackHost(parsed.Host))
+            throw new ArgumentException("This device only allows localhost, 127.0.0.1, or ::1.", nameof(endpoint));
     }
 
     private static bool TryCreateDirectory(string directory)
@@ -111,7 +347,11 @@ public static class UserConfiguration
         catch (IOException) { return false; }
     }
 
-    private static bool IsLocalHost(string host) =>
+    /// <summary>Returns the current user's TextAid application-data directory.</summary>
+    public static string GetUserDataDirectory() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TextAid");
+
+    /// <summary>Determines whether a host is restricted to the current device.</summary>
+    public static bool IsLoopbackHost(string host) =>
         host.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
         IPAddress.TryParse(host, out IPAddress? address) && IPAddress.IsLoopback(address);
 
@@ -120,4 +360,27 @@ public static class UserConfiguration
         if (!profile.TryGetProperty("providerOptions", out JsonElement options) || !options.TryGetProperty("think", out JsonElement think)) return ThinkingMode.Off;
         return think.ValueKind == JsonValueKind.String && Enum.TryParse(think.GetString(), true, out ThinkingMode mode) ? mode : ThinkingMode.Off;
     }
+
+    private static TEnum ReadEnum<TEnum>(JsonElement item, string name, TEnum fallback) where TEnum : struct, Enum =>
+        item.TryGetProperty(name, out JsonElement value) && Enum.TryParse(value.GetString(), true, out TEnum parsed) ? parsed : fallback;
+
+    private static void EnsureUnique(IEnumerable<string> ids, string type)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string id in ids)
+        {
+            if (string.IsNullOrWhiteSpace(id) || !seen.Add(id)) throw new InvalidOperationException($"A {type} ID is missing or duplicated.");
+        }
+    }
+
+    private static void ValidateLanguage(string language, string name)
+    {
+        if (!System.Text.RegularExpressions.Regex.IsMatch(language, "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"))
+            throw new InvalidOperationException($"The {name} is invalid.");
+        try { _ = System.Globalization.CultureInfo.GetCultureInfo(language); }
+        catch (System.Globalization.CultureNotFoundException) { throw new InvalidOperationException($"The {name} is invalid."); }
+    }
+
+    private static bool IsSupportedShortcut(string shortcut) =>
+        !string.IsNullOrWhiteSpace(shortcut) && System.Text.RegularExpressions.Regex.IsMatch(shortcut, "^[A-Za-z0-9]+(\\+[A-Za-z0-9]+)+$");
 }

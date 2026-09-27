@@ -2,6 +2,41 @@
 
 This append-only record uses concise entries with timestamp, actor, operation, affected artifacts, and outcome. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-27 — LOT-006 opened: connections, profiles, and protected secrets
+
+Actor: Codex
+Operation: Olivier explicitly opened LOT-006. TextAid now persists typed This device only, On-premises, and External connection definitions with independent Active states and action-selected model profiles. The resolver applies visible automatic downgrade for absent or inactive categories and error-then-user-confirmed downgrade for invalid configured connections or provider failures. Settings accepts optional network/cloud API keys through password fields and stores supplied values separately under the user's TextAid application-data directory with Windows DPAPI `CurrentUser`; `config.json` retains only opaque references. The configuration migrates existing V1 schema-1 local settings by adding disabled network and External definitions without removing the existing local choice.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `STATUS.md`, `Specs/006-connections-profiles/`, `src/TextAid.Core/`, `src/TextAid.AI/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`.
+Outcome: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors. `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests. The human profile-selection gate remains TO TEST.
+
+## 2026-09-27 — LOT-006 human-gate publication sequence clarified
+
+Actor: Codex
+Operation: Olivier identified that withholding an EXE until G-006-002 passes makes the required EXE walkthrough impossible. The gate procedure now requires publishing an identifiable Release candidate before the human test, while keeping candidate publication separate from gate pass and lot closure.
+Affected artifacts: `Specs/006-connections-profiles/GATES-006.md`, `HISTORY.md`.
+Outcome: Root `publish.ps1` produced the candidate at `src/TextAid.App/bin/Publish/TextAid.exe`: 178,433,455 bytes, SHA-256 `C7AFF2761FA016E6FBAD07ECB72FFF95269660093C057771B4124DB5DC074612`. It is available for Olivier's model-discovery and transformation walkthrough without claiming G-006-002 or lot closure.
+
+## 2026-09-27 — LOT-006 Settings connection tabs corrected
+
+Actor: Codex
+Operation: Replaced the vertically concatenated connection controls with separate This device only, On-premises, and External Settings tabs. Added the shared dark-theme `PasswordBox` template for API-key fields. Recorded Olivier's successful local Ollama discovery and transformation walkthrough as G-006-002 PASS.
+Affected artifacts: `src/TextAid.App/SettingsWindow.xaml`, `src/TextAid.App/Themes/Controls.xaml`, `Specs/006-connections-profiles/GATES-006.md`.
+Outcome: Build completed with 0 warnings and 0 errors; 35 tests pass. Root `publish.ps1` produced a visual-review candidate at `src/TextAid.App/bin/Publish/TextAid.exe`: 178,433,455 bytes, SHA-256 `513D1FA6F513435EBE801E5890EABFC6E91C17536779593FB1209207ED70D99E`.
+
+## 2026-09-27 — LOT-006 configurable action presets
+
+Actor: Codex
+Operation: Added four persisted one-click action presets to the normal session, defaulting to Correct, Rewrite, Summarize, and Translate. Each preset has an adjacent pencil button that opens the current action list and saves the selected replacement. The full action combo remains available; no use tracking, frequency ordering, or telemetry was added.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/006-connections-profiles/SPEC-006.md`, `src/TextAid.Core/UserConfiguration.cs`, `src/TextAid.App/MainWindow.xaml`, `src/TextAid.App/MainWindow.xaml.cs`, `src/TextAid.App/MainViewModel.cs`.
+Outcome: Build completed with 0 warnings and 0 errors; 35 tests pass. A fresh Release candidate is required for human visual and interaction review.
+
+## 2026-09-27 — LOT-006 accepted and closed
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed the final LOT-006 candidate works and explicitly accepted the lot. The reported inconsistent action output-language behavior was recorded as F-006-002 and deferred to LOT-008, which owns language preferences, output-language selection, and quick translation.
+Affected artifacts: `Specs/006-connections-profiles/GATES-006.md`, `Specs/006-connections-profiles/FINDINGS-006.md`, `Specs/006-connections-profiles/CONVERGENCE-006.md`, `LEDGER.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: G-006-001 AUTO and G-006-002 HUMAN are PASS. LOT-006 closed with TOTAL convergence on published candidate SHA-256 `965D3EECCC4B1A77508AE5849A325F66CFC7141EAB82A2E7D7C4CE6802F6CABA`.
+
 ## 2026-09-25 — Pro-Spec project initialized
 
 Actor: Codex

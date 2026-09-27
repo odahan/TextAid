@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Interop;
 using TextAid.Core;
@@ -9,10 +11,10 @@ namespace TextAid.App;
 /// <summary>Hosts one short-lived invocation and places it on the source monitor.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status)
+    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status)
     {
         InitializeComponent();
-        DataContext = new MainViewModel(session, actions, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status);
+        DataContext = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status);
 
         SourceInitialized += (_, _) =>
         {
@@ -52,4 +54,26 @@ public partial class MainWindow : Window
 
     /// <summary>Clears this transaction for a safe new manual input.</summary>
     public void ResetForNewInput() => ((MainViewModel)DataContext).ResetForNewInput();
+
+    private void OnEditPreset(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || !int.TryParse(button.Tag?.ToString(), out int slot)) return;
+        var menu = new ContextMenu { Style = (Style)FindResource("TrayContextMenuStyle") };
+        MainViewModel viewModel = (MainViewModel)DataContext;
+        foreach (ActionDefinition action in viewModel.Actions)
+        {
+            var item = new MenuItem { Header = action.DisplayName, Style = (Style)FindResource("TrayMenuItemStyle") };
+            item.Click += (_, _) =>
+            {
+                UserConfiguration.SaveActionPreset(slot, action.Id);
+                viewModel.AssignPreset(slot, action);
+            };
+            menu.Items.Add(item);
+        }
+
+        menu.PlacementTarget = button;
+        menu.Placement = PlacementMode.Bottom;
+        button.ContextMenu = menu;
+        menu.IsOpen = true;
+    }
 }
