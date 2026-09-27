@@ -37,6 +37,13 @@ Operation: Olivier confirmed the final LOT-006 candidate works and explicitly ac
 Affected artifacts: `Specs/006-connections-profiles/GATES-006.md`, `Specs/006-connections-profiles/FINDINGS-006.md`, `Specs/006-connections-profiles/CONVERGENCE-006.md`, `LEDGER.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: G-006-001 AUTO and G-006-002 HUMAN are PASS. LOT-006 closed with TOTAL convergence on published candidate SHA-256 `965D3EECCC4B1A77508AE5849A325F66CFC7141EAB82A2E7D7C4CE6802F6CABA`.
 
+## 2026-09-27 — LOT-006 contained reopening reclosed
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed that the contained reopening work is complete, including the transform-session branding, status guidance, and shared-menu correction. Codex reran the deterministic build and test suite, recorded Olivier's renewed human validation, and restored LOT-006 to Closed.
+Affected artifacts: `Specs/006-connections-profiles/GATES-006.md`, `Specs/006-connections-profiles/CONVERGENCE-006.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors; `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests. Both LOT-006 gates remain PASS, and Olivier authorized reclosure.
+
 ## 2026-09-25 — Pro-Spec project initialized
 
 Actor: Codex

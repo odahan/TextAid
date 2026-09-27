@@ -4,7 +4,7 @@ Status: CLOSED
 Prepared at: 2026-09-27T00:00:00+02:00
 Closed at: 2026-09-27T00:00:00+02:00
 Closed by: Olivier
-Decision: Olivier explicitly accepted the completed LOT-006 result and authorized closure despite the separately deferred language-workflow finding.
+Decision: Olivier explicitly accepted the completed LOT-006 result, then confirmed the contained reopening corrections were complete and authorized reclosure despite the separately deferred language-workflow finding.
 Convergence: TOTAL
 
 ## Result obtained
@@ -27,4 +27,4 @@ F-006-002 records inconsistent action output-language behavior before the planne
 
 ## Closure decision
 
-Olivier accepted TOTAL convergence. Both active LOT-006 gates are PASS; the only language observation is owned by the planned LOT-008 workflow.
+Olivier accepted TOTAL convergence. Both active LOT-006 gates are PASS; the only language observation is owned by the planned LOT-008 workflow. After a contained reopening for transform-session branding, status guidance, and a shared-menu correction, Olivier confirmed those corrections were complete on 2026-09-27 and authorized this reclosure.

@@ -17,13 +17,14 @@ Method:
 Run dotnet test -m:1 for Core and AI tests.
 
 Tested at: 2026-09-27
-Evaluated result: PASS on the current LOT-006 candidate.
+Evaluated result: PASS after the contained reopening corrections.
 Result: PASS
-Evidence: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors; `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests.
+Evidence: `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors; `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests after the reopening corrections.
 
 ### Test history
 
 - 2026-09-27 — PASS: `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` passed 6 AI, 15 Core, and 14 Windows tests after the configuration, secret-vault, downgrade, shortcut, language-preference, and preset changes.
+- 2026-09-27 — PASS: after the contained reopening corrections, `dotnet build TextAid.sln -m:1 --no-restore -p:NuGetAudit=false` completed with 0 warnings and 0 errors; `dotnet test TextAid.sln -m:1 --no-build -p:NuGetAudit=false` again passed 6 AI, 15 Core, and 14 Windows tests.
 
 ## G-006-002 — Profile selection
 
@@ -39,11 +40,12 @@ Publish an identifiable Release candidate with root `publish.ps1`, then exercise
 
 Validated at: 2026-09-27
 Validated by: Olivier
-Evaluated result: PASS on the published candidate SHA-256 `965D3EECCC4B1A77508AE5849A325F66CFC7141EAB82A2E7D7C4CE6802F6CABA`.
-Comment: Olivier confirmed that the local Ollama discovery and transformation path, the connection settings, and action presets work. The current action-language behavior is explicitly deferred to the planned language workflow.
+Evaluated result: PASS after Olivier confirmed the reopening corrections are complete.
+Comment: Olivier confirmed the contained transform-session branding, status guidance, and shared-menu correction are complete, in addition to the previously accepted local Ollama discovery, transformation, connection-settings, and action-preset behavior. The action-language behavior remains explicitly deferred to the planned LOT-008 workflow.
 
 ### Test history
 
 - 2026-09-27 — Release candidate published for the required human walkthrough: `src/TextAid.App/bin/Publish/TextAid.exe`, 178,433,455 bytes, SHA-256 `C7AFF2761FA016E6FBAD07ECB72FFF95269660093C057771B4124DB5DC074612`. Publication alone does not evaluate this HUMAN gate; status remains TO TEST pending Olivier's walkthrough.
 - 2026-09-27 — PASS: Olivier confirmed the local Ollama discovery and transformation path works on the published candidate.
 - 2026-09-27 — PASS: Olivier confirmed all implemented LOT-006 behavior works on the current published candidate.
+- 2026-09-27 — PASS: Olivier confirmed the contained transform-session branding, status-guidance, and shared-menu corrections are complete and authorized the LOT-006 reclosure.

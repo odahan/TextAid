@@ -47,7 +47,7 @@ Source: `docs/TextAid specification.md`, sections 58–59, 78.
 
 Map clipboard, configuration, provider, model, cancellation, source-window, paste, and localization failures to explicit user-facing errors instead of raw HTTP, COM, or Win32 exception names.
 
-Source: `docs/TextAid specification.md`, sections 60, 78.
+Source: `docs/TextAid specification.md`, sections 60, 78. Always propose a solution, never let the user down alone when facing a problem.
 
 ## Important cases
 
