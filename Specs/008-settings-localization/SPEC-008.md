@@ -85,7 +85,7 @@ Source: D-013, R-020.
 
 ### REQ-008-011 — User-instructions editor and session control
 
-The Actions editor MUST expose an English checkbox labelled **Ask for user instructions** bound to `askForUserInstructions`. The normal Choose session MUST include an **Instructions** control that opens the supplementary-instructions dialog for the currently selected action. If an action requires instructions and none were supplied through that control, Process MUST open the same dialog before that model request. The dialog is modal, themed, editable, and its value applies only to the current invocation. This control and requirement MUST NOT delay the immediate `Ctrl+C+T` quick Translate invocation.
+The Actions editor MUST expose an English checkbox labelled **Ask for user instructions** bound to `askForUserInstructions`. To this checkbox is added a "Question to ask" free text that will be displayed in the "Ask for user instructions" dialog. The normal Choose session MUST include an **Instructions** control that opens the supplementary-instructions dialog for the currently selected action. If an action requires instructions and none were supplied through that control, Process MUST open the same dialog before that model request. The dialog is modal, themed, editable, and its value applies only to the current invocation. This control and requirement MUST NOT delay the immediate `Ctrl+C+T` quick Translate invocation.
 
 Source: D-014, R-021.
 
