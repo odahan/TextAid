@@ -22,6 +22,7 @@ public partial class App : Application
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
     private bool enabled = true;
     private bool capturing;
+    private string? actionsDirectory;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -36,6 +37,8 @@ public partial class App : Application
         }
 
         UserConfiguration.EnsureCreated();
+        actionsDirectory = UserConfiguration.EnsureActionsDirectory();
+        new ActionLoader(actionsDirectory: actionsDirectory).Load();
         hook = new KeyboardHook();
         hook.Triggered += (source, hasCopiedText) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText)));
         using Stream icon = GetResourceStream(new Uri("pack://application:,,,/TextAid;component/Assets/TextAid.ico")).Stream;
@@ -103,7 +106,8 @@ public partial class App : Application
                 State = failed ? InvocationState.Failed : InvocationState.Ready
             };
             string key = failed ? "ClipboardError" : noText ? "EnterTextMessage" : "ReadyToProcessMessage";
-            sessionWindow = new MainWindow(session, ReplaceOutput, CopyResult, StartTransformation, (string)FindResource(key));
+            IReadOnlyList<ActionDefinition> actions = new ActionLoader(actionsDirectory: actionsDirectory).Load();
+            sessionWindow = new MainWindow(session, actions, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, (string)FindResource(key));
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
@@ -111,11 +115,10 @@ public partial class App : Application
         finally { capturing = false; }
     }
 
-    private async Task TransformAsync(InvocationSession session, MainWindow window)
+    private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions)
     {
         try
         {
-            string inputText = session.InputText;
             TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
             if (!settings.HasModel)
             {
@@ -123,10 +126,14 @@ public partial class App : Application
                 return;
             }
 
+            if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
+            string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
+            if (!string.IsNullOrWhiteSpace(supplementaryInstructions))
+                instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
             string output = await transformationService.TransformAsync(
                 new TextTransformationRequest(
                     inputText,
-                    "Rewrite the user's text for clarity and natural phrasing. Return only the rewritten text.",
+                    instruction,
                     settings),
                 session.Cancellation.Token);
             if (!window.IsLoaded) return;
@@ -150,9 +157,33 @@ public partial class App : Application
     private void StartTransformation(MainWindow window, InvocationSession session)
     {
         if (string.IsNullOrWhiteSpace(session.InputText) || session.State == InvocationState.Transforming) return;
+        ActionDefinition? action = new ActionLoader(actionsDirectory: actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
+        if (action is null)
+        {
+            window.ShowFailure("The selected action is no longer available.");
+            return;
+        }
+
+        if (action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session)) return;
+        string inputSnapshot = session.InputText;
+        string? instructionsSnapshot = session.SupplementaryInstructions;
         session.State = InvocationState.Transforming;
         window.ShowTransforming((string)FindResource("TransformingMessage"));
-        _ = TransformAsync(session, window);
+        _ = TransformAsync(session, window, inputSnapshot, action, instructionsSnapshot);
+    }
+
+    /// <summary>Opens the optional per-invocation instructions editor without changing action data.</summary>
+    private void EditInstructions(MainWindow window, InvocationSession session) => TryCollectInstructions(window, session);
+
+    /// <summary>Prepares the existing window for a separate manual transformation.</summary>
+    private static void ResetSession(MainWindow window, InvocationSession session) => window.ResetForNewInput();
+
+    private static bool TryCollectInstructions(MainWindow owner, InvocationSession session)
+    {
+        var dialog = new InstructionsWindow(session.SupplementaryInstructions) { Owner = owner };
+        if (dialog.ShowDialog() != true) return false;
+        session.SupplementaryInstructions = dialog.Instructions;
+        return true;
     }
 
     private void CopyResult(MainWindow window, InvocationSession session)

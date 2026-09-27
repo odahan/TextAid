@@ -1,0 +1,1 @@
+{"id":"rewrite","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Rewrite the input text for clarity and natural phrasing. Preserve its meaning. Return only the rewritten text.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}

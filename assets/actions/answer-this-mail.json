@@ -1,0 +1,1 @@
+{"id":"answer-this-mail","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Draft a clear, helpful reply to the input email. Use the supplementary instructions as the facts, intent, and tone for this reply. Return only the reply.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":true,"isReserved":false}

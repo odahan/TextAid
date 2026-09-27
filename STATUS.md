@@ -8,7 +8,7 @@
 | LOT-002 | — | [V0.1 — Windows shell and foundations](Specs/002-windows-shell/SPEC-002.md) | Closed | — | Olivier accepted TOTAL convergence on the V0.1 EXE; all four gates PASS and all findings are terminal. The separate-machine portability check passed after closure for the final EXE; see `PORTABILITY-CHECKS.md`. |
 | LOT-003 | — | [V0.2 — Safe result actions](Specs/003-safe-accept/SPEC-003.md) | Closed | — | Olivier accepted TOTAL convergence; both gates PASS and all four findings are terminal. See `CONVERGENCE-003.md`. |
 | LOT-004 | — | [V0.3 — MAF and local Ollama](Specs/004-ollama-maf/SPEC-004.md) | Closed | — | Olivier accepted TOTAL convergence on the V0.3 EXE; both gates PASS and no findings were recorded. See `CONVERGENCE-004.md`. |
-| LOT-005 | — | [V0.4 — Declarative actions](Specs/005-declarative-actions/SPEC-005.md) | Planned | — | No result yet. Start after LOT-004 closes. |
+| LOT-005 | — | [V0.4 — Declarative actions](Specs/005-declarative-actions/SPEC-005.md) | Closed | — | Olivier accepted TOTAL convergence; both gates PASS. |
 | LOT-006 | — | [V0.5 — Connections and profiles](Specs/006-connections-profiles/SPEC-006.md) | Planned | — | No result yet. Start after LOT-005 closes. |
 | LOT-007 | — | [V0.6 — Local-first privacy and debug](Specs/007-privacy-debug/SPEC-007.md) | Planned | — | No result yet. Start after LOT-006 closes. |
 | LOT-008 | — | [V0.7 — Settings and localization](Specs/008-settings-localization/SPEC-008.md) | Planned | — | No result yet. Start after LOT-007 closes. |

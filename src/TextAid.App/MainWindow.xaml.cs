@@ -9,10 +9,10 @@ namespace TextAid.App;
 /// <summary>Hosts one short-lived invocation and places it on the source monitor.</summary>
 public partial class MainWindow : Window
 {
-    public MainWindow(InvocationSession session, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, string status)
+    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status)
     {
         InitializeComponent();
-        DataContext = new MainViewModel(session, () => replace(this, session), () => copy(this, session), () => process(this, session), Close, status);
+        DataContext = new MainViewModel(session, actions, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status);
 
         SourceInitialized += (_, _) =>
         {
@@ -49,4 +49,7 @@ public partial class MainWindow : Window
 
     /// <summary>Refreshes the view when processing starts from the editable input.</summary>
     public void ShowTransforming(string message) => ((MainViewModel)DataContext).ShowTransforming(message);
+
+    /// <summary>Clears this transaction for a safe new manual input.</summary>
+    public void ResetForNewInput() => ((MainViewModel)DataContext).ResetForNewInput();
 }

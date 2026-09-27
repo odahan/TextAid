@@ -1,0 +1,61 @@
+using System.Reflection;
+using System.Text.Json;
+
+namespace TextAid.Core;
+
+/// <summary>Provides the initial editable JSON definitions supplied with TextAid.</summary>
+public static class BuiltInActionCatalog
+{
+    private static readonly string[] FileNames = ["translate", "correct", "rewrite", "shorten", "expand", "simplify", "change-tone", "summarize", "answer-this-mail"];
+    private static readonly IReadOnlyDictionary<string, string> DisplayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["translate"] = "Translate",
+        ["correct"] = "Correct",
+        ["rewrite"] = "Rewrite",
+        ["shorten"] = "Shorten",
+        ["expand"] = "Expand",
+        ["simplify"] = "Simplify",
+        ["change-tone"] = "Change tone",
+        ["summarize"] = "Summarize",
+        ["answer-this-mail"] = "Answer this mail"
+    };
+
+    /// <summary>Gets the eight built-in actions in their normal session order.</summary>
+    public static IReadOnlyList<ActionDefinition> Create() => FileNames.Select(ReadEmbeddedAction).ToArray();
+
+    /// <summary>Gets the English fallback label for an action ID.</summary>
+    public static string GetDisplayName(string id) => DisplayNames.TryGetValue(id, out string? name) ? name : id;
+
+    /// <summary>Writes missing built-in action files without overwriting existing user data.</summary>
+    public static void EnsureCreated(string actionsDirectory)
+    {
+        Directory.CreateDirectory(actionsDirectory);
+        foreach (ActionDefinition action in Create())
+        {
+            string path = Path.Combine(actionsDirectory, $"{action.Id}.json");
+            if (File.Exists(path)) continue;
+            File.WriteAllText(path, JsonSerializer.Serialize(action, ActionJson.Options));
+        }
+    }
+
+    private static ActionDefinition ReadEmbeddedAction(string fileName)
+    {
+        Assembly assembly = typeof(BuiltInActionCatalog).Assembly;
+        using Stream stream = assembly.GetManifestResourceStream($"TextAid.Core.Actions.{fileName}.json")
+            ?? throw new InvalidOperationException($"Built-in action resource '{fileName}' is missing.");
+        using var reader = new StreamReader(stream);
+        return JsonSerializer.Deserialize<ActionDefinition>(reader.ReadToEnd(), ActionJson.Options)
+            ?? throw new InvalidOperationException($"Built-in action resource '{fileName}' is invalid.");
+    }
+}
+
+/// <summary>Centralizes JSON options used by external action data.</summary>
+internal static class ActionJson
+{
+    internal static readonly JsonSerializerOptions Options = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true
+    };
+}

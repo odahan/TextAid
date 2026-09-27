@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="../../assets/actions/*.json" LogicalName="TextAid.Core.Actions.%(Filename).json" />
+  </ItemGroup>
+
 </Project>

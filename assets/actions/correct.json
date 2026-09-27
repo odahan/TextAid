@@ -1,0 +1,1 @@
+{"id":"correct","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Correct grammar, spelling, punctuation, and obvious wording issues in the input text. Preserve its meaning. Return only the corrected text.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}

@@ -28,6 +28,24 @@ public static class UserConfiguration
         return path;
     }
 
+    /// <summary>Returns the persisted visible action folder, preferring the directory beside the executable.</summary>
+    public static string EnsureActionsDirectory()
+    {
+        string configurationPath = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(configurationPath))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        string? persistedDirectory = root["actionsDirectory"]?.GetValue<string>();
+        if (!string.IsNullOrWhiteSpace(persistedDirectory) && TryCreateDirectory(persistedDirectory)) return persistedDirectory;
+
+        string primaryDirectory = Path.Combine(AppContext.BaseDirectory, "actions");
+        string fallbackDirectory = Path.Combine(Path.GetDirectoryName(configurationPath)!, "actions");
+        string selectedDirectory = TryCreateDirectory(primaryDirectory) ? primaryDirectory : fallbackDirectory;
+        if (!TryCreateDirectory(selectedDirectory)) throw new InvalidOperationException("TextAid could not create its action directory.");
+
+        root["actionsDirectory"] = selectedDirectory;
+        File.WriteAllText(configurationPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        return selectedDirectory;
+    }
+
     /// <summary>Loads the first local Ollama profile without retaining user text.</summary>
     public static TextTransformationSettings LoadTransformationSettings()
     {
@@ -77,6 +95,20 @@ public static class UserConfiguration
         if (settings.Temperature is < 0 or > 2) throw new ArgumentException("Temperature must be between 0 and 2.", nameof(settings));
         if (settings.Timeout <= TimeSpan.Zero) throw new ArgumentException("Timeout must be greater than zero.", nameof(settings));
         if (settings.ContextSize < 512) throw new ArgumentException("Context size must be at least 512 tokens.", nameof(settings));
+    }
+
+    private static bool TryCreateDirectory(string directory)
+    {
+        try
+        {
+            Directory.CreateDirectory(directory);
+            string probePath = Path.Combine(directory, $".textaid-write-{Guid.NewGuid():N}.tmp");
+            using (File.Create(probePath)) { }
+            File.Delete(probePath);
+            return true;
+        }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (IOException) { return false; }
     }
 
     private static bool IsLocalHost(string host) =>

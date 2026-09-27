@@ -33,19 +33,19 @@ Source: `docs/TextAid specification.md`, sections 39–43, 77.
 
 Validate every action `profileId` and resolve it before an invocation starts. Preserve a visible local default profile, and do not silently substitute a different profile when the referenced profile is unavailable or invalid.
 
-Source: D-009, R-019.
+Source: D-009, D-015, R-022.
 
 ### REQ-006-008 — Concurrent connection categories
 
 Persist independent This device only, On-premises, and External connection definitions concurrently. A ModelProfile chooses one connection; no global mode may replace the selected profile for unrelated actions.
 
-Source: D-011, R-005, R-019.
+Source: D-011, D-015, R-005, R-022.
 
 ### REQ-006-009 — Action generation overrides
 
 Resolve an action's selected profile and optional temperature override for each invocation. Reject an action whose profile is unavailable or whose override is out of the supported range; do not silently substitute another profile or temperature.
 
-Source: D-012, R-019.
+Source: D-012, D-015, R-022.
 
 ### REQ-006-010 — Action-language validation
 
@@ -55,7 +55,7 @@ Source: D-013, R-020.
 
 ### REQ-006-002 — Default configuration
 
-Create schemaVersion 1 configuration and standard action files on first launch under the user profile. Default to Strict Local, Debug off, Ollama endpoint http://127.0.0.1:11434, and no arbitrary preselected model. Ollama absence MUST NOT prevent startup.
+Create schemaVersion 1 configuration on first launch under the user profile. Standard action files are separately created and maintained in the unversioned `actions` subdirectory beside the executable. Default to This device only, Debug off, Ollama endpoint http://127.0.0.1:11434, and no arbitrary preselected model. Ollama absence MUST NOT prevent startup.
 
 Source: `docs/TextAid specification.md`, sections 43–45, 77.
 
@@ -67,7 +67,7 @@ Source: `docs/TextAid specification.md`, sections 46, 64, 77.
 
 ### REQ-006-004 — Configuration validation
 
-Validate duplicate IDs, unknown action/profile/connection/schema/provider, malformed endpoints, and missing models. Reload MUST validate a new configuration completely before replacing the active one.
+Validate duplicate IDs, unknown action/profile/connection/provider, malformed endpoints, and missing models. Configuration reload MUST validate a new configuration completely before replacing the active one. Action JSON has no schema-version field; action validation remains LOT-005 work.
 
 Source: `docs/TextAid specification.md`, sections 39–46, 69, 85.
 
@@ -89,7 +89,7 @@ Validate success and failure paths described in the active requirements; use the
 
 ## Dependencies
 
-LOT-005 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
+LOT-005 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, R-015 through R-018, and R-020 through R-022 apply according to their stated scopes; obsolete R-006, R-013, R-014, and R-019 remain part of closed or superseded history.
 
 ## Known constraints
 

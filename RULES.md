@@ -60,13 +60,14 @@ Rule: Fix the palette, typography, layout dimensions, logo, and icon before visi
 Replaces: None
 Replaced by: None
 
-## R-008 — Single-file distribution
+## [OBSOLETE 2026-09-27] R-008 — Single-file distribution
 
-Status: ACTIVE
+Status: OBSOLETE
 Source: Initial project rule; source sections 9, 73, 90
 Rule: Starting at V0.1, Release publishing MUST produce a self-contained single `TextAid.exe` for win-x64 with trimming disabled; no adjacent configuration or runtime file may be required for distribution. User configuration is created in the user profile at first run.
 Replaces: None
-Replaced by: None
+Replaced by: R-025
+Decision: D-018
 
 ## R-009 — Incremental quality
 
@@ -158,14 +159,15 @@ Rule: The quick-translation shortcut (default `Ctrl+C+T`) MUST start Translate i
 Replaces: R-014
 Replaced by: None
 
-## R-019 — Action-selected AI profile
+## [OBSOLETE 2026-09-27] R-019 — Action-selected AI profile
 
-Status: ACTIVE
+Status: OBSOLETE
 Source: D-009; Olivier's 2026-09-26 decision
 Scope: LOT-005, LOT-006, LOT-009, and later V1 lots
 Rule: Every action, including a built-in action supplied by TextAid, MUST be a declarative editable action definition and MUST resolve to one configured model profile. An action definition includes its name, prompt template, optional temperature override, and profile reference. The selected profile may use This device only, On-premises, or an explicitly configured OpenAI-compatible External connection. An action must never cause a silent provider fallback; endpoint use remains subject to the explicit R-005 deployment category.
 Replaces: None
-Replaced by: None
+Replaced by: R-022
+Decision: D-015
 
 ## R-020 — Action output-language default with session override
 
@@ -183,4 +185,50 @@ Source: D-014; Olivier's 2026-09-26 decision
 Scope: LOT-005, LOT-008, and later V1 lots
 Rule: Every declarative action definition MUST contain an `askForUserInstructions` flag. When the flag is set, TextAid MUST require a themed modal supplementary-instructions dialog before issuing the normal-action model request. The normal session MUST always offer an Instructions control, allowing optional supplementary instructions for any selected action. The instruction text is scoped to one invocation, is combined with the action prompt only at Process time, and MUST NOT persist into the action definition or a later session. Cancelling the dialog MUST not invoke the model. This rule MUST NOT delay the R-018 quick Translate route: `Ctrl+C+T` starts translation immediately without action selection or an instructions dialog.
 Replaces: None
+Replaced by: None
+
+## R-022 — Declarative action store and action-selected profile
+
+Status: ACTIVE
+Source: D-015
+Scope: LOT-005 and later V1 lots; no retroactive change to closed results.
+Rule: Every TextAid-supplied or user-created action MUST use the same editable JSON definition in the `actions` subdirectory beside the running `TextAid.exe`. This external user data MUST NOT carry a schema-version field. The user is responsible for backing up this visible action folder. Each action has a unique stable `id`, a profile reference, prompt template, optional temperature override, output-language default, and `askForUserInstructions` flag. A built-in action's display name is resolved from the selected application/user language by its stable ID; a user-provided display-name override takes precedence and is not automatically translated. No action may cause a silent provider fallback.
+Replaces: R-019
+Replaced by: None
+
+## R-023 — Actions page and immediate action refresh
+
+Status: ACTIVE
+Source: D-015
+Scope: LOT-008 and later V1 lots; no retroactive change to closed results.
+Rule: TextAid MUST expose a dedicated Actions page from both the local main-window gear menu and the tray-equivalent application menu. The page MUST show actions in a left-hand list and the selected action's editable details and prompt on the remaining area. A valid create, edit, enable, disable, or deletion operation MUST immediately replace the active action set and update the main-session action selector without requiring an application restart or recompilation.
+Replaces: None
+Replaced by: None
+
+## R-024 — Reserved quick-translation action
+
+Status: ACTIVE
+Source: D-016
+Scope: LOT-005, LOT-008, and later V1 lots; no retroactive change to closed results.
+Rule: The `Ctrl+C+T` route MUST use TextAid's reserved built-in Translate action. That action remains declarative JSON and uses the standard action execution path, but its identity, enabled state, profile reference, prompt template, and translation behavior MUST be protected from editing, replacement, or reassignment in the Actions page. No user-created or user-modified action may be designated as the quick-translation action.
+Replaces: None
+Replaced by: None
+
+## [OBSOLETE 2026-09-27] R-025 — Self-contained executable with deployed action data
+
+Status: OBSOLETE
+Source: D-018
+Scope: LOT-005 and later releases; no retroactive change to closed results.
+Rule: Release publishing MUST produce a self-contained single `TextAid.exe` for win-x64 with trimming disabled, together with an `actions` subdirectory containing the built-in JSON action definitions. No .NET runtime, installer, or hidden user-profile action data is required for the distributed result. The root `publish.ps1` MUST verify and report this exact release layout.
+Replaces: R-008
+Replaced by: R-026
+Decision: D-019
+
+## R-026 — Single-executable distribution with initialized action storage
+
+Status: ACTIVE
+Source: D-019
+Scope: LOT-005 and later releases; no retroactive change to closed results.
+Rule: Release publishing MUST produce a self-contained single `TextAid.exe` for win-x64 with trimming disabled. The executable MUST embed the default action definitions as resources. On first run it MUST create the visible `actions` directory beside the executable without overwriting existing files; if that directory cannot be created or written, it MUST silently create and persist an `actions` subdirectory beside `config.json` instead. The future Actions page opens the persisted directory. No .NET runtime, installer, or pre-deployed sidecar action data is required for distribution.
+Replaces: R-025
 Replaced by: None

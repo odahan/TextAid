@@ -1,7 +1,10 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
   <sys:String x:Key="ProductName">TextAid</sys:String><sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
   <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String>
+  <sys:String x:Key="ActionLabel">Action</sys:String>
   <sys:String x:Key="ProcessLabel">Process</sys:String><sys:String x:Key="ReplaceLabel">Replace</sys:String><sys:String x:Key="CopyLabel">Copy</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
+  <sys:String x:Key="NewLabel">New</sys:String>
+  <sys:String x:Key="InstructionsLabel">Instructions</sys:String><sys:String x:Key="InstructionsTitle">Supplementary instructions</sys:String><sys:String x:Key="InstructionsMessage">Optional guidance for this one transformation.</sys:String><sys:String x:Key="SaveLabel">Save</sys:String>
   <sys:String x:Key="TransformingMessage">Transforming your text with the local model…</sys:String>
   <sys:String x:Key="TransformingLabel">Local model is working</sys:String>
   <sys:String x:Key="EnterTextMessage">Enter or paste text, then choose Process.</sys:String>

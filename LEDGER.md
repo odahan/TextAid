@@ -265,3 +265,138 @@ LOT-005 adds the flag, prompt composition, editable text, action selection, and 
 
 Replaces: None
 Replaced by: None
+
+## D-015 — Visible unversioned action store and focused action editing
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-005 planning clarifications
+Related: R-019, R-020, R-021, R-022, R-023, LOT-005, LOT-006, LOT-008
+
+Decision:
+Action definitions are external, unversioned JSON user data in an `actions` subdirectory next to the executable, not versioned project artifacts or data hidden in the Windows user profile. Built-in and user actions use that same format. Each action has a unique stable ID; built-in display names are resolved in the selected application/user language, while an explicit user display-name override wins and is not translated. The V0.4 template system has no generic variables or parameters: it renders only the session text once. The explicit translation-destination value is deferred to the LOT-008 language-selector workflow, where it is the narrowly defined dynamic input. Prompt injection requires no dedicated protection or sophisticated mitigation because TextAid has no model tools; prompts may simply make the input-data boundary clear.
+
+Actions are managed in LOT-008 through a dedicated Actions page available from the main-window gear menu and the tray-equivalent application menu. It has an action list on the left and the selected action's settings and prompt on the right. Valid changes immediately refresh the application's active actions and the main action selector.
+
+Reason:
+Olivier wants action data to be straightforward for end users to back up, action customization to be accessible without manual JSON editing, labels to follow the chosen language while retaining deliberate user wording, and V0.4 to avoid unused generic parameter and prompt-injection machinery.
+
+Consequences:
+R-019 is superseded by R-022; R-023 defines the later editing surface and immediate-refresh behavior. LOT-005 loads unversioned action files beside the executable, supplies the eight actions, removes generic parameter rendering, and keeps template handling to one non-reparsed text insertion. LOT-006 no longer creates standard action files in the user profile and does not validate action schema versions; its configuration remains independently versioned. LOT-008 supplies the Actions page, gear menu, translated built-in labels, user override behavior, immediate valid-save refresh, and the only dynamic translation-destination rendering. Closed LOT-001 through LOT-004 results are unaffected. No gate has yet been evaluated, so no acquired validation requires reevaluation.
+
+Replaces: None
+Replaced by: None
+
+## D-016 — Reserved Translate action for the immediate shortcut
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's clarification of the `Ctrl+C+T` action behavior
+Related: D-004, D-015, R-018, R-022, R-023, R-024, LOT-005, LOT-008
+
+Decision:
+`Ctrl+C+T` uses one reserved built-in Translate action rather than a user-selected action. The action remains declarative JSON and goes through the ordinary action loading and model-invocation path; its prompt is not a hard-coded C# transformation. However, its identity, enabled state, profile reference, prompt, and translation semantics are fixed and protected in the Actions page. It cannot be deleted, disabled, altered, or replaced by a user-created action.
+
+Reason:
+The immediate shortcut needs a stable, predictable translation behavior. Allowing a user to designate or reshape an arbitrary action would make the shortcut's meaning uncertain and could break direct translation.
+
+Consequences:
+LOT-005 supplies and validates the protected declarative Translate action alongside the other seven built-ins. LOT-008 shows the action in the Actions page but marks its protected fields unavailable for editing, and always routes `Ctrl+C+T` to it. The other built-in and user-created actions retain the common editable action format and may be tailored normally. No closed result or existing gate evaluation is affected.
+
+Replaces: None
+Replaced by: None
+
+## D-017 — Built-in Answer this mail action
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-005 implementation instruction
+Related: R-021, LOT-005, LOT-008
+
+Decision:
+TextAid supplies **Answer this mail** as a built-in declarative action. It is enabled by default and sets `askForUserInstructions` to true, so the normal session must collect supplementary reply context before its model request.
+
+Reason:
+Olivier considers replying to email a valuable common use case that should be immediately available rather than requiring the user to create an action.
+
+Consequences:
+LOT-005 increases the built-in action set to nine and validates the required supplementary-instructions path for this action. LOT-008 will show it in the editable Actions page using the ordinary action model. No closed result or existing gate evaluation is affected.
+
+Replaces: None
+Replaced by: None
+
+## D-018 — Publish action definitions beside the executable
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-005 publishing instruction
+Related: R-008, R-022, R-025, LOT-005, LOT-010, LOT-011
+
+Decision:
+The official published result contains `TextAid.exe` and its `actions` subdirectory. The built-in JSON action definitions are deployed with the executable rather than created only at first run. `publish.ps1` is the canonical and only final-executable production route and must verify this layout.
+
+Reason:
+The action folder is part of the visible user data that must be easy to inspect and back up, so it must be present in the published distribution.
+
+Consequences:
+R-008 is superseded by R-025 for LOT-005 and later releases. LOT-005 copies nine built-in action definitions to Publish and verifies them with the publisher. LOT-010 and LOT-011 test the executable-plus-actions distribution rather than an EXE alone. Closed releases and their historical portability results remain unchanged.
+
+Replaces: None
+Replaced by: D-019
+
+## D-019 — Embed default actions with writable-location fallback
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's follow-up LOT-005 distribution decision
+Related: D-018, R-025, R-026, LOT-005, LOT-008, LOT-010, LOT-011
+
+Decision:
+The official distribution returns to one self-contained `TextAid.exe`. Default JSON action definitions are embedded as application resources and are created without overwriting existing files on first run in `actions` beside the executable. If that location is unavailable, TextAid silently uses an `actions` subdirectory beside `config.json` and persists the selected location in settings. The future Actions page includes a command to open that persisted folder.
+
+Reason:
+Olivier wants the simplest possible distribution while keeping action data visible, backed up, and usable even from a protected installation directory.
+
+Consequences:
+D-018 and R-025 are superseded. LOT-005 embeds and initializes the actions while preserving a sole EXE in Publish. LOT-008 adds the Open actions folder command. LOT-010 and LOT-011 retain single-EXE distribution checks. Closed releases remain unchanged.
+
+Replaces: D-018
+Replaced by: None
+
+## D-020 — Accent-button contrast
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-005 visual-review instruction
+Related: R-007, LOT-005 and later visible lots
+
+Decision:
+All accent-blue primary buttons use explicit black text through the shared button template and centralized `OnAccent` color token. The token applies across every current and future TextAid screen unless a later accessibility decision replaces it.
+
+Reason:
+White text on the light accent blue is difficult to read.
+
+Consequences:
+Update the central color and button templates only; no per-window color overrides are permitted. Existing visible screens inherit the correction immediately.
+
+Replaces: None
+Replaced by: None
+
+## D-021 — New manual transformation command
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-005 UX instruction
+Related: R-016, R-017, LOT-005
+
+Decision:
+The normal session provides a **New** command that resets the existing window to an empty manual-input session instead of requiring the user to close and reopen it. Reset removes all result and invocation-only instructions and clears the original captured source window, so a subsequent result cannot Replace text in the earlier source application.
+
+Reason:
+Users often want to begin a separate transformation immediately after completing another one; closing and reopening the session is unnecessary friction.
+
+Consequences:
+LOT-005 adds the New button and safe reset behavior. The reset session follows the existing no-selection path: Process remains explicit, and only Copy is available after a result until a new trusted source capture occurs.
+
+Replaces: None
+Replaced by: None

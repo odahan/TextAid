@@ -25,45 +25,45 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-005-001 — Action data
 
-Implement ActionDefinition, ActionLoader, and ActionValidator using versioned JSON. Migrate Rewrite and supply Translate, Correct, Rewrite, Shorten, Expand, Simplify, Change tone, and Summarize as built-in action data. Built-in and user-created actions share the same editable format and no built-in action has a dedicated C# execution path.
+Implement ActionDefinition, ActionLoader, and ActionValidator using unversioned JSON action files in the `actions` subdirectory beside the running executable. Migrate Rewrite and supply Translate, Correct, Rewrite, Shorten, Expand, Simplify, Change tone, Summarize, and Answer this mail as built-in action data. Answer this mail MUST require supplementary user instructions before processing. Built-in and user-created actions share the same format and no built-in action has a dedicated C# execution path. The reserved Translate action is the explicit exception to editability: it remains declarative but protected so it can reliably serve `Ctrl+C+T` later.
 
 Source: `docs/TextAid specification.md`, sections 34–36, 76.
 
 ### REQ-005-002 — No recompilation
 
-Loading an added valid action MUST NOT require a new ViewModel, dedicated button, service, or application build. Actions can be enabled or disabled and use localizable names.
+Loading an added valid action from the visible action folder MUST NOT require a new ViewModel, dedicated button, service, or application build. Actions can be enabled or disabled. Their stable IDs identify built-in localized names; a user display-name override takes precedence and is not translated.
 
 Source: `docs/TextAid specification.md`, sections 34, 76, 90.
 
-### REQ-005-003 — Parameters and templates
+### REQ-005-003 — Text-only templates
 
-Support only choice and text parameters. TemplateRenderer MUST resolve {{text}} and named parameters, reject missing/unknown variables, and never parse injected user text a second time.
+TemplateRenderer MUST resolve only `{{text}}`, reject every other placeholder, and never parse injected user text a second time. V0.4 MUST NOT implement generic action parameters, a form engine, or named-variable resolution.
 
 Source: `docs/TextAid specification.md`, sections 36–37, 76, 84.
 
-### REQ-005-004 — Untrusted input
+### REQ-005-004 — Input-data boundary
 
-Standard prompts MUST delimit selected text as input data and direct the model to ignore instructions within it, while recognizing this is not a complete prompt-injection defense.
+Standard prompts SHOULD delimit selected text as input data for prompt clarity. TextAid has no model tools, so this lot MUST NOT add prompt-injection detection, filtering, or other sophisticated mitigation.
 
 Source: `docs/TextAid specification.md`, sections 38, 84.
 
-### REQ-005-005 — Translation parameters for quick invocation
+### REQ-005-005 — Declarative Translate preparation
 
-The built-in Translate action MUST accept an explicit destination language and preserve the original captured text as its input. Its action data and rendering path MUST support the later `Ctrl+C+T` entry point without adding a separate hard-coded translation implementation. Changing the destination in a session will mean a new single transformation of the original text, never translation of an earlier translated result. This lot does not yet activate `Ctrl+C+T`; the full shortcut and language-preference workflow belongs to LOT-008.
+The built-in Translate action MUST be declarative, protected from modification, disabling, deletion, replacement, or reassignment, preserve the original captured text as its input, and define its output-language default. Its action data MUST support the later `Ctrl+C+T` entry point without adding a separate hard-coded translation implementation. The explicit destination-language value and its narrowly scoped rendering path belong to LOT-008; changing it there will mean a new single transformation of the original text, never translation of an earlier translated result.
 
-Source: D-004, D-006, R-018; Olivier's quick-translation instruction.
+Source: D-004, D-006, D-015, D-016, R-018, R-024; Olivier's quick-translation instruction.
 
 ### REQ-005-006 — Action profile reference
 
 Each ActionDefinition MUST declare a `profileId` that identifies the model profile to use. Built-in action data may select the local default profile; the remote profile implementation remains LOT-009 work. An unknown profile is invalid action data.
 
-Source: D-009, R-019.
+Source: D-009, D-015, R-022.
 
 ### REQ-005-007 — Editable action fields
 
-Each ActionDefinition MUST include a user-visible name, a prompt template, a `profileId`, and an optional temperature override. The profile reference represents the selected This device only, On-premises, or External model profile; action data must not embed a provider endpoint or credential. The same schema applies to every built-in and user-created action.
+Each ActionDefinition MUST include a unique stable `id`, a prompt template, a `profileId`, and an optional temperature override. Built-in display names are resolved from the selected application/user language; a user-visible display-name override is optional and takes precedence. The profile reference represents the selected This device only, On-premises, or External model profile; action data must not embed a provider endpoint or credential. The same format applies to every built-in and user-created action.
 
-Source: D-012, R-019.
+Source: D-012, D-015, R-022.
 
 ### REQ-005-008 — Output-language default
 
@@ -83,13 +83,19 @@ The normal TextAid session MUST keep its input text editable regardless of wheth
 
 Source: D-014, R-021.
 
+### REQ-005-011 — New manual transformation
+
+The normal session MUST provide a **New** command that clears its editable text, result, supplementary instructions, and selected action state without closing the window. It MUST then be equivalent to a newly opened no-selection/manual-input session: no original source window remains eligible for Replace, while Copy remains available after a new successful result.
+
+Source: D-021; Olivier's session-reset instruction.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-004 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
+LOT-004 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, R-015 through R-018, and R-020 through R-022 and R-024 apply according to their stated scopes; obsolete R-006, R-013, R-014, and R-019 remain part of closed or superseded history.
 
 ## Known constraints
 

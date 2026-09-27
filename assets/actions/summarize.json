@@ -1,0 +1,1 @@
+{"id":"summarize","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Summarize the input text concisely while preserving its essential information. Return only the summary.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}

@@ -25,7 +25,7 @@ Post-V1 capabilities in source section 91, except where a narrower exclusion is 
 
 ### REQ-008-001 — Settings sections
 
-Provide dark-themed General, AI Connections, Models/Profiles, Actions, Language, and Debug sections. AI Connections contains three independent tabs: This device only, On-premises, and External. Include enable/disable, double-copy delay, endpoint/authentication/test, model settings, action list/open folder/reload, language selection, and debug log controls. The tabs may all be configured simultaneously; an action profile selects the active connection for that action.
+Provide dark-themed General, AI Connections, Models/Profiles, Language, and Debug Settings sections, plus a separate dedicated Actions page. AI Connections contains three independent tabs: This device only, On-premises, and External. Include enable/disable, double-copy delay, endpoint/authentication/test, model settings, language selection, and debug log controls. The tabs may all be configured simultaneously; an action profile selects the active connection for that action.
 
 Source: `docs/TextAid specification.md`, sections 61–68, 79.
 
@@ -37,21 +37,21 @@ Source: `docs/TextAid specification.md`, sections 49, 79.
 
 ### REQ-008-003 — Language catalog and translation
 
-Provide BCP-47 language entries, English/native names, and availability; reuse relevant languages for Translate. Generate non-English UI values through the current MAF provider, cache them locally, and allow user action or selection to initiate generation with progress.
+Provide BCP-47 language entries, English/native names, and availability; reuse relevant languages for Translate. Generate non-English UI values through the current MAF provider, cache them locally, and allow user action or selection to initiate generation with progress. Resolve built-in action display names from the selected application/user language using their stable action IDs.
 
 Source: `docs/TextAid specification.md`, sections 50–54, 79.
 
 ### REQ-008-004 — Catalog integrity and fallback
 
-Validate translated JSON has exactly the source keys and preserved placeholders. On invalid catalog or provider failure, keep/revert to English without preventing the application from working. User-defined action names need not be translated.
+Validate translated JSON has exactly the source keys and preserved placeholders. On invalid catalog or provider failure, keep/revert to English without preventing the application from working. A user-defined display-name override takes precedence and need not be translated.
 
 Source: `docs/TextAid specification.md`, sections 52–54, 79, 87.
 
 ### REQ-008-005 — Reload behavior
 
-Provide explicit Reload configuration and Reload actions commands; validate completely and replace active state atomically, retaining the previous valid state on failure. A FileSystemWatcher is not required.
+Provide explicit Reload configuration and Reload actions commands; validate completely and replace active state atomically, retaining the previous valid state on failure. A FileSystemWatcher is not required. The Actions page MUST provide an Open actions folder command for the persisted active action location. Valid saves from the Actions page MUST apply immediately to the active action set and main-session selector.
 
-Source: `docs/TextAid specification.md`, sections 69, 79.
+Source: `docs/TextAid specification.md`, sections 69, 79; D-019, R-026.
 
 ### REQ-008-006 — Immediate translation shortcut
 
@@ -71,11 +71,11 @@ Expose the user language and preferred translation language as distinct, valid B
 
 Source: D-004 through D-007, R-015, R-018; Olivier's language-routing and shortcut instructions.
 
-### REQ-008-009 — Actions management
+### REQ-008-009 — Dedicated Actions page
 
-Provide an Actions Settings page that lists every action, including TextAid-supplied actions, and permits creation and editing. The editor exposes name, model profile, temperature, prompt template, and output-language default (Unchanged or a supported language). Profile choices visibly identify their This device only, On-premises, or External connection category. Validation errors must retain the last valid action configuration.
+Provide a dedicated Actions page, reachable from the main-window gear menu and the tray-equivalent application menu, that lists every action, including TextAid-supplied actions, and permits creation and editing. It MUST have an action ListBox on the left and the selected action's settings and prompt in the remaining area. The editor exposes stable ID, optional display-name override, enabled state, model profile, temperature, prompt template, and output-language default (Unchanged or a supported language). Profile choices visibly identify their This device only, On-premises, or External connection category. The reserved Translate action is shown but its identity, enabled state, profile, prompt, and translation behavior are visibly protected from editing, deletion, replacement, or reassignment. Validation errors must retain the last valid action configuration; every valid save applies immediately to the active action set and main-session selector.
 
-Source: D-012, R-019.
+Source: D-012, D-015, D-016, R-022, R-023, R-024.
 
 ### REQ-008-010 — Main-session output-language override
 
@@ -89,13 +89,19 @@ The Actions editor MUST expose an English checkbox labelled **Ask for user instr
 
 Source: D-014, R-021.
 
+### REQ-008-012 — Main-window application menu
+
+Add a gear icon to the main TextAid session. It opens a local application menu equivalent to the tray application menu, including Exit, About, Actions, and Settings. Actions opens the dedicated Actions page without requiring the session to be recreated.
+
+Source: D-015, R-023.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
 
 ## Dependencies
 
-LOT-007 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
+LOT-007 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, R-015 through R-018, and R-020 through R-024 apply according to their stated scopes; obsolete R-006, R-013, R-014, and R-019 remain part of closed or superseded history.
 
 ## Known constraints
 

@@ -1,0 +1,1 @@
+{"id":"expand","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Expand the input text with useful detail while preserving its meaning and tone. Return only the expanded text.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}

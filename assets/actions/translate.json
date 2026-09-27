@@ -1,0 +1,11 @@
+{
+  "id": "translate",
+  "displayNameOverride": null,
+  "isEnabled": true,
+  "promptTemplate": "Translate the input text into the selected output language. Return only the translation.",
+  "profileId": "local-default",
+  "temperatureOverride": null,
+  "outputLanguageDefault": "Unchanged",
+  "askForUserInstructions": false,
+  "isReserved": true
+}

@@ -3,5 +3,5 @@
   <Color x:Key="Foreground">#F3F6FA</Color><Color x:Key="ForegroundMuted">#AAB6C5</Color><Color x:Key="Border">#3B4859</Color>
   <Color x:Key="Accent">#34B9E8</Color><Color x:Key="AccentHover">#5CCDF2</Color><Color x:Key="AccentPressed">#178FB9</Color>
   <Color x:Key="Success">#4DD7A8</Color><Color x:Key="Warning">#F2C56B</Color><Color x:Key="Error">#FF7D89</Color>
-  <Color x:Key="Disabled">#748092</Color><Color x:Key="Selection">#294F67</Color><Color x:Key="OnAccent">#07141B</Color>
+  <Color x:Key="Disabled">#748092</Color><Color x:Key="Selection">#294F67</Color><Color x:Key="OnAccent">#000000</Color>
 </ResourceDictionary>

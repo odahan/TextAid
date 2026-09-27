@@ -334,3 +334,66 @@ Actor: Olivier and Codex
 Operation: Olivier retested the final corrected V0.2 EXE in Notepad, Visual Studio, Chrome, and Edge.
 Affected artifacts: `Specs/003-safe-accept/GATES-003.md`, `Specs/003-safe-accept/FINDINGS-003.md`, `HISTORY.md`.
 Outcome: Replace succeeds in all four reported applications, confirming the corrected `SendInput` path. G-003-002 remains TO TEST for the unreported TestTarget, Copy, controlled-failure, and layout/foreground conditions.
+
+## 2026-09-27 — Declarative action storage and editing refined
+
+Actor: Olivier and Codex
+Operation: Olivier clarified that action JSON is visible unversioned user data beside the executable, that generic template variables are not useful in V0.4, and that editing belongs in a dedicated Actions page accessible from application menus. Codex recorded D-015, superseded R-019 with R-022, added R-023, and refined planned LOT-005, LOT-006, and LOT-008 requirements and LOT-005 gates.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `STATUS.md`, `Specs/005-declarative-actions/`, `Specs/006-connections-profiles/SPEC-006.md`, `Specs/008-settings-localization/SPEC-008.md`.
+Outcome: No lot state, implementation, executable, or gate evaluation changed. LOT-005 remains Planned and awaits a separate human start decision.
+
+## 2026-09-27 — Immediate translation action reserved
+
+Actor: Olivier and Codex
+Operation: Olivier clarified that the direct Translate shortcut must retain fixed behavior. Codex recorded D-016 and R-024, making the built-in declarative Translate action protected while retaining the shared action loading and execution path.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/008-settings-localization/SPEC-008.md`.
+Outcome: Other built-in and user actions remain editable. No implementation, lot state, executable, or gate evaluation changed.
+
+## 2026-09-27 — LOT-005 started
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly authorized implementation of LOT-005 after the LOT-004 closure and the recorded action-model refinements.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-005 moved from Planned to In-progress. Its active work is the visible unversioned action store, declarative action execution, and normal-session action choice; no gate result is yet claimed.
+
+## 2026-09-27 — Built-in email reply action added to LOT-005
+
+Actor: Olivier and Codex
+Operation: Olivier requested a built-in Answer this mail action that requires supplementary user context. Codex recorded D-017 and updated the active LOT-005 specification and gate.
+Affected artifacts: `LEDGER.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/005-declarative-actions/GATES-005.md`, `HISTORY.md`.
+Outcome: The active lot now supplies nine built-in actions. No gate is evaluated by this planning update.
+
+## 2026-09-27 — LOT-005 declarative-actions candidate published
+
+Actor: Codex
+Operation: Implemented the unversioned action loader, validator, text-only template renderer, nine built-in actions, action selector, per-invocation Instructions dialog, action request snapshot, and protected declarative Translate action. Built and tested the solution, then ran the canonical publisher.
+Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `Specs/005-declarative-actions/GATES-005.md`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: G-005-001 is PASS. The only published V0.4 executable is 178,376,111 bytes, SHA-256 `461B21E646B03E9B5D3ABFE5900819E095BEC86B6D8FD28AD7053C77478B8F8A`. G-005-002 remains TO TEST pending Olivier's running-app extensibility walkthrough.
+
+## 2026-09-27 — Single-EXE action initialization restored
+
+Actor: Olivier and Codex
+Operation: Olivier chose a single EXE with embedded default actions instead of publishing action files. He further chose a silent persisted fallback beside the settings file when the executable directory cannot accept action storage. Codex recorded D-019/R-026, embedded the action JSON files, and aligned the future Actions-page folder command.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `publish.ps1`, `src/TextAid.Core/`, `src/TextAid.App/`, `Specs/008-settings-localization/SPEC-008.md`, `Specs/010-hardening/SPEC-010.md`, `Specs/011-v1-release/`.
+Outcome: The earlier direct-deployment decision is superseded before any final V0.4 publication under it. A new V0.4 EXE must be built and published through `publish.ps1`.
+
+## 2026-09-27 — Combo interaction and accent contrast corrected
+
+Actor: Olivier and Codex
+Operation: Olivier reported a light combo scrollbar, a click target limited to the arrow, and unreadable light-button text. Codex made the full combo surface toggle its popup, added dark scrollbar templates, and recorded D-020 while applying explicit black text to every shared accent button.
+Affected artifacts: `LEDGER.md`, `HISTORY.md`, `src/TextAid.App/Themes/Colors.xaml`, `src/TextAid.App/Themes/Controls.xaml`.
+Outcome: The shared visual system is corrected; the updated release must be republished for desktop validation.
+
+## 2026-09-27 — New session reset added
+
+Actor: Olivier and Codex
+Operation: Olivier requested an in-window reset for a separate manual transformation. Codex recorded D-021 and added a New command that clears the session while removing the original replacement target.
+Affected artifacts: `LEDGER.md`, `HISTORY.md`, `Specs/005-declarative-actions/SPEC-005.md`, `src/TextAid.Core/InvocationSession.cs`, `src/TextAid.App/`.
+Outcome: A New session is safe for manual input and cannot Replace into the source captured by the preceding session.
+
+## 2026-09-27 — LOT-005 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed the completed action workflow and visual corrections, then authorized LOT-005 closure. Codex recorded G-005-002 PASS and finalized TOTAL convergence.
+Affected artifacts: `Specs/005-declarative-actions/GATES-005.md`, `Specs/005-declarative-actions/CONVERGENCE-005.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-005 is Closed. Both active gates PASS; LOT-006 remains Planned.

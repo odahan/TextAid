@@ -9,13 +9,19 @@ if ((Get-Item -LiteralPath $publishDirectory).Attributes -band [IO.FileAttribute
     throw "Publish is a link; inspect it before publishing: $publishDirectory"
 }
 
-# The dedicated directory must contain only the final executable after each run.
+# Preserve initialized user action data from a prior local launch while rejecting every other unexpected item.
 $existingItems = @(Get-ChildItem -LiteralPath $publishDirectory -Force)
-if ($existingItems | Where-Object { $_.PSIsContainer -or ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) }) {
-    throw "Publish contains a directory or link; inspect it before publishing: $publishDirectory"
+$unexpectedItems = @($existingItems | Where-Object {
+    ($_.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+    ($_.PSIsContainer -and $_.Name -cne 'actions')
+})
+if ($unexpectedItems) {
+    throw "Publish contains an unexpected directory or link; inspect it before publishing: $publishDirectory"
 }
 foreach ($item in $existingItems) {
-    Remove-Item -LiteralPath $item.FullName -Force
+    if (-not $item.PSIsContainer) {
+        Remove-Item -LiteralPath $item.FullName -Force
+    }
 }
 
 $previousNuGetScratch = $env:NUGET_SCRATCH
@@ -37,8 +43,10 @@ finally {
 }
 
 $publishedItems = @(Get-ChildItem -LiteralPath $publishDirectory -Force)
-if ($publishedItems.Count -ne 1 -or $publishedItems[0].PSIsContainer -or $publishedItems[0].Name -cne 'TextAid.exe') {
-    throw "Expected only TextAid.exe in $publishDirectory."
+$executable = @($publishedItems | Where-Object { -not $_.PSIsContainer -and $_.Name -ceq 'TextAid.exe' })
+$unexpectedPublishedItems = @($publishedItems | Where-Object { ($_.PSIsContainer -and $_.Name -cne 'actions') -or (-not $_.PSIsContainer -and $_.Name -cne 'TextAid.exe') })
+if ($executable.Count -ne 1 -or $unexpectedPublishedItems) {
+    throw "Expected TextAid.exe and, only after a local launch, an actions directory in $publishDirectory."
 }
 
-Write-Output "Published: $($publishedItems[0].FullName)"
+Write-Output "Published: $($executable[0].FullName)"

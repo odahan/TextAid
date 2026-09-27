@@ -1,0 +1,1 @@
+{"id":"simplify","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Simplify the input text while preserving its meaning. Return only the simplified text.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}

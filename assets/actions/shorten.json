@@ -1,0 +1,1 @@
+{"id":"shorten","displayNameOverride":null,"isEnabled":true,"promptTemplate":"Shorten the input text while preserving its essential meaning. Return only the shortened text.","profileId":"local-default","temperatureOverride":null,"outputLanguageDefault":"Unchanged","askForUserInstructions":false,"isReserved":false}
