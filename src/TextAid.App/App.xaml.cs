@@ -13,6 +13,7 @@ namespace TextAid.App;
 /// <summary>Owns the resident tray lifecycle and one active invocation session.</summary>
 public partial class App : Application
 {
+    private const int DefaultActionOutputTokenBudget = 16_384;
     private KeyboardHook? hook;
     private TrayIcon? tray;
     private MainWindow? sessionWindow;
@@ -23,6 +24,7 @@ public partial class App : Application
     private Mutex? instanceMutex;
     private readonly ResultActions resultActions = new(new Win32ResultActions());
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
+    private readonly AiClientFactory chatClientFactory = new();
     private bool enabled = true;
     private bool capturing;
     private string? actionsDirectory;
@@ -142,7 +144,7 @@ public partial class App : Application
             sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, status, isFullLogActive, isUiTranslationRequired);
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
-            sessionWindow.Activate();
+            sessionWindow.ActivateForUserInput();
             if (shortcut == InvocationShortcut.Translate && !failed && !string.IsNullOrWhiteSpace(session.InputText)) StartTransformation(sessionWindow, session);
         }
         finally { capturing = false; }
@@ -173,17 +175,17 @@ public partial class App : Application
                 return;
             }
 
+            window.SetActiveConnection(resolution.Connection.Category);
             window.ShowTransforming(resolution.Status);
             debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
-            if (!resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
-                throw new NotSupportedException($"The {resolution.Connection.Provider} provider will be available in LOT-009.");
             TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
 
             if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
             string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
-            if (!session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
+            string outputLanguageCode = string.IsNullOrWhiteSpace(session.OutputLanguage) ? "Unchanged" : session.OutputLanguage;
+            if (!outputLanguageCode.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
             {
-                LanguageOption outputLanguage = LanguageCatalog.Supported.Single(option => option.Code.Equals(session.OutputLanguage, StringComparison.OrdinalIgnoreCase));
+                LanguageOption outputLanguage = LanguageCatalog.Supported.Single(option => option.Code.Equals(outputLanguageCode, StringComparison.OrdinalIgnoreCase));
                 instruction = $"{instruction}\n\nWrite the entire result in {outputLanguage.EnglishName} ({outputLanguage.Code}). Do not return the result in the source language unless it is {outputLanguage.EnglishName}.";
             }
             if (session.MarkdownOutputEnabled)
@@ -194,7 +196,11 @@ public partial class App : Application
                 instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
             debugLog.WriteFullText("transformation-input", inputText);
             debugLog.WriteFullText("transformation-prompt", instruction);
-            string output = await transformationService.TransformAsync(
+            var resolvedTransformationService = new MafTextTransformationService(
+                _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
+                resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
+                DefaultActionOutputTokenBudget);
+            string output = await resolvedTransformationService.TransformAsync(
                 new TextTransformationRequest(
                     inputText,
                     instruction,
@@ -217,12 +223,39 @@ public partial class App : Application
         catch (Exception exception)
         {
             debugLog.WriteException("transformation", exception);
+            System.ClientModel.ClientResultException? clientException = FindClientResultException(exception);
+            if (clientException is not null) debugLog.Write("external-provider-response", ("httpStatus", clientException.Status));
             UserFacingFailure failureKind = exception is InvalidOperationException invalid && invalid.Message.Contains("model", StringComparison.OrdinalIgnoreCase)
                 ? UserFacingFailure.Model
                 : UserFacingFailure.Provider;
-            string failure = await GetRecoveryMessageAsync(failureKind);
+            string failure = resolution.Connection?.Category == ConnectionCategory.External && failureKind != UserFacingFailure.Model
+                ? GetExternalProviderFailureMessage(exception)
+                : await GetRecoveryMessageAsync(failureKind);
             if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure, generation);
         }
+    }
+
+    /// <summary>Maps safe OpenAI-compatible HTTP status categories without exposing response text or credentials.</summary>
+    private string GetExternalProviderFailureMessage(Exception exception)
+    {
+        System.ClientModel.ClientResultException? clientException = FindClientResultException(exception);
+        return clientException?.Status switch
+        {
+            401 or 403 => (string)FindResource("ExternalAuthenticationFailure"),
+            404 => (string)FindResource("ExternalModelUnavailableFailure"),
+            429 => (string)FindResource("ExternalRateLimitFailure"),
+            400 or 422 => (string)FindResource("ExternalRequestRejectedFailure"),
+            _ => (string)FindResource("ExternalProviderRequestFailure")
+        };
+    }
+
+    private static System.ClientModel.ClientResultException? FindClientResultException(Exception exception)
+    {
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is System.ClientModel.ClientResultException clientException) return clientException;
+        }
+        return null;
     }
 
     /// <summary>Starts a user-requested transformation from the editable session input.</summary>
@@ -373,10 +406,7 @@ public partial class App : Application
     {
         if (settingsWindow is { IsVisible: true })
         {
-            settingsWindow.Activate();
-            settingsWindow.Topmost = true;
-            settingsWindow.Topmost = false;
-            settingsWindow.Focus();
+            settingsWindow.ActivateForUserInput();
             return;
         }
 
@@ -409,8 +439,7 @@ public partial class App : Application
     {
         if (aboutWindow is { IsVisible: true })
         {
-            aboutWindow.Activate();
-            aboutWindow.Focus();
+            aboutWindow.ActivateForUserInput();
             return;
         }
 
@@ -423,7 +452,7 @@ public partial class App : Application
 
     private void ShowActions()
     {
-        if (actionsWindow is { IsVisible: true }) { actionsWindow.Activate(); return; }
+        if (actionsWindow is { IsVisible: true }) { actionsWindow.ActivateForUserInput(); return; }
         actionsWindow = new ActionsWindow();
         actionsWindow.ActionsChanged += (_, _) =>
         {
@@ -433,6 +462,7 @@ public partial class App : Application
         };
         actionsWindow.Closed += (_, _) => actionsWindow = null;
         actionsWindow.Show();
+        actionsWindow.ActivateForUserInput();
     }
 
     protected override void OnExit(ExitEventArgs e)

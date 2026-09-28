@@ -220,6 +220,42 @@ public sealed class ConnectionsAndProfilesTests
     }
 
     [Fact]
+    public void Resolve_ExternalConfigurationUsingEnvironmentAuthentication_OffersUserControlledDowngrade()
+    {
+        ConfigurationSnapshot configuration = CreateConfiguration(
+            externalEndpoint: "https://example.test/v1",
+            externalModel: "remote-model",
+            externalAuthentication: AuthenticationKind.BearerFromEnvironment,
+            externalSecretReference: "deprecated-variable");
+
+        ProfileResolution result = new ProfileResolver(configuration, new MemorySecretVault()).Resolve("external-default");
+
+        Assert.Equal(ProfileResolutionKind.UserConfirmationRequired, result.Kind);
+        Assert.Contains("protected DPAPI credential", result.Status);
+    }
+
+    [Fact]
+    public void Resolve_OpenAiCompatibleConnectionOutsideExternalCategory_IsInvalid()
+    {
+        var connections = new[]
+        {
+            new ConnectionDefinition("ollama-local", ConnectionCategory.ThisDeviceOnly, "ollama", "http://127.0.0.1:11434", true, AuthenticationKind.None, null),
+            new ConnectionDefinition("incorrect-remote", ConnectionCategory.OnPremises, "openai-compatible", "https://example.test/v1", true, AuthenticationKind.None, null)
+        };
+        var profiles = new[]
+        {
+            new ModelProfile("local-default", "ollama-local", "local-model", 0.2f, TimeSpan.FromSeconds(30), new Dictionary<string, object?>()),
+            new ModelProfile("remote-default", "incorrect-remote", "remote-model", 0.2f, TimeSpan.FromSeconds(30), new Dictionary<string, object?>())
+        };
+        var configuration = new ConfigurationSnapshot(1, connections, profiles, "en", "fr", "Ctrl+C+C", "Ctrl+C+T");
+
+        ProfileResolution result = new ProfileResolver(configuration, new MemorySecretVault()).Resolve("remote-default");
+
+        Assert.Equal(ProfileResolutionKind.UserConfirmationRequired, result.Kind);
+        Assert.Contains("requires the External category", result.Status);
+    }
+
+    [Fact]
     public void OfferDowngradeAfterProviderFailure_RequiresUserConfirmation()
     {
         ConfigurationSnapshot configuration = CreateConfiguration(

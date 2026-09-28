@@ -161,7 +161,11 @@
                             <TextBlock Text="{DynamicResource EndpointLabel}" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding ExternalEndpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
                             <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
-                            <TextBox Text="{Binding ExternalModel, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="{DynamicResource LoadExternalModelsLabel}" Command="{Binding LoadExternalModelsCommand}" MinWidth="152" Margin="0,0,8,0"/>
+                                <ProgressBar Width="90" Height="4" VerticalAlignment="Center" IsIndeterminate="True" Visibility="{Binding IsLoadingExternalModels, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                            <ComboBox ItemsSource="{Binding ExternalModels}" SelectedItem="{Binding ExternalModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="OnExternalModelSelected" Margin="0,6,0,12" MinHeight="36" ToolTip="{DynamicResource ExternalModelsHelp}"/>
                             <TextBlock Text="{DynamicResource ApiKeyLabel}" FontWeight="SemiBold"/>
                             <PasswordBox Margin="0,6,0,0" PasswordChanged="OnExternalSecretChanged"/>
                         </StackPanel>
@@ -213,7 +217,7 @@
                             </ComboBox>
                             <CheckBox Content="{DynamicResource KeepEnglishUiLabel}" IsChecked="{Binding PreferEnglishUi}" Margin="0,0,0,12"/>
                             <TextBlock Text="{DynamicResource LocaleGenerationProfileLabel}" FontWeight="SemiBold"/>
-                            <ComboBox ItemsSource="{Binding ActiveLocalizationProfiles}" SelectedItem="{Binding SelectedLocalizationProfile}" Margin="0,6,0,2" MinHeight="36"/>
+                            <ComboBox ItemsSource="{Binding LocalizationProfiles}" SelectedItem="{Binding SelectedLocalizationProfile}" Margin="0,6,0,2" MinHeight="36"/>
                             <TextBlock Text="{DynamicResource LocaleGenerationProfileHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,0,0,8"/>
                             <Button Content="{DynamicResource GenerateUiTranslationLabel}" Command="{Binding GenerateUiTranslationCommand}" IsEnabled="{Binding IsGeneratingLocale, Converter={StaticResource InverseBooleanConverter}}" HorizontalAlignment="Left" MinWidth="180"/>
                             <ProgressBar Height="4" Margin="0,8,0,0" IsIndeterminate="True" Visibility="{Binding IsGeneratingLocale, Converter={StaticResource BooleanToVisibilityConverter}}"/>

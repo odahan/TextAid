@@ -7,6 +7,8 @@ namespace TextAid.Core;
 /// <summary>Creates the local configuration on first launch without persisting user text.</summary>
 public static class UserConfiguration
 {
+    /// <summary>Provides the prefilled endpoint for the standard OpenAI-compatible External connection.</summary>
+    public const string DefaultExternalEndpoint = "https://api.openai.com/v1";
     private static ConfigurationSnapshot? activeConfiguration;
     public static string EnsureCreated()
     {
@@ -28,7 +30,7 @@ public static class UserConfiguration
                 {
                     new { id = "ollama-local", category = "ThisDeviceOnly", provider = "ollama", endpoint = "http://127.0.0.1:11434", isEnabled = true, authentication = "None", secretReference = (string?)null },
                     new { id = "ollama-network", category = "OnPremises", provider = "ollama", endpoint = "", isEnabled = false, authentication = "None", secretReference = (string?)null },
-                    new { id = "openai-external", category = "External", provider = "openai-compatible", endpoint = "", isEnabled = false, authentication = "ApiKey", secretReference = "external-api-key" }
+                    new { id = "openai-external", category = "External", provider = "openai-compatible", endpoint = DefaultExternalEndpoint, isEnabled = false, authentication = "ApiKey", secretReference = "external-api-key" }
                 },
                 profiles = new object[]
                 {
@@ -234,7 +236,7 @@ public static class UserConfiguration
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
-    /// <summary>Saves optional On-premises and External endpoints while placing supplied secrets in the DPAPI vault.</summary>
+    /// <summary>Saves remote endpoints while placing supplied credentials in the per-user DPAPI vault.</summary>
     public static void SaveRemoteConnectionSettings(string networkEndpoint, string networkModel, string? networkSecret, string externalEndpoint, string externalModel, string? externalSecret)
     {
         ValidateOptionalEndpoint(networkEndpoint, ConnectionCategory.OnPremises);
@@ -243,6 +245,7 @@ public static class UserConfiguration
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
         JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
         JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
+        EnsureRemoteConnectionDefinitions(connections, profiles);
         SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", networkEndpoint, networkModel, networkSecret, "network-api-key");
         SaveRemoteConnection(connections, profiles, "openai-external", "external-default", externalEndpoint, externalModel, externalSecret, "external-api-key");
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
@@ -254,6 +257,8 @@ public static class UserConfiguration
         string path = EnsureCreated();
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
         JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
+        JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
+        EnsureRemoteConnectionDefinitions(connections, profiles);
         SetConnectionActivation(connections, "ollama-local", localEnabled);
         SetConnectionActivation(connections, "ollama-network", networkEnabled);
         SetConnectionActivation(connections, "openai-external", externalEnabled);
@@ -292,8 +297,6 @@ public static class UserConfiguration
         ConfigurationSnapshot configuration = LoadConfiguration();
         ModelProfile profile = configuration.Profiles.SingleOrDefault(candidate => candidate.Id.Equals(profileId, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException("Choose an available profile for catalog generation.");
-        ConnectionDefinition connection = configuration.Connections.Single(candidate => candidate.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase));
-        if (!connection.IsEnabled) throw new InvalidOperationException("Choose an active profile for catalog generation.");
         string path = EnsureCreated();
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
         root["preferEnglishUi"] = preferEnglishUi;
@@ -344,7 +347,22 @@ public static class UserConfiguration
         changed |= AddConnectionIfMissing(connections, "openai-external", "External", "openai-compatible", "", false, "ApiKey", "external-api-key");
         foreach (JsonObject connection in connections.OfType<JsonObject>())
         {
-            if (connection["isEnabled"] is null) { connection["isEnabled"] = connection["category"]?.GetValue<string>() == "ThisDeviceOnly"; changed = true; }
+            string connectionId = connection["id"]?.GetValue<string>() ?? string.Empty;
+            bool categoryWasMissing = connection["category"] is null;
+            if (categoryWasMissing)
+            {
+                connection["category"] = connectionId.Equals("ollama-local", StringComparison.OrdinalIgnoreCase)
+                    ? "ThisDeviceOnly"
+                    : "OnPremises";
+                changed = true;
+            }
+
+            bool isLocal = connection["category"]?.GetValue<string>() == "ThisDeviceOnly";
+            if (connection["isEnabled"] is null || (categoryWasMissing && isLocal))
+            {
+                connection["isEnabled"] = isLocal;
+                changed = true;
+            }
         }
         changed |= AddProfileIfMissing(profiles, "network-default", "ollama-network");
         changed |= AddProfileIfMissing(profiles, "external-default", "openai-external");
@@ -370,6 +388,15 @@ public static class UserConfiguration
         if (profiles.Any(item => item?["id"]?.GetValue<string>()?.Equals(id, StringComparison.OrdinalIgnoreCase) == true)) return false;
         profiles.Add(new JsonObject { ["id"] = id, ["connectionId"] = connectionId, ["model"] = "", ["temperature"] = 0.2, ["timeoutSeconds"] = 120, ["providerOptions"] = new JsonObject() });
         return true;
+    }
+
+    /// <summary>Adds the remote definitions required by Settings when an earlier local-only configuration is saved.</summary>
+    private static void EnsureRemoteConnectionDefinitions(JsonArray connections, JsonArray profiles)
+    {
+        AddConnectionIfMissing(connections, "ollama-network", "OnPremises", "ollama", "", false, "None", null);
+        AddConnectionIfMissing(connections, "openai-external", "External", "openai-compatible", DefaultExternalEndpoint, false, "ApiKey", "external-api-key");
+        AddProfileIfMissing(profiles, "network-default", "ollama-network");
+        AddProfileIfMissing(profiles, "external-default", "openai-external");
     }
 
     private static void SetConnectionActivation(JsonArray connections, string id, bool isEnabled)

@@ -14,9 +14,19 @@ public partial class ActionsWindow : Window
         viewModel.ActionsSaved += (_, _) => ActionsChanged?.Invoke(this, EventArgs.Empty);
         viewModel.DeleteConfirmationRequested += label => MessageBox.Show(this, string.Format(UiStrings.Get("DeleteActionConfirmation"), label), UiStrings.Get("ProductName"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
         DataContext = viewModel;
+        Loaded += (_, _) => ActivateForUserInput();
         SourceInitialized += (_, _) => WindowsShell.TryEnableDarkCaption(new WindowInteropHelper(this).Handle);
     }
 
     /// <summary>Refreshes action names after the active UI locale changes.</summary>
     public void RefreshLocalizedLabels() => ((ActionsViewModel)DataContext).RefreshLocalizedLabels();
+
+    /// <summary>Activates the action editor after an explicit tray-menu request.</summary>
+    public void ActivateForUserInput()
+    {
+        Activate();
+        WindowsShell.TryActivateWindow(new WindowInteropHelper(this).Handle);
+        Activate();
+        Focus();
+    }
 }

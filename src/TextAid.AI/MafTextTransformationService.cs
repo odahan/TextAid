@@ -10,6 +10,17 @@ namespace TextAid.AI;
 public sealed class MafTextTransformationService(Func<TextTransformationSettings, IChatClient> createChatClient)
     : ITextTransformationService
 {
+    private static readonly TimeSpan MinimumExternalTimeout = TimeSpan.FromMinutes(10);
+    private readonly bool isOllamaClient = true;
+    private readonly int? maxOutputTokens;
+
+    /// <summary>Creates the service for a provider whose MAF options are not Ollama-specific.</summary>
+    public MafTextTransformationService(Func<TextTransformationSettings, IChatClient> createChatClient, bool isOllamaClient, int? maxOutputTokens = null)
+        : this(createChatClient)
+    {
+        this.isOllamaClient = isOllamaClient;
+        this.maxOutputTokens = maxOutputTokens;
+    }
     /// <inheritdoc />
     public async Task<string> TransformAsync(TextTransformationRequest request, CancellationToken cancellationToken)
     {
@@ -19,21 +30,33 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
         if (!request.Settings.HasModel) throw new InvalidOperationException("No Ollama model is selected.");
         if (!Uri.TryCreate(request.Settings.Endpoint, UriKind.Absolute, out _)) throw new InvalidOperationException("The Ollama endpoint is invalid.");
 
-        using var timeoutSource = new CancellationTokenSource(request.Settings.Timeout);
+        TimeSpan effectiveTimeout = isOllamaClient
+            ? request.Settings.Timeout
+            : request.Settings.Timeout < MinimumExternalTimeout
+                ? MinimumExternalTimeout
+                : request.Settings.Timeout;
+        using var timeoutSource = new CancellationTokenSource(effectiveTimeout);
         using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
         using IChatClient chatClient = createChatClient(request.Settings);
 
-        var chatOptions = new ChatOptions
+        var chatOptions = new ChatOptions { Instructions = request.Instruction };
+        if (isOllamaClient)
         {
-            Instructions = request.Instruction,
-            Temperature = request.Settings.Temperature,
-            Reasoning = new ReasoningOptions
+            int outputBudget = maxOutputTokens is > 0
+                ? Math.Min(maxOutputTokens.Value, Math.Max(1024, request.Settings.ContextSize / 2))
+                : Math.Max(1024, request.Settings.ContextSize / 2);
+            chatOptions.MaxOutputTokens = outputBudget;
+            chatOptions.Temperature = request.Settings.Temperature;
+            chatOptions.Reasoning = new ReasoningOptions
             {
                 Effort = ToReasoningEffort(request.Settings.Thinking),
                 Output = ReasoningOutput.None
-            },
-            ToolMode = ChatToolMode.None
-        }.AddOllamaOption(OllamaOption.NumCtx, request.Settings.ContextSize);
+            };
+            chatOptions.ToolMode = ChatToolMode.None;
+            chatOptions.AddOllamaOption(OllamaOption.NumCtx, request.Settings.ContextSize);
+            chatOptions.AddOllamaOption(OllamaOption.MaxOutputTokens, outputBudget);
+        }
+        else if (maxOutputTokens is > 0) chatOptions.MaxOutputTokens = maxOutputTokens;
         var agent = new ChatClientAgent(
             chatClient,
             new ChatClientAgentOptions
@@ -41,7 +64,10 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
                 ChatOptions = chatOptions,
                 Name = "TextAidRewrite"
             });
-        AgentResponse response = await agent.RunAsync(request.InputText, cancellationToken: linkedSource.Token);
+        AgentResponse response = isOllamaClient
+            ? await agent.RunAsync(request.InputText, cancellationToken: linkedSource.Token)
+            : await agent.RunStreamingAsync(request.InputText, cancellationToken: linkedSource.Token)
+                .ToAgentResponseAsync(linkedSource.Token);
         string result = response.Text?.Trim() ?? string.Empty;
         if (string.IsNullOrWhiteSpace(result)) throw new InvalidOperationException("The local model returned an empty result.");
         return result;

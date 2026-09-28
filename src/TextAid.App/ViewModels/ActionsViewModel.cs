@@ -11,6 +11,7 @@ namespace TextAid.App.ViewModels;
 public sealed partial class ActionsViewModel : ObservableObject
 {
     private readonly ActionLoader loader;
+    private IReadOnlyList<LanguageOption> outputLanguages;
     [ObservableProperty] private EditableAction? selectedAction;
     [ObservableProperty] private string status = UiStrings.Get("ActionsEditorHelp");
     public event EventHandler? ActionsSaved;
@@ -22,18 +23,19 @@ public sealed partial class ActionsViewModel : ObservableObject
         loader = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), UserConfiguration.EnsureActionsDirectory());
         Actions = new ObservableCollection<EditableAction>(loader.LoadAll().Select(EditableAction.From));
         Profiles = configuration.Profiles.Select(profile => profile.Id).ToArray();
-        string unchanged = UiStrings.Get("UnchangedOutputLanguageLabel");
-        OutputLanguages = [new LanguageOption("Unchanged", unchanged, unchanged, unchanged), .. LanguageCatalog.Supported];
+        outputLanguages = CreateOutputLanguages();
         SelectedAction = Actions.FirstOrDefault();
     }
 
     public ObservableCollection<EditableAction> Actions { get; }
     public IReadOnlyList<string> Profiles { get; }
-    public IReadOnlyList<LanguageOption> OutputLanguages { get; }
+    public IReadOnlyList<LanguageOption> OutputLanguages => outputLanguages;
 
     /// <summary>Refreshes built-in action labels after the active UI locale changes.</summary>
     public void RefreshLocalizedLabels()
     {
+        outputLanguages = CreateOutputLanguages();
+        OnPropertyChanged(nameof(OutputLanguages));
         foreach (EditableAction action in Actions) action.RefreshLocalizedLabel();
     }
 
@@ -104,6 +106,12 @@ public sealed partial class ActionsViewModel : ObservableObject
     private void OpenActionsFolder()
     {
         Process.Start(new ProcessStartInfo { FileName = loader.DirectoryPath, UseShellExecute = true });
+    }
+
+    private static IReadOnlyList<LanguageOption> CreateOutputLanguages()
+    {
+        string unchanged = UiStrings.Get("UnchangedOutputLanguageLabel");
+        return [new LanguageOption("Unchanged", unchanged, unchanged, unchanged), .. LanguageCatalog.Supported];
     }
 }
 

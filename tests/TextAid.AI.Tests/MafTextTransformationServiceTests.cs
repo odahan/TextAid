@@ -92,6 +92,53 @@ public sealed class MafTextTransformationServiceTests
         await service.TransformAsync(request, CancellationToken.None);
     }
 
+    [Fact]
+    public async Task TransformAsync_ReservesHalfOfTheLocalContextForOutput()
+    {
+        var client = new FakeChatClient((_, options, _) =>
+        {
+            Assert.Equal(4096, options?.MaxOutputTokens);
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Rewritten text")));
+        });
+        var service = new MafTextTransformationService(_ => client, isOllamaClient: true, maxOutputTokens: 16_384);
+
+        await service.TransformAsync(CreateRequest(), CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task TransformAsync_UsesTheConfiguredOutputBudgetForAnExternalProvider()
+    {
+        var client = new FakeChatClient((_, options, _) =>
+        {
+            Assert.Equal(16_384, options?.MaxOutputTokens);
+            Assert.Null(options?.Temperature);
+            Assert.Null(options?.Reasoning);
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "Rewritten text")));
+        });
+        var service = new MafTextTransformationService(_ => client, isOllamaClient: false, maxOutputTokens: 16_384);
+
+        await service.TransformAsync(CreateRequest(), CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task TransformAsync_GivesExternalProvidersMoreThanTheLegacyTwoMinuteTimeout()
+    {
+        var client = new FakeChatClient(async (_, _, cancellationToken) =>
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(150), cancellationToken);
+            return new ChatResponse(new ChatMessage(ChatRole.Assistant, "Rewritten text"));
+        });
+        var service = new MafTextTransformationService(_ => client, isOllamaClient: false);
+        TextTransformationRequest request = CreateRequest() with
+        {
+            Settings = CreateRequest().Settings with { Timeout = TimeSpan.FromMilliseconds(25) }
+        };
+
+        string result = await service.TransformAsync(request, CancellationToken.None);
+
+        Assert.Equal("Rewritten text", result);
+    }
+
     private static MafTextTransformationService CreateService(FakeChatClient client) => new(_ => client);
 
     private static TextTransformationRequest CreateRequest() => new(
@@ -117,8 +164,9 @@ public sealed class MafTextTransformationServiceTests
             ChatOptions? options = null,
             [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await Task.CompletedTask;
-            yield break;
+            RequestCount++;
+            ChatResponse response = await respond(messages, options, cancellationToken);
+            yield return new ChatResponseUpdate(ChatRole.Assistant, response.Text);
         }
 
         public object? GetService(Type serviceType, object? serviceKey = null) => null;

@@ -674,3 +674,22 @@ LOT-011 owns the persisted Settings control, startup registration lifecycle, err
 
 Replaces: None
 Replaced by: None
+
+## D-036 — DPAPI-first OpenAI-compatible authentication
+
+Date: 2026-09-28T05:28:51+02:00
+Decided by: Olivier
+Source: Olivier's LOT-009 authentication clarification
+Related: D-023, R-005, R-028, LOT-009, REQ-009-002, REQ-009-004, G-009-001
+
+Decision:
+For TextAid's OpenAI-compatible External connection, the ordinary configuration path is a user-entered API key stored with Windows DPAPI under `DataProtectionScope.CurrentUser`. Settings presents a password-style API-key field; `config.json` retains only the opaque `external-api-key` reference. `BearerFromEnvironment` is not offered to users and does not satisfy a configured External connection. None remains available when an OpenAI-compatible endpoint deliberately requires no authentication.
+
+Reason:
+TextAid targets ordinary Windows users, who should not need to create or manage environment variables. The prior CurrentUser-DPAPI vault is already the active project secret boundary and protects the user-entered key more appropriately.
+
+Consequences:
+Replace the active LOT-009 environment-authentication wording while preserving it as superseded text. Update G-009-001's condition, restore External Settings API-key entry, use `DpapiSecretVault` for the external secret, and test protected-key success, missing-secret failure, and migration rejection of the superseded environment configuration. R-028 remains the governing rule; no change to closed LOT-008 evidence is required.
+
+Replaces: The environment-authentication portions of REQ-009-002 and REQ-009-004
+Replaced by: None

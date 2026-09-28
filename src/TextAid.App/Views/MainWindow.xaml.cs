@@ -29,11 +29,7 @@ public partial class MainWindow : Window
         Loaded += (_, _) =>
         {
             WindowsShell.CenterWindowOnSource(new WindowInteropHelper(this).Handle, session.SourceWindow, Width, Height);
-            Topmost = true;
-            Activate();
-            Focus();
-            InputEditor.Focus();
-            Topmost = false;
+            ActivateForUserInput();
         };
         PreviewKeyDown += (_, args) =>
         {
@@ -65,11 +61,24 @@ public partial class MainWindow : Window
     /// <summary>Updates the persistent UI-translation warning without closing the active session.</summary>
     public void SetUiTranslationRequired(bool required) => ((MainViewModel)DataContext).SetUiTranslationRequired(required);
 
+    /// <summary>Shows the deployment category of the provider selected for this invocation.</summary>
+    public void SetActiveConnection(ConnectionCategory category) => ((MainViewModel)DataContext).SetActiveConnection(category);
+
     /// <summary>Refreshes the action selector after a validated editor save.</summary>
     public void ReloadActions(IReadOnlyList<ActionDefinition> actions) => ((MainViewModel)DataContext).ReloadActions(actions);
 
     /// <summary>Refreshes action captions after the active UI locale changes.</summary>
     public void RefreshLocalizedActionLabels() => ((MainViewModel)DataContext).RefreshLocalizedActionLabels();
+
+    /// <summary>Activates this invocation window before placing keyboard input in its editor.</summary>
+    public void ActivateForUserInput()
+    {
+        Activate();
+        WindowsShell.TryActivateWindow(new WindowInteropHelper(this).Handle);
+        Activate();
+        InputEditor.Focus();
+        Keyboard.Focus(InputEditor);
+    }
 
     private void OnEditPreset(object sender, RoutedEventArgs e)
     {

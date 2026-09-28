@@ -24,6 +24,8 @@ public enum ConnectionTestState
 public sealed partial class SettingsViewModel : ObservableObject
 {
     private readonly OllamaChatClientFactory chatClientFactory = new();
+    private readonly OpenAiCompatibleChatClientFactory externalChatClientFactory = new();
+    private readonly AiClientFactory aiClientFactory = new();
 
     [ObservableProperty] private string endpoint = "http://127.0.0.1:11434";
     [ObservableProperty] private string? selectedModel;
@@ -37,7 +39,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string networkEndpoint = string.Empty;
     [ObservableProperty] private string networkModel = string.Empty;
     [ObservableProperty] private string networkSecret = string.Empty;
-    [ObservableProperty] private string externalEndpoint = string.Empty;
+    [ObservableProperty] private string externalEndpoint = UserConfiguration.DefaultExternalEndpoint;
     [ObservableProperty] private string externalModel = string.Empty;
     [ObservableProperty] private string externalSecret = string.Empty;
     [ObservableProperty] private bool localEnabled = true;
@@ -52,11 +54,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool preferEnglishUi;
     [ObservableProperty] private string selectedLocalizationProfile = "local-default";
     [ObservableProperty] private bool isGeneratingLocale;
+    [ObservableProperty] private bool isLoadingExternalModels;
 
     public ObservableCollection<string> Models { get; } = [];
+    public ObservableCollection<string> ExternalModels { get; } = [];
     public IReadOnlyList<LanguageOption> Languages => LanguageCatalog.Supported;
     public IReadOnlyList<ThinkingMode> ThinkingModes { get; } = Enum.GetValues<ThinkingMode>();
-    public ObservableCollection<string> ActiveLocalizationProfiles { get; } = [];
+    public ObservableCollection<string> LocalizationProfiles { get; } = [];
     public ObservableCollection<ProfileSummary> ProfileSummaries { get; } = [];
     public event EventHandler? Saved;
     /// <summary>Raised after a complete, valid UI translation catalog is saved locally.</summary>
@@ -85,15 +89,15 @@ public sealed partial class SettingsViewModel : ObservableObject
             TranslationShortcut = configuration.TranslationShortcut;
             LocalizationPreferences localization = UserConfiguration.LoadLocalizationPreferences();
             PreferEnglishUi = localization.PreferEnglishUi;
-            ActiveLocalizationProfiles.Clear();
+            LocalizationProfiles.Clear();
             ProfileSummaries.Clear();
-            foreach (ModelProfile profile in configuration.Profiles.Where(profile => configuration.Connections.Any(connection => connection.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase) && connection.IsEnabled))) ActiveLocalizationProfiles.Add(profile.Id);
+            foreach (ModelProfile profile in configuration.Profiles) LocalizationProfiles.Add(profile.Id);
             foreach (ModelProfile profile in configuration.Profiles)
             {
                 ConnectionDefinition connection = configuration.Connections.Single(candidate => candidate.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase));
                 ProfileSummaries.Add(new ProfileSummary(profile.Id, connection.Category.ToString(), string.IsNullOrWhiteSpace(profile.Model) ? UiStrings.Get("NoModelConfiguredLabel") : profile.Model, connection.IsEnabled));
             }
-            SelectedLocalizationProfile = ActiveLocalizationProfiles.Contains(localization.ProfileId) ? localization.ProfileId : ActiveLocalizationProfiles.FirstOrDefault() ?? "local-default";
+            SelectedLocalizationProfile = LocalizationProfiles.Contains(localization.ProfileId) ? localization.ProfileId : LocalizationProfiles.FirstOrDefault() ?? "local-default";
             ConnectionDefinition local = configuration.Connections.Single(connection => connection.Category == ConnectionCategory.ThisDeviceOnly);
             LocalEnabled = local.IsEnabled;
             ConnectionDefinition? network = configuration.Connections.FirstOrDefault(connection => connection.Category == ConnectionCategory.OnPremises);
@@ -103,8 +107,9 @@ public sealed partial class SettingsViewModel : ObservableObject
             NetworkEnabled = network?.IsEnabled ?? false;
             ConnectionDefinition? external = configuration.Connections.FirstOrDefault(connection => connection.Category == ConnectionCategory.External);
             ModelProfile? externalProfile = external is null ? null : configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId.Equals(external.Id, StringComparison.OrdinalIgnoreCase));
-            ExternalEndpoint = external?.Endpoint ?? string.Empty;
+            ExternalEndpoint = string.IsNullOrWhiteSpace(external?.Endpoint) ? UserConfiguration.DefaultExternalEndpoint : external.Endpoint;
             ExternalModel = externalProfile?.Model ?? string.Empty;
+            PopulateExternalModels(ExternalModel, []);
             ExternalEnabled = external?.IsEnabled ?? false;
             DebugEnabled = UserConfiguration.LoadDebugMode();
             FullDebugEnabled = UserConfiguration.LoadFullDebugMode();
@@ -133,6 +138,39 @@ public sealed partial class SettingsViewModel : ObservableObject
             Status = UiStrings.Get("OllamaUnreachableMessage");
         }
         finally { IsLoadingModels = false; }
+    }
+
+    /// <summary>Loads models exposed by the configured OpenAI-compatible endpoint.</summary>
+    [RelayCommand]
+    private async Task LoadExternalModelsAsync()
+    {
+        IsLoadingExternalModels = true;
+        try
+        {
+            var connection = new ConnectionDefinition("openai-external", ConnectionCategory.External, "openai-compatible", ExternalEndpoint.Trim(), true, AuthenticationKind.ApiKey, "external-api-key");
+            IReadOnlyList<string> models = await externalChatClientFactory.GetModelNamesAsync(connection, ExternalSecret, CancellationToken.None);
+            PopulateExternalModels(ExternalModel, models);
+            Status = models.Count == 0 ? UiStrings.Get("NoExternalModelsMessage") : UiStrings.Get("ChooseExternalModelMessage");
+        }
+        catch
+        {
+            ExternalModels.Clear();
+            Status = UiStrings.Get("ExternalModelsUnavailableMessage");
+        }
+        finally { IsLoadingExternalModels = false; }
+    }
+
+    /// <summary>Keeps a persisted External model visible while merging newly discovered model names.</summary>
+    private void PopulateExternalModels(string selectedModel, IEnumerable<string> discoveredModels)
+    {
+        ExternalModels.Clear();
+        if (!string.IsNullOrWhiteSpace(selectedModel)) ExternalModels.Add(selectedModel);
+        foreach (string model in discoveredModels)
+        {
+            if (!ExternalModels.Contains(model, StringComparer.OrdinalIgnoreCase)) ExternalModels.Add(model);
+        }
+        ExternalModel = selectedModel;
+        OnPropertyChanged(nameof(ExternalModel));
     }
 
     /// <summary>Reloads persisted configuration only after the existing state can remain safe on a failure.</summary>
@@ -177,8 +215,6 @@ public sealed partial class SettingsViewModel : ObservableObject
             if (!float.TryParse(TemperatureText, NumberStyles.Float, CultureInfo.InvariantCulture, out float temperature)) throw new ArgumentException("Temperature must be a number between 0 and 2.");
             if (!int.TryParse(ContextSizeText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contextSize)) throw new ArgumentException("Context size must be a whole number.");
             if (!int.TryParse(TimeoutSecondsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds)) throw new ArgumentException("Timeout must be a whole number of seconds.");
-            if (LocalEnabled && string.IsNullOrWhiteSpace(SelectedModel)) throw new ArgumentException("Choose a local Ollama model before saving an active local configuration.");
-
             UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
             UserConfiguration.SaveRemoteConnectionSettings(NetworkEndpoint, NetworkModel, NetworkSecret, ExternalEndpoint, ExternalModel, ExternalSecret);
             UserConfiguration.SaveConnectionActivation(LocalEnabled, NetworkEnabled, ExternalEnabled);
@@ -216,17 +252,27 @@ public sealed partial class SettingsViewModel : ObservableObject
         try
         {
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-            ModelProfile profile = configuration.Profiles.Single(candidate => candidate.Id.Equals(SelectedLocalizationProfile, StringComparison.OrdinalIgnoreCase));
-            ConnectionDefinition connection = configuration.Connections.Single(candidate => candidate.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase));
-            if (!connection.IsEnabled) throw new InvalidOperationException("Choose an active profile for catalog generation.");
-            if (!connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase)) throw new NotSupportedException("This active profile will support UI catalog generation when its provider is available.");
-            if (string.IsNullOrWhiteSpace(profile.Model)) throw new InvalidOperationException("Choose a model for the selected catalog-generation profile.");
+            var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
+            ProfileResolution resolution = resolver.Resolve(SelectedLocalizationProfile);
+            if (resolution.Kind is ProfileResolutionKind.Failed or ProfileResolutionKind.UserConfirmationRequired
+                || resolution.Profile is null
+                || resolution.Connection is null)
+            {
+                throw new InvalidOperationException(resolution.Status);
+            }
+
+            ModelProfile profile = resolution.Profile;
+            ConnectionDefinition connection = resolution.Connection;
+            SelectedLocalizationProfile = profile.Id;
 
             int contextSize = profile.ProviderOptions.TryGetValue("num_ctx", out object? context) && int.TryParse(context?.ToString(), out int parsed) ? parsed : 8192;
             var settings = new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, ThinkingMode.Off);
             string source = JsonSerializer.Serialize(EnglishStringCatalog.Values);
             const string instruction = "Translate every JSON string value into the requested UI language. Preserve every JSON key and every placeholder such as {name} exactly. Return one JSON object only, with no Markdown or commentary.";
-            var service = new MafTextTransformationService(new OllamaChatClientFactory().Create);
+            var service = new MafTextTransformationService(
+                _ => aiClientFactory.Create(connection, profile),
+                connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
+                maxOutputTokens: 16_384);
             string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", UserLanguage + ".json");
             var catalog = new LocalizationCatalog(EnglishStringCatalog.Values);
             var generator = new LocaleCatalogGenerator(catalog);
@@ -236,7 +282,13 @@ public sealed partial class SettingsViewModel : ObservableObject
                     new TextTransformationRequest($"Target BCP-47 language: {UserLanguage}\n\nSource catalog:\n{source}", instruction, settings),
                     cancellationToken)),
                 CancellationToken.None);
-            if (!generation.Succeeded) throw new InvalidOperationException("The generated translation did not preserve the complete TextAid UI catalog. English remains active.");
+            if (!generation.Succeeded)
+            {
+                Status = generation.Status == LocaleCatalogGenerationStatus.InvalidCatalog
+                    ? UiStrings.Get("LocaleCatalogInvalidMessage")
+                    : UiStrings.Get("LocaleProviderUnavailableMessage");
+                return;
+            }
             UiTranslationGenerated?.Invoke(this, EventArgs.Empty);
             Status = PreferEnglishUi
                 ? UiStrings.Get("LocaleCacheCreatedEnglishMessage")
@@ -244,7 +296,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         catch (Exception)
         {
-            Status = UiStrings.Get("LocaleGenerationFailureMessage");
+            Status = UiStrings.Get("LocaleProviderUnavailableMessage");
         }
         finally { IsGeneratingLocale = false; }
     }

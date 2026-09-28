@@ -43,6 +43,26 @@ public static class WindowsShell
         return immersiveDarkModeApplied || colorsApplied;
     }
 
+    /// <summary>Brings a TextAid window to the foreground after an explicit user invocation from the notification icon.</summary>
+    public static bool TryActivateWindow(nint window)
+    {
+        nint foregroundWindow = GetForegroundWindow();
+        uint foregroundThread = foregroundWindow == 0 ? 0 : GetWindowThreadProcessId(foregroundWindow, out _);
+        uint currentThread = GetCurrentThreadId();
+        bool attached = foregroundThread != 0 && foregroundThread != currentThread && AttachThreadInput(currentThread, foregroundThread, true);
+        try
+        {
+            BringWindowToTop(window);
+            SetForegroundWindow(window);
+            SetFocus(window);
+            return GetForegroundWindow() == window;
+        }
+        finally
+        {
+            if (attached) AttachThreadInput(currentThread, foregroundThread, false);
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct RECT { public int left, top, right, bottom; }
     [StructLayout(LayoutKind.Sequential)]
@@ -57,6 +77,23 @@ public static class WindowsShell
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetWindowPos(nint window, nint insertAfter, int x, int y, int width, int height, uint flags);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool BringWindowToTop(nint window);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetForegroundWindow(nint window);
+    [DllImport("user32.dll")]
+    private static extern nint SetFocus(nint window);
+    [DllImport("user32.dll")]
+    private static extern nint GetForegroundWindow();
+    [DllImport("user32.dll")]
+    private static extern uint GetWindowThreadProcessId(nint window, out uint processId);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, [MarshalAs(UnmanagedType.Bool)] bool attach);
+    [DllImport("kernel32.dll")]
+    private static extern uint GetCurrentThreadId();
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(nint window, int attribute, ref int value, int size);
 }

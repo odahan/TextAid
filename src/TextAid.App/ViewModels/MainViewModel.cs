@@ -14,6 +14,8 @@ public sealed class MainViewModel : ObservableObject
     private readonly Action processPreset;
     private bool isFullLogActive;
     private bool isUiTranslationRequired;
+    private ConnectionCategory? activeConnectionCategory;
+    private IReadOnlyList<LanguageOption> outputLanguages = CreateOutputLanguages();
 
     public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
@@ -39,15 +41,15 @@ public sealed class MainViewModel : ObservableObject
 
     public InvocationSession Session { get; }
     public ObservableCollection<ActionDefinition> Actions { get; }
-    public IReadOnlyList<LanguageOption> OutputLanguages { get; } =
-        [new LanguageOption("Unchanged", UiStrings.Get("UnchangedOutputLanguageLabel"), UiStrings.Get("UnchangedOutputLanguageLabel"), UiStrings.Get("UnchangedOutputLanguageLabel")), .. LanguageCatalog.Supported];
+    public IReadOnlyList<LanguageOption> OutputLanguages => outputLanguages;
     public string SelectedOutputLanguage
     {
         get => Session.OutputLanguage;
         set
         {
-            if (Session.OutputLanguage.Equals(value, StringComparison.OrdinalIgnoreCase)) return;
-            Session.OutputLanguage = value;
+            string selectedLanguage = string.IsNullOrWhiteSpace(value) ? "Unchanged" : value;
+            if (string.Equals(Session.OutputLanguage, selectedLanguage, StringComparison.OrdinalIgnoreCase)) return;
+            Session.OutputLanguage = selectedLanguage;
             OnPropertyChanged();
             if (!string.IsNullOrWhiteSpace(InputText) && SelectedAction is not null) processPreset();
         }
@@ -103,6 +105,33 @@ public sealed class MainViewModel : ObservableObject
         get => isUiTranslationRequired;
         private set => SetProperty(ref isUiTranslationRequired, value);
     }
+    /// <summary>Gets whether an invocation has resolved a connection category for the visible provider indicator.</summary>
+    public bool HasActiveConnection => activeConnectionCategory is not null;
+    /// <summary>Gets the deployment category actually selected for the current invocation.</summary>
+    public ConnectionCategory? ActiveConnectionCategory => activeConnectionCategory;
+    /// <summary>Gets a compact recognizable symbol for the selected deployment category.</summary>
+    public string ActiveConnectionSymbol => activeConnectionCategory switch
+    {
+        ConnectionCategory.ThisDeviceOnly => "⌂",
+        ConnectionCategory.OnPremises => "⌁",
+        ConnectionCategory.External => "◎",
+        _ => string.Empty
+    };
+    /// <summary>Gets accessible localized text describing the selected deployment category.</summary>
+    public string ActiveConnectionLabel => activeConnectionCategory switch
+    {
+        ConnectionCategory.ThisDeviceOnly => UiStrings.Get("ThisDeviceOnlyIndicatorLabel"),
+        ConnectionCategory.OnPremises => UiStrings.Get("OnPremisesIndicatorLabel"),
+        ConnectionCategory.External => UiStrings.Get("ExternalIndicatorLabel"),
+        _ => string.Empty
+    };
+    public string ActiveConnectionActivityLabel => activeConnectionCategory switch
+    {
+        ConnectionCategory.ThisDeviceOnly => UiStrings.Get("LocalModelWorkingLabel"),
+        ConnectionCategory.OnPremises => UiStrings.Get("NetworkModelWorkingLabel"),
+        ConnectionCategory.External => UiStrings.Get("ExternalModelWorkingLabel"),
+        _ => UiStrings.Get("TransformingLabel")
+    };
     public bool IsTransforming => Session.State == InvocationState.Transforming;
     public bool CanUseResult => Session.HasCurrentResult;
     public bool CanReplaceResult => CanUseResult && Session.SourceWindow != 0;
@@ -150,6 +179,8 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Notifies action captions after the active UI locale changes.</summary>
     public void RefreshLocalizedActionLabels()
     {
+        outputLanguages = CreateOutputLanguages();
+        OnPropertyChanged(nameof(OutputLanguages));
         foreach (ActionPreset preset in Presets) preset.RefreshLabel();
         OnPropertyChanged(nameof(Actions));
     }
@@ -238,7 +269,25 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Updates the locale-cache warning after a cache or UI-language preference changes.</summary>
     public void SetUiTranslationRequired(bool required) => IsUiTranslationRequired = required;
 
+    /// <summary>Shows the connection category that was actually selected for the current invocation.</summary>
+    public void SetActiveConnection(ConnectionCategory category)
+    {
+        if (activeConnectionCategory == category) return;
+        activeConnectionCategory = category;
+        OnPropertyChanged(nameof(HasActiveConnection));
+        OnPropertyChanged(nameof(ActiveConnectionCategory));
+        OnPropertyChanged(nameof(ActiveConnectionSymbol));
+        OnPropertyChanged(nameof(ActiveConnectionLabel));
+        OnPropertyChanged(nameof(ActiveConnectionActivityLabel));
+    }
+
     private ActionDefinition? FindAction(string? actionId) => Actions.FirstOrDefault(action => action.Id.Equals(actionId, StringComparison.OrdinalIgnoreCase));
+
+    private static IReadOnlyList<LanguageOption> CreateOutputLanguages()
+    {
+        string unchanged = UiStrings.Get("UnchangedOutputLanguageLabel");
+        return [new LanguageOption("Unchanged", unchanged, unchanged, unchanged), .. LanguageCatalog.Supported];
+    }
 }
 
 /// <summary>Represents one user-configurable one-click action preset.</summary>

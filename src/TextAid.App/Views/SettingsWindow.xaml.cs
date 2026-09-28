@@ -30,12 +30,27 @@ public partial class SettingsWindow : Window
             Close();
         };
         Loaded += async (_, _) => await viewModel.InitializeAsync();
+        Loaded += (_, _) => ActivateForUserInput();
         SourceInitialized += (_, _) => WindowsShell.TryEnableDarkCaption(new WindowInteropHelper(this).Handle);
+    }
+
+    /// <summary>Activates the settings window after an explicit tray-menu request.</summary>
+    public void ActivateForUserInput()
+    {
+        Activate();
+        WindowsShell.TryActivateWindow(new WindowInteropHelper(this).Handle);
+        Activate();
+        Focus();
     }
 
     private void OnNetworkSecretChanged(object sender, RoutedEventArgs e) => ((SettingsViewModel)DataContext).NetworkSecret = ((PasswordBox)sender).Password;
 
     private void OnExternalSecretChanged(object sender, RoutedEventArgs e) => ((SettingsViewModel)DataContext).ExternalSecret = ((PasswordBox)sender).Password;
+
+    private void OnExternalModelSelected(object sender, SelectionChangedEventArgs e)
+    {
+        if (((ComboBox)sender).SelectedItem is string model) ((SettingsViewModel)DataContext).ExternalModel = model;
+    }
 
     private void OnCancel(object sender, RoutedEventArgs e) => Close();
 

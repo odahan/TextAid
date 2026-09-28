@@ -17,7 +17,17 @@ public partial class AboutWindow : Window
         string? informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         string? version = informationalVersion?.Split('+', 2)[0] ?? assembly.GetName().Version?.ToString(3);
         DataContext = new { VersionText = $"Version {version}" };
+        Loaded += (_, _) => ActivateForUserInput();
         SourceInitialized += (_, _) => WindowsShell.TryEnableDarkCaption(new WindowInteropHelper(this).Handle);
+    }
+
+    /// <summary>Activates the About window after an explicit tray-menu request.</summary>
+    public void ActivateForUserInput()
+    {
+        Activate();
+        WindowsShell.TryActivateWindow(new WindowInteropHelper(this).Handle);
+        Activate();
+        Focus();
     }
 
     private void OnNavigate(object sender, RequestNavigateEventArgs args)

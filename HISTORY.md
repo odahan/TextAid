@@ -2,6 +2,20 @@
 
 This append-only record uses concise entries with timestamp, actor, operation, affected artifacts, and outcome. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-28 — LOT-009 closed
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed the final automated tests and External-provider walkthrough, including GPT 5.4 long-text Rewrite, UI translation generation, model selection, visible deployment indicator, and local-profile reactivation. Olivier explicitly authorized LOT-009 closure.
+Affected artifacts: `Specs/009-remote-provider/GATES-009.md`, `Specs/009-remote-provider/CONVERGENCE-009.md`, `STATUS.md`.
+Outcome: G-009-001 AUTO and G-009-002 HUMAN are PASS on V0.8 candidate commit `c61d5777f14a0baf5f841311ed8e5e79affc8cf1`, published as `TextAid.exe` SHA-256 `D257D36FDD8E199F14120E8708438907C1AA982D4D0A68BAC494256F226D5B0C`. LOT-009 is Closed with TOTAL convergence; LOT-010 is the next planned lot.
+
+## 2026-09-28 — LOT-008 closed and LOT-009 opened
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed complete validation of the V0.7 Settings, localization, direct-translation, result-safety, Copy, and shortcut walkthrough, explicitly authorized TOTAL closure of LOT-008, and authorized the opening of LOT-009 whose implementation work had already begun.
+Affected artifacts: `Specs/008-settings-localization/GATES-008.md`, `Specs/008-settings-localization/CONVERGENCE-008.md`, `STATUS.md`.
+Outcome: G-008-001 AUTO and G-008-002 HUMAN are PASS on V0.7 candidate commit `c61d5777f14a0baf5f841311ed8e5e79affc8cf1`, published as `TextAid.exe` SHA-256 `433F4AF73D29EF6E5B8C7E12AD3CE8746E12FB03BC6F50E2852AF0411774C310`. LOT-008 is Closed with TOTAL convergence; LOT-009 is In-progress.
+
 ## 2026-09-27 — Locale-cache correction foundation and planned language packs
 
 Actor: Olivier and Codex

@@ -136,12 +136,16 @@ public sealed class ProfileResolver
             return new ValidationResult(false, true, $"{Display(connection.Category)} configuration is not configured.");
         if (!Uri.TryCreate(connection.Endpoint, UriKind.Absolute, out Uri? endpoint) || endpoint.Scheme is not "http" and not "https")
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration has an invalid endpoint.");
+        if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase) && connection.Category != ConnectionCategory.External)
+            return new ValidationResult(false, false, "OpenAI-compatible configuration requires the External category.");
         if (connection.Category == ConnectionCategory.ThisDeviceOnly && !UserConfiguration.IsLoopbackHost(endpoint.Host))
             return new ValidationResult(false, false, "This device only configuration must use a loopback endpoint.");
         if (profile.Temperature is < 0 or > 2 || profile.Timeout <= TimeSpan.Zero)
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration has invalid generation settings.");
         if (connection.Authentication == AuthenticationKind.ApiKey && (string.IsNullOrWhiteSpace(connection.SecretReference) || !secretVault.TryGetSecret(connection.SecretReference, out _)))
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration requires a readable secret.");
+        if (connection.Authentication == AuthenticationKind.BearerFromEnvironment)
+            return new ValidationResult(false, false, $"{Display(connection.Category)} configuration must use a protected DPAPI credential.");
         return new ValidationResult(true, false, string.Empty);
     }
 

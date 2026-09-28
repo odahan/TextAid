@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using OpenAI;
 using TextAid.Core;
 
 namespace TextAid.AI;
@@ -13,11 +14,16 @@ public sealed class AiClientFactory
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(profile);
-        if (!connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
-            throw new NotSupportedException($"The '{connection.Provider}' provider is not available until LOT-009.");
+        if (connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+        {
+            int contextSize = profile.ProviderOptions.TryGetValue("num_ctx", out object? value) && int.TryParse(value?.ToString(), out int parsed) ? parsed : 8192;
+            ThinkingMode thinking = profile.ProviderOptions.TryGetValue("think", out object? think) && Enum.TryParse(think?.ToString(), true, out ThinkingMode parsedThinking) ? parsedThinking : ThinkingMode.Off;
+            return ollamaFactory.Create(new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, thinking));
+        }
 
-        int contextSize = profile.ProviderOptions.TryGetValue("num_ctx", out object? value) && int.TryParse(value?.ToString(), out int parsed) ? parsed : 8192;
-        ThinkingMode thinking = profile.ProviderOptions.TryGetValue("think", out object? think) && Enum.TryParse(think?.ToString(), true, out ThinkingMode parsedThinking) ? parsedThinking : ThinkingMode.Off;
-        return ollamaFactory.Create(new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, thinking));
+        if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase))
+            return new OpenAiCompatibleChatClientFactory().Create(connection, profile);
+
+        throw new NotSupportedException($"The '{connection.Provider}' provider is not supported.");
     }
 }

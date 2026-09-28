@@ -12,6 +12,9 @@ public enum ConnectionCategory
 public enum AuthenticationKind
 {
     None,
+    /// <summary>Represents an earlier environment-based configuration and is rejected for new External connections.</summary>
+    BearerFromEnvironment,
+    /// <summary>Retains the DPAPI-backed credential option introduced for existing user configurations.</summary>
     ApiKey
 }
 

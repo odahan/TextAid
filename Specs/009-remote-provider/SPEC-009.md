@@ -31,9 +31,13 @@ Source: `docs/TextAid specification.md`, sections 4–6, 47, 80.
 
 ### REQ-009-002 — Authentication
 
-Support None and BearerFromEnvironment, resolving the named environment variable at use time. Do not store an API key in clear text in config.json; Windows Credential Manager is outside V1.
+Support None and a user-entered API key protected with Windows DPAPI under `DataProtectionScope.CurrentUser`. Store only an opaque secret reference in `config.json`; do not ask ordinary users to create environment variables. A missing or unreadable protected secret invalidates the configured connection and follows the explicit R-027 downgrade path.
 
-Source: `docs/TextAid specification.md`, sections 48, 80.
+Source: D-036, R-028; retained source sections 48, 80.
+
+#### Superseded requirement text — 2026-09-28 by D-036
+
+Support None and BearerFromEnvironment, resolving the named environment variable at use time. Do not store an API key in clear text in config.json; Windows Credential Manager is outside V1.
 
 ### REQ-009-003 — External mode requirement
 
@@ -43,9 +47,13 @@ Source: D-010, R-005; retained source sections 4, 47–48, 80.
 
 ### REQ-009-004 — OpenAI-compatible connection
 
-Implement an explicitly configured OpenAI-compatible connection through IChatClient and the existing MAF path. Its endpoint, model, and named Bearer environment variable are configuration values; an action may select its ModelProfile through `profileId`. The remote profile must be visible to the user and must never be chosen as an implicit fallback.
+Implement an explicitly configured OpenAI-compatible connection through IChatClient and the existing MAF path. Its endpoint, model, and DPAPI-protected API-key reference are configuration values; an action may select its ModelProfile through `profileId`. The remote profile must be visible to the user and must never be chosen as an implicit fallback.
 
-Source: D-009, R-019.
+Source: D-009, D-036, R-028.
+
+#### Superseded requirement text — 2026-09-28 by D-036
+
+Implement an explicitly configured OpenAI-compatible connection through IChatClient and the existing MAF path. Its endpoint, model, and named Bearer environment variable are configuration values; an action may select its ModelProfile through `profileId`. The remote profile must be visible to the user and must never be chosen as an implicit fallback.
 
 ## Important cases
 

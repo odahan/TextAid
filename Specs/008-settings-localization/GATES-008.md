@@ -2,12 +2,12 @@
 
 > Before working on this lot, read the repository root README.md.
 
-All gates below are active and unevaluated. Identify each evaluated result precisely. Preserve prior evaluations in each gate's `Test history` before reevaluation.
+Both gates below are active and PASS. Identify each evaluated result precisely. Preserve prior evaluations in each gate's `Test history` before reevaluation.
 
 ## G-008-001 — Localization tests
 
 Type: AUTO
-Status: TO TEST
+Status: PASS
 Defined at: 2026-09-25T23:53:23
 
 Condition:
@@ -16,10 +16,10 @@ Tests cover complete, missing/extra-key, invalid JSON, placeholder loss, unavail
 Method:
 Run dotnet test -m:1 for Core, AI, and Windows keyboard tests; use fake IChatClient results for deterministic routing and supersession cases.
 
-Tested at: —
-Evaluated result: —
-Result: —
-Evidence: —
+Tested at: 2026-09-28T05:15:30+02:00
+Evaluated result: V0.7 candidate, commit `c61d5777f14a0baf5f841311ed8e5e79affc8cf1`, published as `TextAid.exe` SHA-256 `433F4AF73D29EF6E5B8C7E12AD3CE8746E12FB03BC6F50E2852AF0411774C310`.
+Result: PASS
+Evidence: The recorded deterministic suites passed: Core 59/59, AI 6/6, and Windows 16/16. The English source catalog and `Strings.xaml` key sets were compared exactly (158/158).
 
 ### Test history
 
@@ -28,7 +28,7 @@ Evidence: —
 ## G-008-002 — Settings and locale walkthrough
 
 Type: HUMAN
-Status: TO TEST
+Status: PASS
 Defined at: 2026-09-25T23:53:23
 
 Condition:
@@ -37,11 +37,11 @@ The six Settings sections work in the dark theme, changes apply safely, progress
 Method:
 Exercise Settings and language switching on Windows.
 
-Validated at: —
-Validated by: —
-Evaluated result: —
-Comment: —
+Validated at: 2026-09-28T05:28:51+02:00
+Validated by: Olivier
+Evaluated result: V0.7 candidate, commit `c61d5777f14a0baf5f841311ed8e5e79affc8cf1`, published as `TextAid.exe` SHA-256 `433F4AF73D29EF6E5B8C7E12AD3CE8746E12FB03BC6F50E2852AF0411774C310`.
+Comment: Olivier confirmed complete validation of the Settings, localization, quick-translation, latest-result, Copy, and shortcut scenarios specified by this gate, and authorized LOT-008 closure.
 
 ### Test history
 
-No evaluations yet.
+No prior evaluation.

@@ -30,6 +30,22 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="ConnectionIndicatorDot" TargetType="Ellipse">
+            <Setter Property="Width" Value="9"/>
+            <Setter Property="Height" Value="9"/>
+            <Setter Property="Fill" Value="{DynamicResource ForegroundMutedBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ActiveConnectionCategory}" Value="ThisDeviceOnly">
+                    <Setter Property="Fill" Value="{DynamicResource SuccessBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ActiveConnectionCategory}" Value="OnPremises">
+                    <Setter Property="Fill" Value="{DynamicResource WarningBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ActiveConnectionCategory}" Value="External">
+                    <Setter Property="Fill" Value="{DynamicResource ErrorBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="12">
         <Grid>
@@ -47,7 +63,15 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="{DynamicResource MainWindowHeading}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource AccentPressedBrush}"/>
+                <StackPanel Grid.ColumnSpan="2" HorizontalAlignment="Center" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{DynamicResource MainWindowHeading}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AccentPressedBrush}"/>
+                    <Border Visibility="{Binding HasActiveConnection, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding ActiveConnectionLabel}" Margin="10,0,0,0" Padding="5,2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="9">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Style="{StaticResource ConnectionIndicatorDot}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding ActiveConnectionSymbol}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
                 <Image Grid.Column="1" Source="pack://application:,,,/TextAid;component/Assets/Logo-final.png" Height="80" HorizontalAlignment="Right" Stretch="Uniform" Margin="0,-16,0,0"/>
                 <Button Grid.Column="0" Content="☰" Click="OnShowApplicationMenu" ToolTip="{DynamicResource ApplicationMenuToolTip}" Width="42" Padding="0" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
             </Grid>
@@ -121,7 +145,7 @@
         <StackPanel Grid.Row="5" Margin="0,14,0,0">
             <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding IsTransforming, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <ProgressBar Width="180" Height="5" Margin="0,7,10,0" IsIndeterminate="True"/>
-                <TextBlock Text="{DynamicResource TransformingLabel}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding ActiveConnectionActivityLabel}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
             </StackPanel>
             <TextBlock MinHeight="22" Text="{Binding Status}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap"/>
         </StackPanel>
