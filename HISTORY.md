@@ -2,6 +2,83 @@
 
 This append-only record uses concise entries with timestamp, actor, operation, affected artifacts, and outcome. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-28 — LOT-010 closed with accepted deferred compatibility checks
+
+Actor: Olivier and Codex
+Operation: Olivier accepted the deferred VS Code and DPI/multi-monitor checks as N/A for the identified V0.9 candidate and explicitly authorized LOT-010 closure. Codex recorded D-041, finalized the convergence, and retained the deferred work as residual.
+Affected artifacts: `LEDGER.md`, `Specs/010-hardening/GATES-010.md`, `Specs/010-hardening/FINDINGS-010.md`, `Specs/010-hardening/CONVERGENCE-010.md`, and `STATUS.md`.
+Outcome: G-010-001 and G-010-003 are PASS; G-010-002 is N/A under D-041. LOT-010 closes with PARTIAL convergence on published executable SHA-256 `1FBB9C060A723212EDD40DE9A7D5DDA833225A968BAFA1B419DEA8AA3FB025BB`.
+
+## 2026-09-28 — LOT-010 core human validation completed
+
+Actor: Olivier
+Operation: Validated the corrected local-model, locale, neutral-language, leading-emoji, invocation, translation, Replace/Copy/Cancel, and privacy/deployment-boundary paths on the published V0.9 candidate.
+Affected artifacts: `Specs/010-hardening/GATES-010.md`.
+Outcome: G-010-003 is PASS. G-010-002 retains the partial evidence but remains TO TEST for the unrecorded application and display matrix.
+
+## 2026-09-28 — LOT-010 DPI and multi-monitor validation deferred
+
+Actor: Olivier
+Operation: Deferred the 100/125/150-percent DPI and multi-monitor portion of the V0.9 compatibility matrix because suitable displays are not currently available.
+Affected artifacts: `Specs/010-hardening/GATES-010.md`.
+Outcome: The deferred display checks remain visible and are not represented as a passing result; the application-specific compatibility cases also remain to be recorded.
+
+## 2026-09-28 — LOT-010 application compatibility mostly validated
+
+Actor: Olivier
+Operation: Confirmed successful application-matrix validation in Visual Studio, Chromium, Word, and Outlook; deferred the VS Code check.
+Affected artifacts: `Specs/010-hardening/GATES-010.md`.
+Outcome: The application evidence is complete except for VS Code. Along with the deferred display checks, it keeps G-010-002 at TO TEST pending a human decision or later retest.
+
+## 2026-09-28 — LOT-010 final automated candidate prepared
+
+Actor: Codex
+Operation: Built, tested, and published the current LOT-010 candidate after the final Humanize prompt adjustment. Rechecked the distributed action directive and the allowed publish-directory contents.
+Affected artifacts: `Specs/010-hardening/GATES-010.md` and `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: G-010-001 is PASS on executable SHA-256 `1FBB9C060A723212EDD40DE9A7D5DDA833225A968BAFA1B419DEA8AA3FB025BB`, with 92 non-integration tests passing and 0 build warnings/errors. G-010-002 and G-010-003 remain human validation gates.
+
+## 2026-09-28 — LOT-010 Humanize prompt tuned for local generation
+
+Actor: Olivier and Codex
+Operation: Olivier tested the first `Humanize` action with qwen3.5:9b. The model normalized punctuation and preserved direct factual prose, but retained the intended targets by substituting a balanced “à la fois…” construction and keeping hype or adjective clusters. Codex made the prompt concrete about removing rather than rephrasing these patterns, and reduced its temperature from 0.35 to 0.2 for more stable local execution.
+Affected artifacts: `assets/actions/humanize.json`, the initialized distributable `actions/humanize.json`, `tests/TextAid.Core.Tests/DeclarativeActionsTests.cs`, and LOT-010 traceability records.
+Outcome: The action remains bounded, fact-preserving, editable, and not framed as detector evasion. A focused local retest of the three original samples is pending.
+
+## 2026-09-28 — LOT-010 Humanize directive made mandatory for local tests
+
+Actor: Olivier and Codex
+Operation: The first two qwen3.5:9b follow-up samples were returned unchanged despite containing the targeted patterns. Olivier requested English examples. Codex replaced the optional phrasing with a mandatory rewrite directive and short English examples for contrast, hype, and adjective clusters.
+Affected artifacts: `assets/actions/humanize.json`, the initialized distributable `actions/humanize.json`, `tests/TextAid.Core.Tests/DeclarativeActionsTests.cs`, and LOT-010 traceability records.
+Outcome: The action now distinguishes an already concise factual input from an input that contains a target pattern, which must be changed. A focused local retest is pending.
+
+## 2026-09-28 — LOT-010 opened; local-model warm-up feedback
+
+Actor: Olivier and Codex
+Operation: Olivier opened LOT-010 and added a narrow resilience requirement for local-model cold starts. TextAid now asks OllamaSharp whether the selected This device only model is loaded. If it is not, the existing indeterminate session progress bar remains visible while an empty Ollama generation loads the model with the configured context length; the session states, “Preparing the local model. This can take a moment…”. Loaded models and On-premises or External connections bypass this phase. Warm-up errors remain on the existing provider-failure path.
+Affected artifacts: `STATUS.md`, `Specs/010-hardening/`, `src/TextAid.AI/OllamaChatClientFactory.cs`, `src/TextAid.App/App.xaml.cs`, and the English source catalog.
+Outcome: The working-tree candidate based on `44d7b65` built with 0 warnings and 0 errors. All 92 non-integration tests passed: 12 AI, 63 Core, and 17 Windows-platform. G-010-001 is PASS; the cold-start UI walkthrough remains part of the human Windows compatibility matrix.
+
+## 2026-09-28 — LOT-010 in-place locale and emoji regressions
+
+Actor: Olivier and Codex
+Operation: Olivier validated the local-model cold-start path by stopping Ollama; the next transformation resumed almost immediately. He also reported an unselected neutral output-language item in a still-open French-localized session and omission of a leading emoji by local Rewrite and Correct. Codex refreshed the selected output-language binding after rebuilding localized language options and made every transformation explicitly preserve input emojis, including boundary emojis, unless a declarative action or supplementary user instructions explicitly require otherwise.
+Affected artifacts: `Specs/010-hardening/FINDINGS-010.md`, `Specs/010-hardening/GATES-010.md`, `src/TextAid.App/ViewModels/MainViewModel.cs`, and `src/TextAid.App/App.xaml.cs`.
+Outcome: F-010-001 has partial human PASS evidence. F-010-002 and F-010-003 are implemented and await their focused Windows retests. The working-tree candidate based on `44d7b65` built with 0 warnings and 0 errors; its 92 non-integration tests passed.
+
+## 2026-09-28 — LOT-010 concise emoji instruction
+
+Actor: Olivier and Codex
+Operation: Olivier reported that the local model returned an action-style prompt instead of a transformed result after the first long emoji-preservation instruction. Codex retained the default preservation behavior but reduced the instruction to a short, priority-aware sentence.
+Affected artifacts: `Specs/010-hardening/FINDINGS-010.md`, `src/TextAid.App/App.xaml.cs`.
+Outcome: The source text remains a distinct MAF user message; the concise wording avoids conflating the default fidelity rule with the action request. Focused local Rewrite and Correct validation is pending.
+
+## 2026-09-28 — LOT-010 unchanged-language preservation
+
+Actor: Olivier and Codex
+Operation: Olivier reported that a French Rewrite with `Inchangée` selected returned English text. Codex added an explicit no-translation instruction for the neutral output-language choice; selected output languages retain their target-language instruction. After Olivier observed that the generic wording was still insufficient specifically for Rewrite, the neutral route was refined to name a confidently detected supported source language explicitly.
+Affected artifacts: `Specs/010-hardening/FINDINGS-010.md`, `src/TextAid.App/App.xaml.cs`.
+Outcome: The selection's semantics are now enforced at the model boundary. Focused French Rewrite validation is pending.
+
 ## 2026-09-28 — LOT-009 closed
 
 Actor: Olivier and Codex

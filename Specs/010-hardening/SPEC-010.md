@@ -15,7 +15,7 @@ Source milestone: `docs/TextAid specification.md`, section 81; source-to-lot map
 
 ## In scope
 
-Depends on LOT-009; no new feature wave.
+Depends on LOT-009. The scope is limited to validation and narrowly targeted resilience or compatibility corrections discovered while exercising the matrix.
 
 ## Out of scope
 
@@ -58,6 +58,24 @@ Source: `docs/TextAid specification.md`, sections 9, 81, 90.
 Exercise both configured invocation paths, including default `Ctrl+C+C` action choice and default `Ctrl+C+T` immediate translation, across the compatibility matrix. Cover both preferred-language directions, a third or uncertain source language, manual destination change, pending and failed translations, stale completion after a destination change, Replace safety, Copy without source modification, shortcut reassignment, persistence, and internally conflicting bindings.
 
 Source: D-004, D-005, D-006, R-015, R-017, R-018; Olivier's later invocation and result-action decisions.
+
+### REQ-010-007 — Local-model warm-up feedback
+
+Before a This device only Ollama transformation, check through OllamaSharp whether the selected model is already loaded. When it is not loaded, load it before the transformation while the existing session progress indicator remains visible and the user sees a clear localized message that the local model is being prepared. Do not show this preparation state for a model already loaded or for an On-premises or External connection. A warm-up failure follows the existing provider-failure flow; it must not leave the session appearing blocked.
+
+Source: Olivier's LOT-010 startup instruction, 2026-09-28.
+
+### REQ-010-008 — Built-in Synonymes action
+
+Add Olivier's validated `Synonymes` action to the embedded base action catalog with its current declarative prompt, local-default profile, 0.2 temperature, Unchanged output-language default, and ordinary editable-action status. It must be initialized only when missing, so an existing user action of the same identity is retained.
+
+Source: D-037.
+
+### REQ-010-009 — Built-in Humanize action
+
+Add an editable `Humanize` base action that produces a more direct, natural revision while preserving factual content, names, numbers, citations, links, language, and intended voice. Its prompt removes selected formulaic AI-writing patterns and ordinary punctuation excess without claiming to evade detection, inventing details, or producing explanatory metadata. Initialize it only when missing.
+
+Source: D-038, D-039, D-040; Wikipedia: Signs of AI writing, consulted 2026-09-28.
 
 ## Important cases
 

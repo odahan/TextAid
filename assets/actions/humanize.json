@@ -1,0 +1,12 @@
+{
+  "id": "humanize",
+  "displayNameOverride": null,
+  "isEnabled": true,
+  "promptTemplate": "Rewrite the input in direct, natural prose. Preserve every fact, name, number, citation, link, language, and intended voice. Do not invent details, sources, opinions, or personal experience. IMPORTANT: if a target pattern below is present, you MUST rewrite the affected sentence. Never return it unchanged just to preserve its wording. Remove the pattern instead of replacing it with a synonym or another balanced formula. Examples: 'This is not only X but also Y' becomes a direct statement of the concrete result. 'A revolutionary solution that marks a pivotal moment' loses unsupported hype and keeps only the verifiable claim. 'Simple, robust, and comprehensive' or 'clear, fast, and elegant' keeps only adjectives that are necessary and supported, otherwise state the factual function. Also remove vague importance claims, promotional adjectives, vague attribution, repetitive transitions, artificial three-part lists, and unnecessary summaries. Prefer plain, concrete wording. Replace em dashes and semicolons with ordinary punctuation. Use straight quotes in plain-text output instead of typographic or French guillemets. Keep emojis unchanged unless explicitly instructed otherwise. If the input is already concise and factual and has no target pattern, make only necessary changes. Return only the revised text.",
+  "profileId": "local-default",
+  "temperatureOverride": 0.2,
+  "outputLanguageDefault": "Unchanged",
+  "askForUserInstructions": false,
+  "isReserved": false,
+  "userInstructionsQuestion": null
+}

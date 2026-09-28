@@ -181,6 +181,7 @@ public sealed class MainViewModel : ObservableObject
     {
         outputLanguages = CreateOutputLanguages();
         OnPropertyChanged(nameof(OutputLanguages));
+        OnPropertyChanged(nameof(SelectedOutputLanguage));
         foreach (ActionPreset preset in Presets) preset.RefreshLabel();
         OnPropertyChanged(nameof(Actions));
     }

@@ -1,0 +1,12 @@
+{
+  "id": "Synonymes",
+  "displayNameOverride": null,
+  "isEnabled": true,
+  "promptTemplate": "Make a bullet list of 10 synonym of the first word or verb of the following text. :\n\n{{text}}",
+  "profileId": "local-default",
+  "temperatureOverride": 0.2,
+  "outputLanguageDefault": "Unchanged",
+  "askForUserInstructions": false,
+  "isReserved": false,
+  "userInstructionsQuestion": null
+}

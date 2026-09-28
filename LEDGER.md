@@ -693,3 +693,98 @@ Replace the active LOT-009 environment-authentication wording while preserving i
 
 Replaces: The environment-authentication portions of REQ-009-002 and REQ-009-004
 Replaced by: None
+
+## D-037 — Include the validated Synonymes action in the base catalog
+
+Date: 2026-09-28T19:55:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-010 instruction
+Related: R-022, R-023, R-031, LOT-010
+
+Decision:
+Add the current validated `Synonymes` declarative action to TextAid's embedded base action catalog. It keeps the existing identity, model profile, generation settings, prompt, and ordinary editable status. Initialization creates it only if absent, preserving any existing file with the same identity.
+
+Reason:
+The useful tested action should be available on a new installation without manual recreation, while existing user customization remains intact.
+
+Consequences:
+LOT-010 adds REQ-010-008, embeds the action, includes it in catalog validation, and adds its English source-catalog action label. A changed English catalog invalidates older locale caches under R-031 until regenerated or replaced.
+
+Replaces: None
+Replaced by: None
+
+## D-038 — Add a bounded Humanize base action
+
+Date: 2026-09-28T20:05:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-010 instruction, informed by Wikipedia: Signs of AI writing
+Related: R-022, R-023, R-031, LOT-010
+
+Decision:
+Add an ordinary editable `Humanize` base action. It is a bounded editorial revision that removes selected formulaic AI-writing patterns while preserving facts, original language, intended voice, names, numbers, citations, and links. It must not claim to evade detectors, invent details or personal experience, or return commentary about its changes.
+
+Reason:
+TextAid should offer a practical, user-controllable mini humanizer without converting it into a separate skill, detection workflow, or autonomous editing system.
+
+Consequences:
+LOT-010 adds REQ-010-009, embeds `humanize.json`, initializes it only if missing, and adds its English source-catalog label. The catalog change invalidates prior locale caches under R-031 until regeneration or replacement.
+
+Replaces: None
+Replaced by: None
+
+## D-039 — Optimize the Humanize action for local generation
+
+Date: 2026-09-28T20:25:00+02:00
+Decided by: Olivier
+Source: Olivier's local qwen3.5:9b test feedback
+Related: D-038, R-022, R-023, LOT-010
+
+Decision:
+Strengthen the editable `Humanize` action with concrete removal rules suitable for a capable but non-frontier local model, and set its temperature to 0.2. The prompt must direct the model to remove rhetorical patterns rather than substitute an equivalent formulation, including balanced contrast patterns such as “à la fois…”, unsupported hype, and adjective clusters. Its factual-preservation and bounded-editorial limits remain unchanged.
+
+Reason:
+The first local results correctly normalized punctuation but retained or merely restated several targeted patterns. A more explicit, lower-variance instruction is more reliable for the local model in use.
+
+Consequences:
+The embedded action and the already initialized distributable action are updated together. The action remains ordinary and editable; it neither claims detector evasion nor expands into a detection or autonomous editing feature.
+
+Replaces: None
+Replaced by: None
+
+## D-040 — Make local Humanize target-pattern rewrites mandatory
+
+Date: 2026-09-28T20:40:00+02:00
+Decided by: Olivier
+Source: Olivier's qwen3.5:9b follow-up test and English-example instruction
+Related: D-038, D-039, R-022, R-023, LOT-010
+
+Decision:
+When a targeted pattern is present, the local `Humanize` prompt must require rewriting its affected sentence and must forbid returning it unchanged merely to preserve source wording. Use short English examples for the contrast, unsupported-hype, and adjective-cluster rules. An input without a target pattern remains eligible for minimal change.
+
+Reason:
+The strengthened initial prompt still allowed the local model to return targeted French source text unchanged. English examples and an explicit mandatory instruction reduce ambiguity for the locally executed model.
+
+Consequences:
+The embedded and already initialized action are updated together, and catalog validation checks the mandatory directive. The action's preservation guarantees and bounded editorial purpose remain unchanged.
+
+Replaces: None
+Replaced by: None
+
+## D-041 — Accept deferred LOT-010 compatibility checks as N/A for closure
+
+Date: 2026-09-28T20:39:17+02:00
+Decided by: Olivier
+Source: Olivier's LOT-010 closure authorization
+Related: R-009, R-012, LOT-010, G-010-002
+
+Decision:
+For the published V0.9 candidate SHA-256 `1FBB9C060A723212EDD40DE9A7D5DDA833225A968BAFA1B419DEA8AA3FB025BB`, accept the unperformed Visual Studio Code and 100/125/150-percent DPI/multi-monitor checks as N/A for LOT-010 closure. Close LOT-010 with a PARTIAL convergence. The checks are deferred rather than represented as passing and must remain visible for a later compatibility pass.
+
+Reason:
+Suitable DPI/multi-monitor displays are not currently available, and Olivier deferred the VS Code check. The remaining application matrix, the core user journeys, security and deployment boundaries, automated regression, and the published candidate have been validated.
+
+Consequences:
+G-010-002 becomes N/A only under these stated conditions. LOT-010 can close without concealing the deferred checks. A later lot or compatibility pass must reintroduce them as actual tests before claiming their results.
+
+Replaces: None
+Replaced by: None

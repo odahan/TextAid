@@ -24,6 +24,7 @@ public partial class App : Application
     private Mutex? instanceMutex;
     private readonly ResultActions resultActions = new(new Win32ResultActions());
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
+    private readonly OllamaChatClientFactory ollamaChatClientFactory = new();
     private readonly AiClientFactory chatClientFactory = new();
     private bool enabled = true;
     private bool capturing;
@@ -176,9 +177,20 @@ public partial class App : Application
             }
 
             window.SetActiveConnection(resolution.Connection.Category);
+            TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
+
+            if (resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly
+                && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase)
+                && !await ollamaChatClientFactory.IsModelLoadedAsync(settings, session.Cancellation.Token))
+            {
+                window.ShowTransforming((string)FindResource("WarmingUpLocalModelMessage"));
+                debugLog.Write("local-model-warmup-started", ("model", settings.Model));
+                await ollamaChatClientFactory.WarmupAsync(settings, session.Cancellation.Token);
+                debugLog.Write("local-model-warmup-completed", ("model", settings.Model));
+            }
+
             window.ShowTransforming(resolution.Status);
             debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
-            TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
 
             if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
             string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
@@ -186,12 +198,21 @@ public partial class App : Application
             if (!outputLanguageCode.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
             {
                 LanguageOption outputLanguage = LanguageCatalog.Supported.Single(option => option.Code.Equals(outputLanguageCode, StringComparison.OrdinalIgnoreCase));
-                instruction = $"{instruction}\n\nWrite the entire result in {outputLanguage.EnglishName} ({outputLanguage.Code}). Do not return the result in the source language unless it is {outputLanguage.EnglishName}.";
+                instruction = $"{instruction}\n\nGENERATION LANGUAGE = {outputLanguage.EnglishName} ({outputLanguage.Code}). Write the entire result in this language. Do not return the result in the source language unless it is {outputLanguage.EnglishName}.";
+            }
+            else
+            {
+                string? detectedInputLanguage = TextLanguageDetector.Detect(inputText);
+                LanguageOption? inputLanguage = LanguageCatalog.Supported.FirstOrDefault(option => option.Code.Equals(detectedInputLanguage, StringComparison.OrdinalIgnoreCase));
+                instruction = inputLanguage is null
+                    ? $"{instruction}\n\nWrite the result in the same language or languages as the input. Do not translate it."
+                    : $"{instruction}\n\nGENERATION LANGUAGE = {inputLanguage.EnglishName} ({inputLanguage.Code}). This is the language of the input. Write the entire result in this language; do not translate it into another language.";
             }
             if (session.MarkdownOutputEnabled)
                 instruction = $"{instruction}\n\nFormat the entire result as GitHub-flavored Markdown. Use Markdown only; do not wrap it in a fenced code block unless the requested content itself is code.";
             else
                 instruction = $"{instruction}\n\nReturn plain text only. Do not use Markdown syntax, including headings, emphasis markers, lists, tables, links, block quotes, or fenced code blocks.";
+            instruction = $"{instruction}\n\nKeep emojis unchanged by default. An explicit instruction to modify emojis takes priority.";
             if (!string.IsNullOrWhiteSpace(supplementaryInstructions))
                 instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
             debugLog.WriteFullText("transformation-input", inputText);

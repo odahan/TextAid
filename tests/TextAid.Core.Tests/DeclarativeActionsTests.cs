@@ -28,9 +28,14 @@ public sealed class DeclarativeActionsTests
         using var directory = new TemporaryDirectory();
         IReadOnlyList<ActionDefinition> actions = new ActionLoader(actionsDirectory: directory.Path).Load();
 
-        Assert.Equal(9, actions.Count);
+        Assert.Equal(11, actions.Count);
         Assert.Contains(actions, action => action.Id == "translate" && action.IsReserved);
         Assert.Contains(actions, action => action.Id == "answer-this-mail" && action.AskForUserInstructions);
+        Assert.Contains(actions, action => action.Id == "Synonymes" && action.TemperatureOverride == 0.2f);
+        ActionDefinition humanize = Assert.Single(actions.Where(action => action.Id == "humanize"));
+        Assert.Equal(0.2f, humanize.TemperatureOverride);
+        Assert.Equal("Unchanged", humanize.OutputLanguageDefault);
+        Assert.Contains("MUST rewrite the affected sentence", humanize.PromptTemplate, StringComparison.Ordinal);
         Assert.All(actions, action => Assert.True(File.Exists(System.IO.Path.Combine(directory.Path, $"{action.Id}.json"))));
     }
 

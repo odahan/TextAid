@@ -33,4 +33,41 @@ public sealed class OllamaChatClientFactory
         using var client = new OllamaApiClient(endpoint, string.Empty);
         return await client.IsRunningAsync(cancellationToken);
     }
+
+    /// <summary>Determines whether the selected model is currently held in the Ollama server's memory.</summary>
+    public async Task<bool> IsModelLoadedAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        using var client = new OllamaApiClient(settings.Endpoint, settings.Model);
+        IEnumerable<OllamaSharp.Models.RunningModel> models = await client.ListRunningModelsAsync(cancellationToken);
+        return models.Any(model => IsSameModel(model.Name ?? model.ModelName, settings.Model));
+    }
+
+    /// <summary>Loads a selected model without generating visible user content.</summary>
+    public async Task WarmupAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+        using var client = new OllamaApiClient(settings.Endpoint, settings.Model);
+        var request = new OllamaSharp.Models.GenerateRequest
+        {
+            Model = settings.Model,
+            Prompt = string.Empty,
+            KeepAlive = "5m",
+            Options = new OllamaSharp.Models.RequestOptions { NumCtx = settings.ContextSize }
+        };
+
+        await foreach (var _ in client.GenerateAsync(request, cancellationToken))
+        {
+            // Enumerating the completion waits until Ollama has loaded the model.
+        }
+    }
+
+    private static bool IsSameModel(string? loadedModel, string selectedModel)
+    {
+        if (string.Equals(loadedModel, selectedModel, StringComparison.OrdinalIgnoreCase)) return true;
+        return string.Equals(AppendDefaultTag(loadedModel), AppendDefaultTag(selectedModel), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string AppendDefaultTag(string? model) =>
+        string.IsNullOrWhiteSpace(model) || model.Contains(':', StringComparison.Ordinal) ? model ?? string.Empty : $"{model}:latest";
 }

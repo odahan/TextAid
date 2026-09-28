@@ -6,7 +6,7 @@ namespace TextAid.Core;
 /// <summary>Provides the initial editable JSON definitions supplied with TextAid.</summary>
 public static class BuiltInActionCatalog
 {
-    private static readonly string[] FileNames = ["translate", "correct", "rewrite", "shorten", "expand", "simplify", "change-tone", "summarize", "answer-this-mail"];
+    private static readonly string[] FileNames = ["translate", "correct", "rewrite", "shorten", "expand", "simplify", "change-tone", "summarize", "answer-this-mail", "Synonymes", "humanize"];
     private static readonly IReadOnlyDictionary<string, string> DisplayNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         ["translate"] = "Translate",
@@ -17,7 +17,9 @@ public static class BuiltInActionCatalog
         ["simplify"] = "Simplify",
         ["change-tone"] = "Change tone",
         ["summarize"] = "Summarize",
-        ["answer-this-mail"] = "Answer this mail"
+        ["answer-this-mail"] = "Answer this mail",
+        ["Synonymes"] = "Synonymes",
+        ["humanize"] = "Humanize"
     };
 
     /// <summary>Gets or sets the optional UI-layer resolver for localized built-in action names.</summary>
