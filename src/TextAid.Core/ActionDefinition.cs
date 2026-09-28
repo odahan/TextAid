@@ -12,7 +12,8 @@ public sealed record ActionDefinition(
     float? TemperatureOverride,
     string OutputLanguageDefault,
     bool AskForUserInstructions,
-    bool IsReserved = false)
+    bool IsReserved = false,
+    string? UserInstructionsQuestion = null)
 {
     /// <summary>Returns the English fallback display name for a built-in action.</summary>
     [JsonIgnore]

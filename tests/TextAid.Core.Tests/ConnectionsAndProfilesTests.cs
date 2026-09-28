@@ -4,6 +4,87 @@ namespace TextAid.Core.Tests;
 
 public sealed class ConnectionsAndProfilesTests
 {
+    [Fact]
+    public void InvocationSession_MarkdownOutput_IsDisabledByDefaultAndCanBeEnabled()
+    {
+        using var session = new InvocationSession(0, "input");
+
+        Assert.False(session.MarkdownOutputEnabled);
+
+        session.MarkdownOutputEnabled = true;
+
+        Assert.True(session.MarkdownOutputEnabled);
+
+        session.ResetForNewInput();
+
+        Assert.False(session.MarkdownOutputEnabled);
+    }
+
+    [Theory]
+    [InlineData("en", "en", "fr", "fr")]
+    [InlineData("fr-CA", "en", "fr", "en")]
+    [InlineData("de", "en", "fr", "en")]
+    [InlineData(null, "en", "fr", "en")]
+    public void QuickTranslationRouting_UsesConfiguredDirection(string? detected, string userLanguage, string preferredLanguage, string expected)
+    {
+        Assert.Equal(expected, QuickTranslationRouting.SelectDestination(detected, userLanguage, preferredLanguage));
+    }
+
+    [Fact]
+    public void InvocationSession_NewGeneration_CancelsThePreviousRequestAndClearsOutput()
+    {
+        var session = new InvocationSession(0, "input") { OutputText = "stale", State = InvocationState.ResultReady };
+        CancellationToken previous = session.Cancellation.Token;
+
+        int generation = session.StartNewGeneration();
+
+        Assert.True(previous.IsCancellationRequested);
+        Assert.Equal(1, generation);
+        Assert.Null(session.OutputText);
+        Assert.Equal(InvocationState.Transforming, session.State);
+    }
+
+    [Fact]
+    public void InvocationSession_RejectsStaleOutputUntilTheCurrentGenerationCompletes()
+    {
+        using var session = new InvocationSession((nint)42, "input");
+        int firstGeneration = session.StartNewGeneration();
+        int currentGeneration = session.StartNewGeneration();
+
+        Assert.False(session.TryCompleteGeneration(firstGeneration, "stale output"));
+        Assert.Null(session.OutputText);
+        Assert.Equal(InvocationState.Transforming, session.State);
+        Assert.False(session.HasCurrentResult);
+
+        Assert.True(session.TryCompleteGeneration(currentGeneration, "current output"));
+        Assert.Equal("current output", session.OutputText);
+        Assert.Equal(InvocationState.ResultReady, session.State);
+        Assert.True(session.HasCurrentResult);
+    }
+
+    [Theory]
+    [InlineData("Please rewrite this text with your own words.", "en")]
+    [InlineData("Veuillez corriger ce texte avec les accents français.", "fr")]
+    [InlineData("Bitte korrigieren Sie diesen Text mit einer klaren Antwort.", "de")]
+    [InlineData("Por favor corrige este texto con una respuesta clara.", "es")]
+    [InlineData("Per favore correggi questo testo con una risposta chiara.", "it")]
+    [InlineData("bonjour", null)]
+    [InlineData("the", null)]
+    [InlineData("abc", null)]
+    public void TextLanguageDetector_IsConservative(string text, string? expected)
+    {
+        Assert.Equal(expected, TextLanguageDetector.Detect(text));
+    }
+
+    [Fact]
+    public void LanguageOption_UsesItsReadableLabelWhenRenderedAsAnObject()
+    {
+        LanguageOption italian = LanguageCatalog.Supported.Single(option => option.Code == "it");
+
+        Assert.Equal(italian.DisplayName, italian.ToString());
+        Assert.Contains("Italian", italian.ToString());
+    }
+
     [Theory]
     [InlineData("localhost", true)]
     [InlineData("127.0.0.1", true)]

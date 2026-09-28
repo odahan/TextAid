@@ -5,6 +5,8 @@ using System.Windows.Controls.Primitives;
 using TextAid.Core;
 using TextAid.AI;
 using TextAid.Platform.Windows;
+using TextAid.App.Views;
+using TextAid.App.Localization;
 
 namespace TextAid.App;
 
@@ -17,12 +19,15 @@ public partial class App : Application
     private SettingsWindow? settingsWindow;
     private StartupNoticeWindow? startupNoticeWindow;
     private AboutWindow? aboutWindow;
+    private ActionsWindow? actionsWindow;
     private Mutex? instanceMutex;
     private readonly ResultActions resultActions = new(new Win32ResultActions());
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
     private bool enabled = true;
     private bool capturing;
     private string? actionsDirectory;
+    private string? localeFallbackNotice;
+    private bool isUiTranslationRequired;
     private DebugSessionLog debugLog = DebugSessionLog.Start(false, false, Path.GetTempPath());
 
     protected override void OnStartup(StartupEventArgs e)
@@ -41,12 +46,13 @@ public partial class App : Application
         ConfigureDebugLog();
         actionsDirectory = UserConfiguration.EnsureActionsDirectory();
         ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        ApplyCachedLocale(configuration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
         new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
-        hook = new KeyboardHook();
-        hook.Triggered += (source, hasCopiedText) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText)));
+        ConfigureKeyboardHook(configuration);
         using Stream icon = GetResourceStream(new Uri("pack://application:,,,/TextAid;component/Assets/TextAid.ico")).Stream;
         tray = new TrayIcon(icon);
         tray.Clicked += () => Dispatcher.BeginInvoke(ShowTrayMenu);
+        if (localeFallbackNotice is not null) tray.ShowInfo(localeFallbackNotice);
         debugLog.Write("application-started");
         Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
     }
@@ -80,11 +86,11 @@ public partial class App : Application
         startupNoticeWindow.ShowDialog();
     }
 
-    private async Task CaptureWithFeedbackAsync(nint source, bool hasCopiedText)
+    private async Task CaptureWithFeedbackAsync(nint source, bool hasCopiedText, InvocationShortcut shortcut = InvocationShortcut.Choose)
     {
         try
         {
-            await CaptureAsync(source, hasCopiedText);
+            await CaptureAsync(source, hasCopiedText, shortcut);
         }
         catch (Exception exception)
         {
@@ -94,7 +100,7 @@ public partial class App : Application
     }
 
     /// <summary>Opens a transformation session from a verified copy gesture or as an empty manual entry.</summary>
-    private async Task CaptureAsync(nint source, bool hasCopiedText)
+    private async Task CaptureAsync(nint source, bool hasCopiedText, InvocationShortcut shortcut)
     {
         if (!enabled || capturing || sessionWindow is not null) return;
         capturing = true;
@@ -126,24 +132,31 @@ public partial class App : Application
             string status = failed ? failureMessage! : noText ? (string)FindResource("EnterTextMessage") : (string)FindResource("ReadyToProcessMessage");
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
             IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
+            if (shortcut == InvocationShortcut.Translate)
+            {
+                session.ActionId = "translate";
+                session.OutputLanguage = QuickTranslationRouting.SelectDestination(TextLanguageDetector.Detect(session.InputText), configuration.UserLanguage, configuration.PreferredTranslationLanguage);
+                status = (string)FindResource("TranslatingCapturedTextMessage");
+            }
             bool isFullLogActive = UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode();
-            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, status, isFullLogActive);
+            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, status, isFullLogActive, isUiTranslationRequired);
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.Activate();
+            if (shortcut == InvocationShortcut.Translate && !failed && !string.IsNullOrWhiteSpace(session.InputText)) StartTransformation(sessionWindow, session);
         }
         finally { capturing = false; }
     }
 
-    private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions)
+    private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, int generation)
     {
         ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
         var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
         ProfileResolution resolution = resolver.Resolve(action.ProfileId);
-        await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution);
+        await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, generation);
     }
 
-    private async Task TransformWithResolutionAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution resolution)
+    private async Task TransformWithResolutionAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution resolution, int generation)
     {
         try
         {
@@ -156,7 +169,7 @@ public partial class App : Application
 
             if (resolution.Kind == ProfileResolutionKind.UserConfirmationRequired && !ConfirmDowngrade(window, resolution.Status))
             {
-                window.ShowFailure("The configuration downgrade was cancelled.");
+                window.ShowFailure((string)FindResource("ConfigurationDowngradeCancelledMessage"));
                 return;
             }
 
@@ -168,6 +181,15 @@ public partial class App : Application
 
             if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
             string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
+            if (!session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
+            {
+                LanguageOption outputLanguage = LanguageCatalog.Supported.Single(option => option.Code.Equals(session.OutputLanguage, StringComparison.OrdinalIgnoreCase));
+                instruction = $"{instruction}\n\nWrite the entire result in {outputLanguage.EnglishName} ({outputLanguage.Code}). Do not return the result in the source language unless it is {outputLanguage.EnglishName}.";
+            }
+            if (session.MarkdownOutputEnabled)
+                instruction = $"{instruction}\n\nFormat the entire result as GitHub-flavored Markdown. Use Markdown only; do not wrap it in a fenced code block unless the requested content itself is code.";
+            else
+                instruction = $"{instruction}\n\nReturn plain text only. Do not use Markdown syntax, including headings, emphasis markers, lists, tables, links, block quotes, or fenced code blocks.";
             if (!string.IsNullOrWhiteSpace(supplementaryInstructions))
                 instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
             debugLog.WriteFullText("transformation-input", inputText);
@@ -178,7 +200,7 @@ public partial class App : Application
                     instruction,
                     settings),
                 session.Cancellation.Token);
-            if (!window.IsLoaded) return;
+            if (!window.IsLoaded || !session.TryCompleteGeneration(generation, output)) return;
             debugLog.Write("transformation-completed", ("outputLength", output.Length));
             debugLog.WriteFullText("transformation-output", output);
             window.ShowResult(output);
@@ -190,7 +212,7 @@ public partial class App : Application
         }
         catch (OperationCanceledException)
         {
-            await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, (string)FindResource("TransformationTimeoutError"));
+            if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, (string)FindResource("TransformationTimeoutError"), generation);
         }
         catch (Exception exception)
         {
@@ -199,29 +221,29 @@ public partial class App : Application
                 ? UserFacingFailure.Model
                 : UserFacingFailure.Provider;
             string failure = await GetRecoveryMessageAsync(failureKind);
-            await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure);
+            if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure, generation);
         }
     }
 
     /// <summary>Starts a user-requested transformation from the editable session input.</summary>
     private void StartTransformation(MainWindow window, InvocationSession session)
     {
-        if (string.IsNullOrWhiteSpace(session.InputText) || session.State == InvocationState.Transforming) return;
+        if (string.IsNullOrWhiteSpace(session.InputText)) return;
         ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
         ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
         if (action is null)
         {
             debugLog.Write("user-facing-failure", ("category", UserFacingFailure.Configuration));
-            window.ShowFailure("The selected action is no longer available.");
+            window.ShowFailure((string)FindResource("SelectedActionUnavailableMessage"));
             return;
         }
 
-        if (action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session)) return;
+        if (action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion)) return;
         string inputSnapshot = session.InputText;
         string? instructionsSnapshot = session.SupplementaryInstructions;
-        session.State = InvocationState.Transforming;
+        int generation = session.StartNewGeneration();
         window.ShowTransforming((string)FindResource("TransformingMessage"));
-        _ = TransformAsync(session, window, inputSnapshot, action, instructionsSnapshot);
+        _ = TransformAsync(session, window, inputSnapshot, action, instructionsSnapshot, generation);
     }
 
     private static TextTransformationSettings CreateTransformationSettings(ModelProfile profile, ConnectionDefinition connection)
@@ -231,7 +253,7 @@ public partial class App : Application
         return new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, thinking);
     }
 
-    private async Task OfferProviderFailureDowngradeAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution usedResolution, string providerFailure)
+    private async Task OfferProviderFailureDowngradeAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution usedResolution, string providerFailure, int generation)
     {
         if (usedResolution.Connection is null)
         {
@@ -242,7 +264,7 @@ public partial class App : Application
         ProfileResolution downgrade = resolver.OfferDowngradeAfterProviderFailure(usedResolution.Connection.Category, providerFailure);
         if (downgrade.Kind == ProfileResolutionKind.UserConfirmationRequired && ConfirmDowngrade(window, downgrade.Status))
         {
-            await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, downgrade);
+            await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, downgrade, generation);
             return;
         }
 
@@ -250,7 +272,7 @@ public partial class App : Application
     }
 
     private static bool ConfirmDowngrade(Window owner, string message) =>
-        MessageBox.Show(owner, message, "TextAid", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+        MessageBox.Show(owner, message, (string)Current.FindResource("ProductName"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
 
     /// <summary>Opens the optional per-invocation instructions editor without changing action data.</summary>
     private void EditInstructions(MainWindow window, InvocationSession session) => TryCollectInstructions(window, session);
@@ -258,9 +280,9 @@ public partial class App : Application
     /// <summary>Prepares the existing window for a separate manual transformation.</summary>
     private static void ResetSession(MainWindow window, InvocationSession session) => window.ResetForNewInput();
 
-    private static bool TryCollectInstructions(MainWindow owner, InvocationSession session)
+    private static bool TryCollectInstructions(MainWindow owner, InvocationSession session, string? question = null)
     {
-        var dialog = new InstructionsWindow(session.SupplementaryInstructions) { Owner = owner };
+        var dialog = new InstructionsWindow(session.SupplementaryInstructions, question) { Owner = owner };
         if (dialog.ShowDialog() != true) return false;
         session.SupplementaryInstructions = dialog.Instructions;
         return true;
@@ -328,6 +350,8 @@ public partial class App : Application
         toggle.Click += (_, _) => enabled = !enabled;
         var settings = new MenuItem { Header = Label("SettingsLabel"), Style = itemStyle };
         settings.Click += (_, _) => ShowSettings();
+        var actions = new MenuItem { Header = Label("ActionsLabel"), Style = itemStyle };
+        actions.Click += (_, _) => ShowActions();
         var open = new MenuItem { Header = Label("OpenLabel"), Style = itemStyle };
         open.Click += (_, _) => _ = CaptureWithFeedbackAsync(0, hasCopiedText: false);
         var about = new MenuItem { Header = Label("AboutLabel"), Style = itemStyle };
@@ -337,6 +361,7 @@ public partial class App : Application
         menu.Items.Add(toggle);
         menu.Items.Add(new Separator { Style = separatorStyle });
         menu.Items.Add(open);
+        menu.Items.Add(actions);
         menu.Items.Add(settings);
         menu.Items.Add(about);
         menu.Items.Add(new Separator { Style = separatorStyle });
@@ -359,9 +384,17 @@ public partial class App : Application
 
         settingsWindow = new SettingsWindow();
         settingsWindow.FullLogActivityChanged += active => sessionWindow?.SetFullLogActive(active);
+        settingsWindow.UiTranslationGenerated += (_, _) =>
+        {
+            ConfigurationSnapshot currentConfiguration = UserConfiguration.LoadConfiguration();
+            ApplyCachedLocale(currentConfiguration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
+        };
         settingsWindow.SettingsSaved += (_, _) =>
         {
             ConfigureDebugLog();
+            ConfigureKeyboardHook(UserConfiguration.LoadConfiguration());
+            ApplyCachedLocale(UserConfiguration.LoadConfiguration().UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
+            if (localeFallbackNotice is not null) tray?.ShowInfo(localeFallbackNotice);
             sessionWindow?.SetFullLogActive(UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode());
         };
         settingsWindow.Closed += (_, _) =>
@@ -388,6 +421,20 @@ public partial class App : Application
         aboutWindow.ShowDialog();
     }
 
+    private void ShowActions()
+    {
+        if (actionsWindow is { IsVisible: true }) { actionsWindow.Activate(); return; }
+        actionsWindow = new ActionsWindow();
+        actionsWindow.ActionsChanged += (_, _) =>
+        {
+            if (sessionWindow is null) return;
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            sessionWindow.ReloadActions(new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load());
+        };
+        actionsWindow.Closed += (_, _) => actionsWindow = null;
+        actionsWindow.Show();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         debugLog.Write("application-stopped");
@@ -403,6 +450,42 @@ public partial class App : Application
     {
         debugLog.Dispose();
         debugLog = DebugSessionLog.Start(UserConfiguration.LoadDebugMode(), UserConfiguration.LoadFullDebugMode(), UserConfiguration.GetLocalUserDataDirectory());
+    }
+
+    /// <summary>Replaces the global hook only after a complete valid shortcut configuration is saved.</summary>
+    private void ConfigureKeyboardHook(ConfigurationSnapshot configuration)
+    {
+        KeyboardHook? previous = hook;
+        var replacement = new KeyboardHook(configuration.NormalShortcut, configuration.TranslationShortcut);
+        replacement.Triggered += (source, hasCopiedText, shortcut) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText, shortcut)));
+        hook = replacement;
+        previous?.Dispose();
+    }
+
+    /// <summary>Applies only a fully validated cached locale; English remains active for every failure path.</summary>
+    private void ApplyCachedLocale(string language, bool preferEnglishUi)
+    {
+        var catalog = new LocalizationCatalog(EnglishStringCatalog.Values);
+        string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", language + ".json");
+        LocaleCatalogLoadResult result = preferEnglishUi || language.Equals("en", StringComparison.OrdinalIgnoreCase)
+            ? new LocaleCatalogLoadResult(EnglishStringCatalog.Values, LocaleCatalogLoadStatus.Loaded)
+            : catalog.Load(cachePath);
+        isUiTranslationRequired = !preferEnglishUi
+            && !language.Equals("en", StringComparison.OrdinalIgnoreCase)
+            && result.Status != LocaleCatalogLoadStatus.Loaded;
+        IReadOnlyDictionary<string, string> values = result.Values;
+        foreach ((string key, string value) in values) Resources[key] = value;
+        BuiltInActionCatalog.DisplayNameResolver = id => UiStrings.TryGet($"Action.{id}");
+        localeFallbackNotice = result.Status switch
+        {
+            LocaleCatalogLoadStatus.Stale => (string)FindResource("LocaleCacheStaleFallbackMessage"),
+            LocaleCatalogLoadStatus.Invalid => (string)FindResource("LocaleCacheInvalidFallbackMessage"),
+            LocaleCatalogLoadStatus.Unreadable => (string)FindResource("LocaleCacheUnreadableFallbackMessage"),
+            _ => null
+        };
+        sessionWindow?.RefreshLocalizedActionLabels();
+        sessionWindow?.SetUiTranslationRequired(isUiTranslationRequired);
+        actionsWindow?.RefreshLocalizedLabels();
     }
 
     /// <summary>Returns a short model-generated recovery suggestion when an eligible Ollama profile is available.</summary>

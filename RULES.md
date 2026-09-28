@@ -268,3 +268,12 @@ Scope: LOT-006 and later V1 lots; no retroactive change to closed results.
 Rule: The normal session MUST expose four persisted one-click action presets, defaulting in order to Correct, Rewrite, Summarize, and Translate, while retaining the complete action combo box. A preset displays only its assigned action name and immediately selects and processes that action; the ordinary combo box selects only. The Quick actions group uses the alternate surface. Each preset MUST have an adjacent borderless pencil affordance for selecting its action from the current action list. Preset assignments are user configuration and MUST NOT cause action-use tracking, frequency ordering, telemetry, or automatic reordering.
 Replaces: None
 Replaced by: None
+
+## R-031 — Source-first visible-string localization discipline
+
+Status: ACTIVE
+Source: D-033; Olivier's localization-maintenance instruction
+Scope: LOT-008 and every later lot, including post-V1 lots; no retroactive change to closed results.
+Rule: Before adding or changing any user-visible text, implementation MUST first reuse an existing English source-catalog key when its meaning matches. Views and code MUST reference that key rather than duplicate a literal string. When no suitable key exists, the English source catalog MUST be extended first; translated caches whose source fingerprint no longer matches MUST be treated as stale and fall back to English until explicitly regenerated or replaced by a compatible reviewed pack. New visible text MUST NOT be added directly to a view as an untracked literal. Catalog edits must preserve key stability and placeholder semantics.
+Replaces: None
+Replaced by: None

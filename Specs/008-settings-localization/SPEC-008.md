@@ -95,6 +95,24 @@ Add a gear icon to the main TextAid session. It opens a local application menu e
 
 Source: D-015, R-023.
 
+### REQ-008-013 — Durable locale-cache foundation
+
+Keep English as the immutable source catalog and store each generated locale cache by BCP-47 tag in a distinct visible locale-cache location. A cache MUST be validated for exact keys and preserved placeholders before use, and MUST expose a deterministic fingerprint of the English source catalog for later compatibility checks. The cache format and location MUST allow a later feature to add separately stored user corrections and importable/exportable reviewed language packs without overwriting the generated cache or English source. LOT-008 does not expose correction editing, pack import/export, GitHub retrieval, or sharing.
+
+Source: D-031.
+
+### REQ-008-014 — English UI preference and catalog-generation profile
+
+Language Settings MUST let the user keep the TextAid UI in English independently of the user language and preferred translation language. When a non-English catalog is explicitly generated, the user MUST choose the model profile used for that request from the active connection profiles only; the choice MUST be visible and MUST NOT alter ordinary action routing. The application must not claim that this setting makes a remote profile local or changes the privacy category selected by that profile.
+
+Source: D-032.
+
+### REQ-008-015 — Visible locale-cache fallback
+
+When a selected non-English locale cache is stale, invalid, or unreadable, TextAid MUST revert to English and show a clear user-facing notification explaining why, that the application remains usable, and that generating or importing a compatible translation restores the localized UI. A missing cache alone need not be reported as an error.
+
+Source: D-034.
+
 ## Important cases
 
 Validate success and failure paths described in the active requirements; use the source specification for examples and exact user-facing messages where given.
@@ -104,5 +122,9 @@ Validate success and failure paths described in the active requirements; use the
 LOT-007 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, R-015 through R-018, and R-020 through R-024 apply according to their stated scopes; obsolete R-006, R-013, R-014, and R-019 remain part of closed or superseded history.
 
 ## Known constraints
+
+### Localization-maintenance warning
+
+R-031 applies. Reuse an existing English source-catalog key for every visible string when possible. Otherwise add the English key first, reference it symbolically from views/code, and treat older-fingerprint translated caches as stale until explicitly regenerated or replaced.
 
 The source document is retained for traceability. If it conflicts with an active Pro-Spec requirement or rule, record a finding and obtain the required human decision before changing active intent.

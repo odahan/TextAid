@@ -33,6 +33,12 @@ Source: `docs/TextAid specification.md`, sections 89–90; D-006, R-017.
 
 Verify complete dark non-minimizable transaction UI, dark chrome, correct centering, explicit Replace/Copy/Cancel outcomes, all model calls through MAF/IChatClient, OllamaSharp default, and declarative actions without rebuild.
 
+### REQ-011-003 — Optional Windows startup
+
+Settings MUST provide a persisted switch that lets the current Windows user choose whether TextAid starts when that user signs in. Enabling it MUST create or update only TextAid's current-user startup registration; disabling it MUST remove only that registration. The UI MUST reflect the effective persisted state and show a clear recoverable error if Windows startup registration cannot be updated. This feature MUST never require administrator privileges, create a machine-wide startup entry, launch a second TextAid instance, or change the application’s normal single-instance behavior.
+
+Source: D-035.
+
 Source: `docs/TextAid specification.md`, sections 89–90; D-006, R-017.
 
 ### REQ-011-003 — Provider, privacy, resilience
@@ -68,5 +74,9 @@ Validate success and failure paths described in the active requirements; use the
 LOT-010 must be closed before this lot starts. Active R-001 through R-005, R-007 through R-012, and R-015 through R-018 apply according to their stated scopes; obsolete R-006, R-013, and R-014 remain part of closed or superseded history.
 
 ## Known constraints
+
+### Localization-maintenance warning
+
+R-031 applies. Reuse an existing English source-catalog key for every visible string when possible. Otherwise add the English key first, reference it symbolically from views/code, and treat older-fingerprint translated caches as stale until explicitly regenerated or replaced.
 
 The source document is retained for traceability. If it conflicts with an active Pro-Spec requirement or rule, record a finding and obtain the required human decision before changing active intent.

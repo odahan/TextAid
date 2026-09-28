@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Interop;
 using TextAid.Platform.Windows;
 
-namespace TextAid.App;
+namespace TextAid.App.Views;
 
 /// <summary>Explains how to configure a provider when no usable local Ollama setup is found.</summary>
 public partial class StartupNoticeWindow : Window

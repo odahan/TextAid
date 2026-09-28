@@ -1,0 +1,266 @@
+<Window x:Class="TextAid.App.Views.SettingsWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:TextAid.App.Converters" Title="{DynamicResource SettingsLabel}" Width="600" Height="720" MinWidth="540" MinHeight="600" WindowStartupLocation="CenterScreen" Icon="pack://application:,,,/TextAid;component/Assets/TextAid.ico" Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" FontFamily="Segoe UI Variable Text, Segoe UI">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <Style x:Key="DarkTabItem" TargetType="TabItem">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundMutedBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="16,9"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="Transparent" BorderThickness="0,0,0,2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                                <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="DarkTabControl" TargetType="TabControl">
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Background="{DynamicResource BackgroundBrush}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0,0,0,1">
+                                <TabPanel IsItemsHost="True"/>
+                            </Border>
+                            <Border Grid.Row="1" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                                <ContentPresenter ContentSource="SelectedContent" Margin="0"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="StatusMarker" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ConnectionState}" Value="Ready">
+                    <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ConnectionState}" Value="Failed">
+                    <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding ConnectionState}" Value="Testing">
+                    <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="24">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel>
+                <TextBlock Text="{DynamicResource SettingsLabel}" FontSize="20" FontWeight="SemiBold"/>
+                <TextBlock Text="{DynamicResource SettingsConnectionsHelp}" Margin="0,6,0,0" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+            </StackPanel>
+            <TabControl Grid.Row="1" Style="{StaticResource DarkTabControl}" Margin="0,22,0,12">
+                <TabItem Header="{DynamicResource GeneralTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource GeneralPreferencesTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource GeneralValidationMessage}" Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <TextBlock Text="{DynamicResource GeneralLanguageHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <Button Content="{DynamicResource ReloadConfigurationLabel}" Command="{Binding ReloadConfigurationCommand}" HorizontalAlignment="Left" Margin="0,14,0,0"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource ThisDeviceOnlyTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <CheckBox Content="{DynamicResource ActiveLabel}" IsChecked="{Binding LocalEnabled}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource OllamaEndpointLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding Endpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12" ToolTip="{DynamicResource LoopbackEndpointToolTip}"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="{DynamicResource TestConnectionLabel}" Command="{Binding TestConnectionCommand}" MinWidth="132" Margin="0,0,8,0"/>
+                                <Button Content="{DynamicResource LoadLocalModelsLabel}" Command="{Binding LoadModelsCommand}" MinWidth="140"/>
+                            </StackPanel>
+                            <ProgressBar Height="4" Margin="0,10,0,4" IsIndeterminate="True" Visibility="{Binding IsLoadingModels, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <TextBlock Text="●" Style="{StaticResource StatusMarker}" FontSize="16" Margin="0,-1,7,0"/>
+                                <TextBlock Text="{DynamicResource ConnectionStatusLabel}" Style="{StaticResource StatusMarker}" FontWeight="SemiBold"/>
+                                <TextBlock Text=": "/>
+                                <TextBlock Text="{Binding ConnectionState}"/>
+                            </StackPanel>
+                            <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold" Margin="0,16,0,0"/>
+                            <ComboBox ItemsSource="{Binding Models}" SelectedItem="{Binding SelectedModel}" Margin="0,6,0,12" MinHeight="36"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{DynamicResource TemperatureLabel}" FontWeight="SemiBold"/>
+                                    <TextBox Text="{Binding TemperatureText, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{DynamicResource ContextSizeLabel}" FontWeight="SemiBold"/>
+                                    <TextBox Text="{Binding ContextSizeText, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="14"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="{DynamicResource TimeoutLabel}" FontWeight="SemiBold"/>
+                                    <TextBox Text="{Binding TimeoutSecondsText, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="{DynamicResource ThinkingLabel}" FontWeight="SemiBold"/>
+                                    <ComboBox ItemsSource="{Binding ThinkingModes}" SelectedItem="{Binding SelectedThinking}" Margin="0,6,0,0" MinHeight="36"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource OnPremisesTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource OnPremisesTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource OnPremisesPrivacyHelp}" Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <CheckBox Content="{DynamicResource ActiveLabel}" IsChecked="{Binding NetworkEnabled}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource EndpointLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding NetworkEndpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding NetworkModel, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <TextBlock Text="{DynamicResource OptionalApiKeyLabel}" FontWeight="SemiBold"/>
+                            <PasswordBox Margin="0,6,0,0" PasswordChanged="OnNetworkSecretChanged"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource ExternalTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource ExternalTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource ExternalPrivacyHelp}" Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <CheckBox Content="{DynamicResource ActiveLabel}" IsChecked="{Binding ExternalEnabled}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource EndpointLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding ExternalEndpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding ExternalModel, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <TextBlock Text="{DynamicResource ApiKeyLabel}" FontWeight="SemiBold"/>
+                            <PasswordBox Margin="0,6,0,0" PasswordChanged="OnExternalSecretChanged"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource ProfilesTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource ProfilesTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource ProfilesCategoryHelp}" Margin="0,4,0,12" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <ItemsControl ItemsSource="{Binding ProfileSummaries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource SurfaceAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,8">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Id}" FontWeight="SemiBold"/>
+                                                    <TextBlock Text="{Binding Model}" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding ConnectionCategory}" HorizontalAlignment="Right"/>
+                                                    <TextBlock Text="{DynamicResource ActiveLabel}" Visibility="{Binding IsActive, Converter={StaticResource BooleanToVisibilityConverter}}" Foreground="{DynamicResource SuccessBrush}" HorizontalAlignment="Right" Margin="0,3,0,0"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{DynamicResource ProfilesActionsHelp}" Margin="0,4,0,0" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource LanguageTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource LanguageAndShortcutsTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource ApplicationLanguageLabel}" FontWeight="SemiBold" Margin="0,14,0,0"/>
+                            <TextBlock Text="{DynamicResource ApplicationLanguageHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,2,0,6"/>
+                            <ComboBox ItemsSource="{Binding Languages}" SelectedValuePath="Code" SelectedValue="{Binding UserLanguage}" Margin="0,0,0,12" MinHeight="36">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <CheckBox Content="{DynamicResource KeepEnglishUiLabel}" IsChecked="{Binding PreferEnglishUi}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource LocaleGenerationProfileLabel}" FontWeight="SemiBold"/>
+                            <ComboBox ItemsSource="{Binding ActiveLocalizationProfiles}" SelectedItem="{Binding SelectedLocalizationProfile}" Margin="0,6,0,2" MinHeight="36"/>
+                            <TextBlock Text="{DynamicResource LocaleGenerationProfileHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,0,0,8"/>
+                            <Button Content="{DynamicResource GenerateUiTranslationLabel}" Command="{Binding GenerateUiTranslationCommand}" IsEnabled="{Binding IsGeneratingLocale, Converter={StaticResource InverseBooleanConverter}}" HorizontalAlignment="Left" MinWidth="180"/>
+                            <ProgressBar Height="4" Margin="0,8,0,0" IsIndeterminate="True" Visibility="{Binding IsGeneratingLocale, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <TextBlock Text="{DynamicResource PreferredTranslationLanguageLabel}" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource PreferredTranslationLanguageHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,2,0,6"/>
+                            <ComboBox ItemsSource="{Binding Languages}" SelectedValuePath="Code" SelectedValue="{Binding PreferredTranslationLanguage}" Margin="0,0,0,12" MinHeight="36">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Text="{DynamicResource ChooseShortcutLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding NormalShortcut, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,2"/>
+                            <TextBlock Text="{DynamicResource ChooseShortcutHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource TranslateShortcutLabel}" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding TranslationShortcut, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,2"/>
+                            <TextBlock Text="{DynamicResource TranslateShortcutHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="{DynamicResource DebugTabLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource OptionalDiagnosticLogTitle}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource DebugDisabledHelp}" Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <CheckBox Content="{DynamicResource EnableDebugLogLabel}" IsChecked="{Binding DebugEnabled}" Margin="0,0,0,12"/>
+                            <CheckBox Content="{DynamicResource EnableFullLogLabel}" IsChecked="{Binding FullDebugEnabled}" IsEnabled="{Binding DebugEnabled}" Margin="0,0,0,8"/>
+                            <TextBlock Text="{DynamicResource FullLogLabel}" Foreground="{DynamicResource ErrorBrush}" FontWeight="SemiBold" Visibility="{Binding IsFullLogActive, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,8"/>
+                            <TextBlock Text="{DynamicResource FullLogWarning}" TextWrapping="Wrap" Foreground="{DynamicResource WarningBrush}" Margin="0,0,0,12"/>
+                            <Button Content="{DynamicResource OpenDebugFolderLabel}" Command="{Binding OpenDebugFolderCommand}" HorizontalAlignment="Left" MinWidth="180" Margin="0,0,0,12"/>
+                            <TextBlock Text="{DynamicResource SafeLogHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundBrush}" Margin="0,0,14,0"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Content="{DynamicResource CancelLabel}" Click="OnCancel" MinWidth="96" Margin="0,0,8,0"/>
+                    <Button Content="{DynamicResource SaveLabel}" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>

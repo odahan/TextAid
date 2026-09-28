@@ -11,7 +11,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-Release candidate builds, non-integration tests pass, and a single self-contained TextAid.exe is produced.
+Release candidate builds, non-integration tests pass, and a single self-contained TextAid.exe is produced. Deterministic tests cover current-user startup registration enable/disable and failure handling without touching machine-wide registration.
 
 Method:
 Run dotnet build -m:1, dotnet test -m:1, and the Release publish; identify the candidate result.
@@ -32,7 +32,7 @@ Status: TO TEST
 Defined at: 2026-09-25T23:53:23
 
 Condition:
-The named human accepts the candidate against each formal V1 release criterion, including both invocation paths, quick-translation direction and destination changes, safe `Replace`, non-replacing `Copy`, configurable shortcuts, and the documented compatibility limits.
+The named human accepts the candidate against each formal V1 release criterion, including both invocation paths, quick-translation direction and destination changes, safe `Replace`, non-replacing `Copy`, configurable shortcuts, the optional per-user Windows-startup switch, and the documented compatibility limits.
 
 Method:
 Review release evidence and exercise the candidate; record named, dated validation.

@@ -129,6 +129,14 @@ public static class UserConfiguration
         }
     }
 
+    /// <summary>Reloads configuration atomically and reports an invalid persisted file without replacing the active snapshot.</summary>
+    public static ConfigurationSnapshot ReloadConfiguration()
+    {
+        ConfigurationSnapshot configuration = LoadConfigurationCore();
+        activeConfiguration = configuration;
+        return configuration;
+    }
+
     private static ConfigurationSnapshot LoadConfigurationCore()
     {
         string path = EnsureCreated();
@@ -269,6 +277,30 @@ public static class UserConfiguration
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
+    /// <summary>Loads the independent UI-language preference and selected catalog-generation profile.</summary>
+    public static LocalizationPreferences LoadLocalizationPreferences()
+    {
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        return new LocalizationPreferences(root["preferEnglishUi"]?.GetValue<bool>() ?? false, root["localizationProfileId"]?.GetValue<string>() ?? "local-default");
+    }
+
+    /// <summary>Saves locale generation choices without changing translation direction preferences.</summary>
+    public static void SaveLocalizationPreferences(bool preferEnglishUi, string profileId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(profileId);
+        ConfigurationSnapshot configuration = LoadConfiguration();
+        ModelProfile profile = configuration.Profiles.SingleOrDefault(candidate => candidate.Id.Equals(profileId, StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException("Choose an available profile for catalog generation.");
+        ConnectionDefinition connection = configuration.Connections.Single(candidate => candidate.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase));
+        if (!connection.IsEnabled) throw new InvalidOperationException("Choose an active profile for catalog generation.");
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        root["preferEnglishUi"] = preferEnglishUi;
+        root["localizationProfileId"] = profileId;
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
     /// <summary>Loads the four persisted action-preset references in their displayed order.</summary>
     public static IReadOnlyList<string> LoadActionPresetIds()
     {
@@ -321,6 +353,8 @@ public static class UserConfiguration
         if (root["shortcuts"] is null) { root["shortcuts"] = new JsonObject { ["normalAction"] = "Ctrl+C+C", ["quickTranslation"] = "Ctrl+C+T" }; changed = true; }
         if (root["actionPresets"] is null) { root["actionPresets"] = new JsonArray("correct", "rewrite", "summarize", "translate"); changed = true; }
         if (root["fullDebugMode"] is null) { root["fullDebugMode"] = false; changed = true; }
+        if (root["preferEnglishUi"] is null) { root["preferEnglishUi"] = false; changed = true; }
+        if (root["localizationProfileId"] is null) { root["localizationProfileId"] = "local-default"; changed = true; }
         if (changed) File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
@@ -414,6 +448,8 @@ public static class UserConfiguration
 
     private static void ValidateLanguage(string language, string name)
     {
+        if (!LanguageCatalog.IsSupported(language))
+            throw new InvalidOperationException($"The {name} is not supported.");
         if (!System.Text.RegularExpressions.Regex.IsMatch(language, "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"))
             throw new InvalidOperationException($"The {name} is invalid.");
         try { _ = System.Globalization.CultureInfo.GetCultureInfo(language); }
@@ -423,3 +459,6 @@ public static class UserConfiguration
     private static bool IsSupportedShortcut(string shortcut) =>
         !string.IsNullOrWhiteSpace(shortcut) && System.Text.RegularExpressions.Regex.IsMatch(shortcut, "^[A-Za-z0-9]+(\\+[A-Za-z0-9]+)+$");
 }
+
+/// <summary>Contains UI-language fallback and catalog-generation profile preferences.</summary>
+public sealed record LocalizationPreferences(bool PreferEnglishUi, string ProfileId);

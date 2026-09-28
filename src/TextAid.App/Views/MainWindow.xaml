@@ -1,0 +1,144 @@
+<Window x:Class="TextAid.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{DynamicResource ProductName}" Height="640" Width="980" MinHeight="440" MinWidth="720" ResizeMode="CanResize" ShowInTaskbar="False" WindowStartupLocation="Manual" Icon="pack://application:,,,/TextAid;component/Assets/TextAid.ico" Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource ForegroundBrush}" FontFamily="Segoe UI Variable Text, Segoe UI">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="PresetEditButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundMutedBrush}"/>
+            <Setter Property="Padding" Value="5,0"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="0" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Frame" Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource FocusBrush}"/>
+                                <Setter TargetName="Frame" Property="BorderThickness" Value="1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Padding="12">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="12"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" ClipToBounds="False" Height="50">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.ColumnSpan="2" HorizontalAlignment="Center" Text="{DynamicResource MainWindowHeading}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Foreground="{DynamicResource AccentPressedBrush}"/>
+                <Image Grid.Column="1" Source="pack://application:,,,/TextAid;component/Assets/Logo-final.png" Height="80" HorizontalAlignment="Right" Stretch="Uniform" Margin="0,-16,0,0"/>
+                <Button Grid.Column="0" Content="☰" Click="OnShowApplicationMenu" ToolTip="{DynamicResource ApplicationMenuToolTip}" Width="42" Padding="0" HorizontalAlignment="Left" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
+            </Grid>
+            <StackPanel Grid.Row="2">
+                <Border Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,0">
+                    <StackPanel Grid.Column="1">
+                        <ItemsControl ItemsSource="{Binding Presets}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                                        <Button Content="{Binding Label}" Command="{Binding DataContext.SelectPresetCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" MinWidth="132"/>
+                                        <Button Content="⚙" Click="OnEditPreset" Tag="{Binding Slot}" ToolTip="{DynamicResource ConfigurePresetToolTip}" Style="{StaticResource PresetEditButton}" Margin="4,0,0,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Grid ColumnDefinitions="*,*,*">
+                    <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal" Margin="0,8,0,8"  >
+                        <TextBlock Text="{DynamicResource ActionLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        <ComboBox Width="220" ItemsSource="{Binding Actions}" SelectedItem="{Binding SelectedAction}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" Orientation="Horizontal" Margin="28,8,28,8">
+                        <TextBlock Text="{DynamicResource MarkdownOutputLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        <ToggleButton Style="{StaticResource SwitchToggle}" IsChecked="{Binding MarkdownOutputEnabled}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,8,0,8" >
+                        <TextBlock Text="{DynamicResource OutputLanguageLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        <ComboBox Width="250" ItemsSource="{Binding OutputLanguages}" SelectedValuePath="Code" SelectedValue="{Binding SelectedOutputLanguage}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource CapturedText}" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Grid.Row="0" Grid.Column="2" Text="{DynamicResource PreviewLabel}" FontSize="16" FontWeight="SemiBold"/>
+            <TextBox x:Name="InputEditor" Grid.Row="2" Grid.Column="0" Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14"/>
+            <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap" FontSize="14" LineHeight="20" />
+                </ScrollViewer>
+            </Border>
+        </Grid>
+        <StackPanel Grid.Row="5" Margin="0,14,0,0">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8" Visibility="{Binding IsTransforming, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <ProgressBar Width="180" Height="5" Margin="0,7,10,0" IsIndeterminate="True"/>
+                <TextBlock Text="{DynamicResource TransformingLabel}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+            </StackPanel>
+            <TextBlock MinHeight="22" Text="{Binding Status}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap"/>
+        </StackPanel>
+        <Grid Grid.Row="6" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="{DynamicResource FullLogLabel}" Foreground="{DynamicResource ErrorBrush}" FontWeight="SemiBold" Visibility="{Binding IsFullLogActive, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TextBlock Text="{DynamicResource UiTranslationRequiredLabel}" Foreground="{DynamicResource WarningBrush}" FontWeight="SemiBold" Margin="12,0,0,0" Visibility="{Binding IsUiTranslationRequired, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{DynamicResource NewLabel}" Command="{Binding NewCommand}" MinWidth="82" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource InstructionsLabel}" Command="{Binding InstructionsCommand}" MinWidth="106" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource ProcessLabel}" Command="{Binding ProcessCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource CancelLabel}" Command="{Binding CancelCommand}" MinWidth="96" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource CopyLabel}" Command="{Binding CopyCommand}" MinWidth="96" Margin="0,0,8,0"/>
+                <Button Content="{DynamicResource ReplaceLabel}" Command="{Binding ReplaceCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96"/>
+            </StackPanel>
+        </Grid>
+        </Grid>
+    </Border>
+</Window>

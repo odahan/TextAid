@@ -2,6 +2,27 @@
 
 This append-only record uses concise entries with timestamp, actor, operation, affected artifacts, and outcome. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-27 — Locale-cache correction foundation and planned language packs
+
+Actor: Olivier and Codex
+Operation: Olivier extended active LOT-008 with a durable, non-destructive locale-cache foundation and directed creation of a later numeric specification for user corrections and exchangeable translated language packs. Codex recorded D-031, added REQ-008-013, and created planned LOT-012.
+Affected artifacts: `LEDGER.md`, `STATUS.md`, `Specs/008-settings-localization/SPEC-008.md`, `Specs/012-language-corrections-packs/`, `src/TextAid.Core/LocalizationCatalog.cs`, `tests/TextAid.Core.Tests/LocalizationCatalogTests.cs`.
+Outcome: LOT-008 remains limited to validated caches, English fallback, source fingerprinting, and future-compatible storage boundaries. Editing, import/export, and GitHub/community-pack workflows are explicitly deferred to post-V1 LOT-012.
+
+## 2026-09-27 — Source-first localization rule for remaining work
+
+Actor: Olivier and Codex
+Operation: Olivier directed that all remaining lots reuse an existing symbolic English catalog key for visible text, or add a new English source entry before a view/code reference is added. Codex recorded D-033 and active R-031, then added the maintenance warning to LOT-008 through LOT-012.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/008-settings-localization/SPEC-008.md` through `Specs/012-language-corrections-packs/SPEC-012.md`, `HISTORY.md`.
+Outcome: Source-catalog changes now explicitly make earlier-fingerprint translated caches stale, with safe English fallback until explicit regeneration or compatible replacement.
+
+## 2026-09-27 — Optional Windows startup assigned to the final V1 lot
+
+Actor: Olivier and Codex
+Operation: Olivier assigned an optional per-user Windows-startup switch to final LOT-011 without creating another lot. Codex recorded D-035 and REQ-011-003.
+Affected artifacts: `LEDGER.md`, `Specs/011-v1-release/SPEC-011.md`, `HISTORY.md`.
+Outcome: LOT-008 remains free of Windows startup registration; LOT-011 will implement and validate the opt-in behavior.
+
 ## 2026-09-27 — LOT-006 opened: connections, profiles, and protected secrets
 
 Actor: Codex

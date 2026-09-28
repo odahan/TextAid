@@ -5,7 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Navigation;
 using TextAid.Platform.Windows;
 
-namespace TextAid.App;
+namespace TextAid.App.Views;
 
 /// <summary>Shows product identity and the version embedded in the application assembly.</summary>
 public partial class AboutWindow : Window

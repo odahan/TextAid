@@ -57,4 +57,8 @@ LOT-008 must be closed before this lot starts. Active R-001 through R-005, R-007
 
 ## Known constraints
 
+### Localization-maintenance warning
+
+R-031 applies. Reuse an existing English source-catalog key for every visible string when possible. Otherwise add the English key first, reference it symbolically from views/code, and treat older-fingerprint translated caches as stale until explicitly regenerated or replaced.
+
 The source document is retained for traceability. If it conflicts with an active Pro-Spec requirement or rule, record a finding and obtain the required human decision before changing active intent.

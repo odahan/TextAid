@@ -23,7 +23,7 @@ Evidence: —
 
 ### Test history
 
-No evaluations yet.
+- 2026-09-28 — Automated regression: `TextAid.Core.Tests` passed (59/59), `TextAid.AI.Tests` passed (6/6), and `TextAid.Platform.Windows.Tests` passed (16/16). The English source catalog and `Strings.xaml` key sets were also compared exactly (158/158). The Core suite proves that a stale generation cannot publish output, so it cannot enable either `Copy` or `Replace`; it also covers unavailable catalog-generation providers, invalid generated catalogs that retain the prior validated cache, and a locked unreadable cache that returns English. The remaining evidence for G-008-001 is the existing binding behavior exercised through the Windows walkthrough in G-008-002.
 
 ## G-008-002 — Settings and locale walkthrough
 

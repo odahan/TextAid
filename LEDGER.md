@@ -19,48 +19,6 @@ Add global rule R-011, LOT-002 requirement REQ-002-008, and AUTO gate G-002-004;
 Replaces: None
 Replaced by: None
 
-## D-029 — Single-configuration promotion for action profiles
-
-Date: 2026-09-27T00:00:00+02:00
-Decided by: Olivier
-Source: Olivier's LOT-007 privacy and UX clarification
-Related: R-005, R-022, R-027, R-029, LOT-006, LOT-007, LOT-009, LOT-010, LOT-011
-
-Decision:
-At invocation resolution only, if exactly one active, valid, eligible connection configuration exists, TextAid automatically and visibly uses that sole configuration for every action whose requested configuration is absent, inactive, or otherwise not configured. An action whose requested category differs is automatically downgraded or promoted to that sole choice; the status names both the requested category and the selected sole category. This includes requests for This device only and On-premises when External is the sole active eligible configuration.
-
-If two or more active eligible configurations exist, TextAid does not infer an upward route. It fails with clear guidance to select an appropriate active profile for the action. If no eligible configuration exists, it fails with configuration guidance. A malformed connection, unreadable secret, unavailable model, provider failure, timeout, or other runtime failure never triggers an upward switch; the existing explicit failure and user-controlled downward-downgrade behavior remains unchanged.
-
-Reason:
-An intentional cloud-only or network-only setup should operate every standard action without requiring the user to edit all action profiles that normally select This device only. Where multiple choices exist, silently selecting a more remote provider would obscure a meaningful privacy and cost choice.
-
-Consequences:
-R-027 and R-029 are revised. LOT-007 implements and tests the resolution outcome and visible status. LOT-009 applies the behavior once the External provider is executable. LOT-010 and LOT-011 cover cloud-only and network-only regression. The closed LOT-006 candidate remains historically accepted; this later behavior is delivered in LOT-007.
-
-Replaces: None
-Replaced by: None
-
-## D-030 — User-controlled full diagnostic logging
-
-Date: 2026-09-27T00:00:00+02:00
-Decided by: Olivier
-Source: Olivier's LOT-007 diagnostic clarification
-Related: R-005, LOT-007, LOT-010, LOT-011
-
-Decision:
-TextAid retains the existing safe Debug log as the default opt-in diagnostic mode. When Debug is enabled, the user may separately enable a persistent **Full log** mode. Full log records the diagnostic text that safe mode omits, including clipboard/input text, prompts, generated output, and raw exception messages, so that an IT professional or diagnostic AI can investigate a difficult failure. Full log remains a local file and is never transmitted automatically. The Debug page must explain that the user can manually obfuscate sensitive passages in a text editor before sharing the file for support.
-
-No authentication credential may ever be written, including API keys, Bearer tokens, passwords, or DPAPI-protected secrets. Full log has a visible red **Full log** indicator while active. The Full log choice persists with Debug; disabling Debug prevents log creation regardless of the persisted Full log preference.
-
-Reason:
-Safe diagnostics are appropriate by default, but some hard failures require enough context for a qualified person or AI to determine their cause. The user deliberately controls this trade-off and decides whether to share the locally stored file.
-
-Consequences:
-R-005 and LOT-007 debug requirements are revised. LOT-007 adds the persisted mode, red indicator, credential redaction, explanatory disclosure, and deterministic redaction coverage. LOT-010 and LOT-011 validate the two modes and ensure no credential is logged.
-
-Replaces: None
-Replaced by: None
-
 ## D-002 — Separate-machine verification is deferred when unavailable
 
 Date: 2026-09-26T04:32:06+02:00
@@ -574,6 +532,145 @@ Olivier wants the session to show the established brand, make the preset path di
 
 Consequences:
 LOT-006 is reopened for this contained correction. The shared menu behavior must remain consistent between the header and tray; LOT-008 retains its later broader menu and Actions-page work.
+
+Replaces: None
+Replaced by: None
+
+## D-029 — Single-configuration promotion for action profiles
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-007 privacy and UX clarification
+Related: R-005, R-022, R-027, R-029, LOT-006, LOT-007, LOT-009, LOT-010, LOT-011
+
+Decision:
+At invocation resolution only, if exactly one active, valid, eligible connection configuration exists, TextAid automatically and visibly uses that sole configuration for every action whose requested configuration is absent, inactive, or otherwise not configured. An action whose requested category differs is automatically downgraded or promoted to that sole choice; the status names both the requested category and the selected sole category. This includes requests for This device only and On-premises when External is the sole active eligible configuration.
+
+If two or more active eligible configurations exist, TextAid does not infer an upward route. It fails with clear guidance to select an appropriate active profile for the action. If no eligible configuration exists, it fails with configuration guidance. A malformed connection, unreadable secret, unavailable model, provider failure, timeout, or other runtime failure never triggers an upward switch; the existing explicit failure and user-controlled downward-downgrade behavior remains unchanged.
+
+Reason:
+An intentional cloud-only or network-only setup should operate every standard action without requiring the user to edit all action profiles that normally select This device only. Where multiple choices exist, silently selecting a more remote provider would obscure a meaningful privacy and cost choice.
+
+Consequences:
+R-027 and R-029 are revised. LOT-007 implements and tests the resolution outcome and visible status. LOT-009 applies the behavior once the External provider is executable. LOT-010 and LOT-011 cover cloud-only and network-only regression. The closed LOT-006 candidate remains historically accepted; this later behavior is delivered in LOT-007.
+
+Replaces: None
+Replaced by: None
+
+## D-030 — User-controlled full diagnostic logging
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's LOT-007 diagnostic clarification
+Related: R-005, LOT-007, LOT-010, LOT-011
+
+Decision:
+TextAid retains the existing safe Debug log as the default opt-in diagnostic mode. When Debug is enabled, the user may separately enable a persistent **Full log** mode. Full log records the diagnostic text that safe mode omits, including clipboard/input text, prompts, generated output, and raw exception messages, so that an IT professional or diagnostic AI can investigate a difficult failure. Full log remains a local file and is never transmitted automatically. The Debug page must explain that the user can manually obfuscate sensitive passages in a text editor before sharing the file for support.
+
+No authentication credential may ever be written, including API keys, Bearer tokens, passwords, or DPAPI-protected secrets. Full log has a visible red **Full log** indicator while active. The Full log choice persists with Debug; disabling Debug prevents log creation regardless of the persisted Full log preference.
+
+Reason:
+Safe diagnostics are appropriate by default, but some hard failures require enough context for a qualified person or AI to determine their cause. The user deliberately controls this trade-off and decides whether to share the locally stored file.
+
+Consequences:
+R-005 and LOT-007 debug requirements are revised. LOT-007 adds the persisted mode, red indicator, credential redaction, explanatory disclosure, and deterministic redaction coverage. LOT-010 and LOT-011 validate the two modes and ensure no credential is logged.
+
+Replaces: None
+Replaced by: None
+
+## D-031 — Durable translation-cache foundation and later language packs
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's localization-correction instruction
+Related: R-007, LOT-008, LOT-012
+
+Decision:
+LOT-008 is extended with a narrowly scoped durable locale-cache foundation. English remains the immutable source catalog. Each generated translated cache is stored separately by BCP-47 language tag, validated against the exact English keys and placeholders, and associated with a deterministic source-catalog fingerprint. The format and storage layout must reserve room for a later distinct user-override layer and portable reviewed language packs. LOT-008 does not provide editing corrections, import/export, sharing, GitHub access, or automatic updates of language packs.
+
+LOT-012 will provide user correction editing, restore-to-suggested behavior, import/export validation, pack provenance, and the documented path for community-reviewed language packs. It must preserve the local-first behavior: downloaded or shared packs are optional user actions, never a prerequisite for startup or normal transformations.
+
+Reason:
+Machine-generated translation may not reflect the wording a user or community prefers. Corrections need to remain durable across cache regeneration and future shared packs need compatibility boundaries.
+
+Consequences:
+LOT-008 gains only the compatibility and non-destructive storage foundation. The future UX and exchange workflow are deliberately deferred to LOT-012, avoiding an unreviewed expansion of the active lot.
+
+Replaces: None
+Replaced by: None
+
+## D-032 — Independent English UI preference and explicit catalog-generation profile
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's language-settings instruction
+Related: R-005, R-007, LOT-008
+
+Decision:
+LOT-008 exposes a separate preference to retain English for the TextAid UI. This preference does not modify the user's language or preferred translation language used by quick translation. When generating a translated locale cache, the user chooses one active connection profile explicitly; only active profiles appear. The selected profile is used only for catalog generation and does not change normal action routing or misrepresent the profile's connection category.
+
+Reason:
+Users may prefer reliable English UI wording over imperfect generated translations, and may prefer the quality of a particular active model for translation generation.
+
+Consequences:
+The setting is persisted, validates active-profile eligibility, and is available to the later explicit generation command. No background generation, provider promotion, or implicit cloud use is added.
+
+Replaces: None
+Replaced by: None
+
+## D-033 — Source-first localization discipline for all remaining lots
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's visible-string localization instruction
+Related: R-007, R-031, LOT-008 through LOT-012
+
+Decision:
+Every remaining lot must treat the English source catalog as the first destination for user-visible text. Before creating a string, implementation reuses a semantic existing key when possible; otherwise it adds a stable English key before wiring the view or code to that key. A source-catalog change invalidates translated caches for the prior source fingerprint, which must fall back to English until a compatible cache is explicitly generated or imported.
+
+Reason:
+TextAid must not accumulate duplicate literals or display mixed, stale, and inconsistent translations as the product evolves.
+
+Consequences:
+R-031 applies from LOT-008 onward. Every remaining specification now carries a localization-maintenance warning. LOT-008’s source fingerprint becomes the compatibility mechanism; LOT-012 will use it for reviewed packs and user corrections.
+
+Replaces: None
+Replaced by: None
+
+## D-034 — Explain locale-cache fallback to the user
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's cache-fallback UX instruction
+Related: R-007, R-031, LOT-008
+
+Decision:
+When TextAid rejects a selected locale cache because its fingerprint is stale, its content is invalid, or it cannot be read, it must visibly explain the English fallback. The message must say that TextAid remains usable and direct the user to generate or import a compatible translation. A missing cache is the normal pre-generation state and is not an error notification.
+
+Reason:
+Silent language regression would look like an application defect and obscure the corrective action.
+
+Consequences:
+LOT-008 publishes a tray notification at startup or after Settings reload for rejected caches. The source-first catalog discipline keeps the reason actionable.
+
+Replaces: None
+Replaced by: None
+
+## D-035 — Optional per-user Windows startup in the final lot
+
+Date: 2026-09-27T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's Windows-startup instruction
+Related: LOT-011
+
+Decision:
+LOT-011, rather than a new lot, adds a Settings switch allowing the current user to opt into or out of launching TextAid at Windows sign-in. The implementation uses only a current-user registration and must never require elevation, add a machine-wide registration, or defeat the existing single-instance guard.
+
+Reason:
+Resident-text-assistance use benefits from optional availability after sign-in, but users retain control and should not receive a new installation-level side effect before the final qualification lot.
+
+Consequences:
+LOT-011 owns the persisted Settings control, startup registration lifecycle, error handling, and final human validation. No code or startup registration is added in LOT-008.
 
 Replaces: None
 Replaced by: None

@@ -18,16 +18,8 @@ public static class ActionValidator
         if (!profileIds.Contains(action.ProfileId)) throw new InvalidOperationException($"Action '{action.Id}' references an unknown profile.");
         if (action.TemperatureOverride is < 0 or > 2) throw new InvalidOperationException($"Action '{action.Id}' has an invalid temperature override.");
         if (string.IsNullOrWhiteSpace(action.OutputLanguageDefault)) throw new InvalidOperationException($"Action '{action.Id}' requires an output-language default.");
-        if (!action.OutputLanguageDefault.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
-        {
-            if (!System.Text.RegularExpressions.Regex.IsMatch(action.OutputLanguageDefault, "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"))
-                throw new InvalidOperationException($"Action '{action.Id}' has an invalid output-language default.");
-            try { _ = System.Globalization.CultureInfo.GetCultureInfo(action.OutputLanguageDefault); }
-            catch (System.Globalization.CultureNotFoundException)
-            {
-                throw new InvalidOperationException($"Action '{action.Id}' has an invalid output-language default.");
-            }
-        }
+        if (!action.OutputLanguageDefault.Equals("Unchanged", StringComparison.OrdinalIgnoreCase) && !LanguageCatalog.IsSupported(action.OutputLanguageDefault))
+            throw new InvalidOperationException($"Action '{action.Id}' has an invalid output-language default.");
         TemplateRenderer.ValidateTemplate(action.PromptTemplate);
     }
 

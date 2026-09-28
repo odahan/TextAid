@@ -20,11 +20,23 @@ public static class BuiltInActionCatalog
         ["answer-this-mail"] = "Answer this mail"
     };
 
+    /// <summary>Gets or sets the optional UI-layer resolver for localized built-in action names.</summary>
+    public static Func<string, string?>? DisplayNameResolver { get; set; }
+
     /// <summary>Gets the eight built-in actions in their normal session order.</summary>
     public static IReadOnlyList<ActionDefinition> Create() => FileNames.Select(ReadEmbeddedAction).ToArray();
 
-    /// <summary>Gets the English fallback label for an action ID.</summary>
-    public static string GetDisplayName(string id) => DisplayNames.TryGetValue(id, out string? name) ? name : id;
+    /// <summary>Gets the localized label for a built-in action, or its English fallback.</summary>
+    public static string GetDisplayName(string id)
+    {
+        string? localized = DisplayNameResolver?.Invoke(id);
+        return !string.IsNullOrWhiteSpace(localized)
+            ? localized
+            : DisplayNames.TryGetValue(id, out string? name) ? name : id;
+    }
+
+    /// <summary>Determines whether an action ID is supplied by TextAid.</summary>
+    public static bool IsBuiltIn(string id) => DisplayNames.ContainsKey(id);
 
     /// <summary>Writes missing built-in action files without overwriting existing user data.</summary>
     public static void EnsureCreated(string actionsDirectory)

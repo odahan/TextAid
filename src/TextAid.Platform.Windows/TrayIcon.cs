@@ -18,6 +18,9 @@ public sealed class TrayIcon : IDisposable
 
     public void ShowError(string message) => icon.ShowBalloonTip(4000, "TextAid", message, ToolTipIcon.Error);
 
+    /// <summary>Shows a non-error status notification from the resident application.</summary>
+    public void ShowInfo(string message) => icon.ShowBalloonTip(6000, "TextAid", message, ToolTipIcon.Info);
+
     public void Dispose()
     {
         icon.Visible = false;

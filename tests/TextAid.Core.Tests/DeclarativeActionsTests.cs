@@ -49,6 +49,26 @@ public sealed class DeclarativeActionsTests
     }
 
     [Fact]
+    public void BuiltInDisplayName_UsesTheUiResolverButNeverOverridesAUserName()
+    {
+        Func<string, string?>? previous = BuiltInActionCatalog.DisplayNameResolver;
+        try
+        {
+            BuiltInActionCatalog.DisplayNameResolver = id => id == "translate" ? "Traduire" : null;
+
+            var builtIn = new ActionDefinition("translate", null, true, "Translate {{text}}", "local-default", null, "Unchanged", false, true);
+            var customized = builtIn with { DisplayNameOverride = "My Translate" };
+
+            Assert.Equal("Traduire", builtIn.DisplayName);
+            Assert.Equal("My Translate", customized.DisplayName);
+        }
+        finally
+        {
+            BuiltInActionCatalog.DisplayNameResolver = previous;
+        }
+    }
+
+    [Fact]
     public void Load_RejectsAChangedReservedTranslateAction()
     {
         using var directory = new TemporaryDirectory();
@@ -61,6 +81,33 @@ public sealed class DeclarativeActionsTests
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => loader.Load());
 
         Assert.Equal("The reserved Translate action cannot be modified.", exception.Message);
+    }
+
+    [Fact]
+    public void Delete_RemovesAnOrdinaryActionAndRetainsAValidSet()
+    {
+        using var directory = new TemporaryDirectory();
+        var loader = new ActionLoader(actionsDirectory: directory.Path);
+        _ = loader.Load();
+        loader.Save(new ActionDefinition("polish", "Polish", true, "Process {{text}}", "local-default", null, "Unchanged", false));
+
+        loader.Delete("polish");
+
+        Assert.DoesNotContain(loader.Load(), action => action.Id == "polish");
+        Assert.False(File.Exists(Path.Combine(directory.Path, "polish.json")));
+    }
+
+    [Fact]
+    public void Delete_RejectsTheReservedTranslateAction()
+    {
+        using var directory = new TemporaryDirectory();
+        var loader = new ActionLoader(actionsDirectory: directory.Path);
+        _ = loader.Load();
+
+        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => loader.Delete("translate"));
+
+        Assert.Equal("The reserved Translate action cannot be deleted.", exception.Message);
+        Assert.Contains(loader.Load(), action => action.Id == "translate");
     }
 
     [Fact]
