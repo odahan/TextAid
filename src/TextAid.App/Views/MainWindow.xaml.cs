@@ -1,8 +1,11 @@
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
+using TextAid.App;
 using TextAid.Core;
 using TextAid.Platform.Windows;
 using TextAid.App.ViewModels;
@@ -13,12 +16,16 @@ namespace TextAid.App.Views;
 public partial class MainWindow : Window
 {
     private readonly Action showApplicationMenu;
+    private readonly InvocationSession session;
 
     public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
         InitializeComponent();
+        this.session = session;
         this.showApplicationMenu = showApplicationMenu ?? throw new ArgumentNullException(nameof(showApplicationMenu));
-        DataContext = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
+        var viewModel = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
+        viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        DataContext = viewModel;
 
         SourceInitialized += (_, _) =>
         {
@@ -47,13 +54,23 @@ public partial class MainWindow : Window
     public void ShowFailure(string message) => ((MainViewModel)DataContext).ShowFailure(message);
 
     /// <summary>Shows the completed transformation and enables the safe result actions.</summary>
-    public void ShowResult(string output) => ((MainViewModel)DataContext).ShowResult(output);
+    public void ShowResult(string output)
+    {
+        ((MainViewModel)DataContext).ShowResult(output);
+        ShowRenderedMarkdownIfAvailable();
+    }
 
     /// <summary>Refreshes the view when processing starts from the editable input.</summary>
     public void ShowTransforming(string message) => ((MainViewModel)DataContext).ShowTransforming(message);
 
     /// <summary>Clears this transaction for a safe new manual input.</summary>
-    public void ResetForNewInput() => ((MainViewModel)DataContext).ResetForNewInput();
+    public void ResetForNewInput()
+    {
+        MarkdownPreview.Document = null;
+        MarkdownPreview.Visibility = Visibility.Collapsed;
+        PlainTextPreview.Visibility = Visibility.Visible;
+        ((MainViewModel)DataContext).ResetForNewInput();
+    }
 
     /// <summary>Updates the persistent Full log indicator without closing the active session.</summary>
     public void SetFullLogActive(bool active) => ((MainViewModel)DataContext).SetFullLogActive(active);
@@ -103,4 +120,33 @@ public partial class MainWindow : Window
     }
 
     private void OnShowApplicationMenu(object sender, RoutedEventArgs e) => showApplicationMenu();
+
+    private void OnShowRawMarkdown(object sender, RoutedEventArgs e)
+    {
+        MarkdownPreview.Visibility = Visibility.Collapsed;
+        PlainTextPreview.Visibility = Visibility.Visible;
+    }
+
+    private void OnShowRenderedMarkdown(object sender, RoutedEventArgs e) => ShowRenderedMarkdownIfAvailable();
+
+    private void ShowRenderedMarkdownIfAvailable()
+    {
+        FlowDocument? document = null;
+        bool rendered = session.MarkdownOutputEnabled
+            && session.HasCurrentResult
+            && MarkdownPreviewRenderer.TryCreateDocument(session.OutputText!, out document);
+
+        MarkdownPreview.Document = rendered ? document : null;
+        MarkdownPreview.Visibility = rendered ? Visibility.Visible : Visibility.Collapsed;
+        PlainTextPreview.Visibility = rendered ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(MainViewModel.MarkdownOutputEnabled)
+            && sender is MainViewModel { MarkdownOutputEnabled: false })
+        {
+            OnShowRawMarkdown(this, new RoutedEventArgs());
+        }
+    }
 }

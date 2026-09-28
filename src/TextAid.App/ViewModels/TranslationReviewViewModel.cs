@@ -37,6 +37,12 @@ public sealed partial class TranslationReviewViewModel : ObservableObject
     /// <summary>Raised after an accepted correction or compatible import changes displayed translations.</summary>
     public event EventHandler? TranslationsChanged;
 
+    /// <summary>Requests confirmation before the generated suggested-translation cache is removed.</summary>
+    public event Func<bool>? DeleteCacheConfirmationRequested;
+
+    /// <summary>Raised after deletion returns the application to its English default UI state.</summary>
+    public event EventHandler? LanguageCacheDeleted;
+
     [RelayCommand]
     private void SaveCorrection()
     {
@@ -64,6 +70,32 @@ public sealed partial class TranslationReviewViewModel : ObservableObject
         SelectedItem.Origin = packs.GetOrigin(CachePath, OverridesPath, SelectedItem.Key).Kind;
         Status = UiStrings.Get("TranslationRestoredMessage");
         TranslationsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    [RelayCommand]
+    private void DeleteLanguageCache()
+    {
+        if (DeleteCacheConfirmationRequested?.Invoke() != true) return;
+        if (!catalog.TryDelete(CachePath))
+        {
+            Status = UiStrings.Get("LanguageCacheDeletionFailureMessage");
+            return;
+        }
+
+        try
+        {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            LocalizationPreferences localization = UserConfiguration.LoadLocalizationPreferences();
+            UserConfiguration.SaveUserPreferences("en", configuration.PreferredTranslationLanguage, configuration.NormalShortcut, configuration.TranslationShortcut);
+            UserConfiguration.SaveLocalizationPreferences(true, localization.ProfileId);
+            Status = UiStrings.Get("LanguageCacheDeletedMessage");
+            TranslationsChanged?.Invoke(this, EventArgs.Empty);
+            LanguageCacheDeleted?.Invoke(this, EventArgs.Empty);
+        }
+        catch (Exception)
+        {
+            Status = UiStrings.Get("LanguageCacheDeletionFailureMessage");
+        }
     }
 
     /// <summary>Exports the compatible suggested cache, intentionally excluding personal corrections.</summary>

@@ -1,6 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
   <sys:String x:Key="ProductName">TextAid</sys:String><sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
-  <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String>
+  <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String><sys:String x:Key="RawMarkdownPreviewLabel">**bold**</sys:String><sys:String x:Key="RenderedMarkdownPreviewLabel">bold</sys:String><sys:String x:Key="RawMarkdownPreviewToolTip">Show raw Markdown</sys:String><sys:String x:Key="RenderedMarkdownPreviewToolTip">Show rendered Markdown</sys:String>
   <sys:String x:Key="ActionLabel">Action</sys:String>
   <sys:String x:Key="MarkdownOutputLabel">Markdown output</sys:String>
   <sys:String x:Key="UiTranslationRequiredLabel">● UI translation needed</sys:String>
@@ -53,5 +53,6 @@
   <sys:String x:Key="LocaleCacheStaleFallbackMessage">The selected UI translation was made for an older English catalog. TextAid is using English until you generate or import a compatible translation.</sys:String>
   <sys:String x:Key="LocaleCacheInvalidFallbackMessage">The selected UI translation is invalid. TextAid is using English; generate or import a compatible translation to restore it.</sys:String>
   <sys:String x:Key="LocaleCacheUnreadableFallbackMessage">The selected UI translation could not be read. TextAid is using English; check the locale cache and try again.</sys:String>
+  <sys:String x:Key="DeleteLanguageCacheLabel">Delete language cache</sys:String><sys:String x:Key="DeleteLanguageCacheConfirmation">Delete the generated language cache for this language? Personal corrections are kept.</sys:String><sys:String x:Key="LanguageCacheDeletedMessage">The generated language cache was deleted. Personal corrections were kept.</sys:String><sys:String x:Key="LanguageCacheDeletionFailureMessage">TextAid could not delete the language cache.</sys:String>
   <sys:String x:Key="Action.translate">Translate</sys:String><sys:String x:Key="Action.correct">Correct</sys:String><sys:String x:Key="Action.rewrite">Rewrite</sys:String><sys:String x:Key="Action.shorten">Shorten</sys:String><sys:String x:Key="Action.expand">Expand</sys:String><sys:String x:Key="Action.simplify">Simplify</sys:String><sys:String x:Key="Action.change-tone">Change tone</sys:String><sys:String x:Key="Action.summarize">Summarize</sys:String><sys:String x:Key="Action.answer-this-mail">Answer this mail</sys:String><sys:String x:Key="Action.Synonymes">Synonyms</sys:String><sys:String x:Key="Action.humanize">Humanize</sys:String>
 </ResourceDictionary>

@@ -656,3 +656,10 @@ Actor: Olivier and Codex
 Operation: Olivier confirmed that G-012-001 and G-012-002 had been verified successfully and authorized closure. Codex recorded the human validation, finalized the LOT-012 convergence, and closed the lot.
 Affected artifacts: `Specs/012-language-corrections-packs/GATES-012.md`, `Specs/012-language-corrections-packs/FINDINGS-012.md`, `Specs/012-language-corrections-packs/CONVERGENCE-012.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: LOT-012 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `A8E313A196A4B09AE6990A7A59AF83AD9E0D8C87F87944DC0329B59FEE1E6C66`. Both gates are PASS; LOT-013 remains the next planned lot.
+
+## 2026-09-29 — LOT-013 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Codex implemented and published the native MdXaml rendered Markdown preview, its raw/rendered selectors, dark inert rendering safeguards, fallback behavior, and deterministic WPF coverage. Olivier accepted the Windows preview walkthrough and authorized closure after the selector, Markdown-off, cache-deletion, and global English-reset corrections.
+Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/`, `tests/`, `Specs/013-markdown-preview/`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: LOT-013 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `F3D9715551624D3A382DD351CFD5C1EF511F3A35BC87479DE2563D344A923E7A`. Both gates are PASS; the separate-machine portability check is deferred under R-012.

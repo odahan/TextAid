@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/TextAid.Platform.Windows/TextAid.Platform.Windows.csproj" />
+    <ProjectReference Include="../../src/TextAid.App/TextAid.App.csproj" />
   </ItemGroup>
 
 </Project>

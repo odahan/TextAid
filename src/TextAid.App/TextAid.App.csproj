@@ -22,6 +22,7 @@
     <ProjectReference Include="../TextAid.AI/TextAid.AI.csproj" />
     <ProjectReference Include="../TextAid.Platform.Windows/TextAid.Platform.Windows.csproj" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="MdXaml" Version="1.27.0" />
     <Resource Include="../../assets/Logo-final.png" LogicalName="Assets/Logo-final.png" />
     <Resource Include="../../assets/TextAid.ico" LogicalName="Assets/TextAid.ico" />
   </ItemGroup>

@@ -73,6 +73,20 @@ public sealed class LocalizationCatalog
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
+    /// <summary>Removes only a generated language cache and its provenance metadata, preserving personal corrections.</summary>
+    public bool TryDelete(string cachePath)
+    {
+        try
+        {
+            File.Delete(cachePath);
+            File.Delete(cachePath + ".source-fingerprint");
+            File.Delete(cachePath + ".origin.json");
+            return true;
+        }
+        catch (IOException) { return false; }
+        catch (UnauthorizedAccessException) { return false; }
+    }
+
     internal static HashSet<string> Placeholders(string value) => System.Text.RegularExpressions.Regex.Matches(value, "\\{[^{}]+\\}").Select(match => match.Value).ToHashSet(StringComparer.Ordinal);
 }
 

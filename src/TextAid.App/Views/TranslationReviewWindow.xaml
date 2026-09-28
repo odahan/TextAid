@@ -39,7 +39,7 @@
             </DataGrid>
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock Text="{Binding Status}" TextWrapping="Wrap"/><StackPanel Orientation="Horizontal" Margin="0,8,0,0"><Button Content="{DynamicResource ImportLanguagePackLabel}" Click="OnImport" Margin="0,0,8,0"/><Button Content="{DynamicResource ExportLanguagePackLabel}" Click="OnExport"/></StackPanel></StackPanel>
+                <StackPanel><TextBlock Text="{Binding Status}" TextWrapping="Wrap"/><StackPanel Orientation="Horizontal" Margin="0,8,0,0"><Button Content="{DynamicResource ImportLanguagePackLabel}" Click="OnImport" Margin="0,0,8,0"/><Button Content="{DynamicResource ExportLanguagePackLabel}" Click="OnExport" Margin="0,0,8,0"/><Button Content="{DynamicResource DeleteLanguageCacheLabel}" Command="{Binding DeleteLanguageCacheCommand}"/></StackPanel></StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom"><Button Content="{DynamicResource RestoreSuggestedLabel}" Command="{Binding RestoreSuggestedCommand}" Margin="0,0,8,0"/><Button Content="{DynamicResource SaveCorrectionLabel}" Command="{Binding SaveCorrectionCommand}" Style="{StaticResource PrimaryButton}"/></StackPanel>
             </Grid>
         </Grid>

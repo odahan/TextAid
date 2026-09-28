@@ -538,14 +538,15 @@ public partial class App : Application
     {
         var catalog = new LocalizationCatalog(EnglishStringCatalog.Values);
         string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", language + ".json");
-        LocaleCatalogLoadResult result = preferEnglishUi || language.Equals("en", StringComparison.OrdinalIgnoreCase)
+        bool useEnglish = preferEnglishUi || language.Equals("en", StringComparison.OrdinalIgnoreCase);
+        LocaleCatalogLoadResult result = useEnglish
             ? new LocaleCatalogLoadResult(EnglishStringCatalog.Values, LocaleCatalogLoadStatus.Loaded)
             : catalog.Load(cachePath);
         isUiTranslationRequired = !preferEnglishUi
             && !language.Equals("en", StringComparison.OrdinalIgnoreCase)
             && result.Status != LocaleCatalogLoadStatus.Loaded;
         string localesDirectory = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales");
-        IReadOnlyDictionary<string, string> values = result.Status == LocaleCatalogLoadStatus.Loaded
+        IReadOnlyDictionary<string, string> values = !useEnglish && result.Status == LocaleCatalogLoadStatus.Loaded
             ? new LanguagePackService(catalog).ApplyOverrides(result.Values, LanguagePackService.GetOverridesPath(localesDirectory, language))
             : result.Values;
         foreach ((string key, string value) in values) Resources[key] = value;

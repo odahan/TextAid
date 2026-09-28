@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Interop;
 using Microsoft.Win32;
+using TextAid.App.Localization;
 using TextAid.App.ViewModels;
 using TextAid.Platform.Windows;
 
@@ -16,6 +17,8 @@ public partial class TranslationReviewWindow : Window
     {
         InitializeComponent();
         viewModel = new TranslationReviewViewModel(language);
+        viewModel.DeleteCacheConfirmationRequested += () => MessageBox.Show(this, UiStrings.Get("DeleteLanguageCacheConfirmation"), UiStrings.Get("ProductName"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+        viewModel.LanguageCacheDeleted += (_, _) => Close();
         DataContext = viewModel;
         SourceInitialized += (_, _) => WindowsShell.TryEnableDarkCaption(new WindowInteropHelper(this).Handle);
         Closing += OnClosing;

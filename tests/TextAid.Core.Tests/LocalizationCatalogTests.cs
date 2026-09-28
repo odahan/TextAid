@@ -98,6 +98,28 @@ public sealed class LocalizationCatalogTests
     }
 
     [Fact]
+    public void TryDelete_RemovesOnlyTheGeneratedCacheAndItsMetadata()
+    {
+        string directory = CreateDirectory();
+        try
+        {
+            string cachePath = Path.Combine(directory, "fr.json");
+            string overridesPath = LanguagePackService.GetOverridesPath(directory, "fr");
+            Assert.True(catalog.TrySave(cachePath, "{\"Greeting\":\"Bonjour {name}\",\"Save\":\"Enregistrer\"}"));
+            File.WriteAllText(cachePath + ".origin.json", "{}");
+            Assert.True(new LanguagePackService(catalog).TrySaveOverride(overridesPath, "Save", "Sauvegarder"));
+
+            Assert.True(catalog.TryDelete(cachePath));
+
+            Assert.False(File.Exists(cachePath));
+            Assert.False(File.Exists(cachePath + ".source-fingerprint"));
+            Assert.False(File.Exists(cachePath + ".origin.json"));
+            Assert.True(File.Exists(overridesPath));
+        }
+        finally { DeleteDirectory(directory); }
+    }
+
+    [Fact]
     public void PersonalOverride_TakesPrecedenceAndCanBeRestored()
     {
         string directory = CreateDirectory();

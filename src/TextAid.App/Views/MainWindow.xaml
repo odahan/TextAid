@@ -134,12 +134,21 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Grid.Column="0" Text="{DynamicResource CapturedText}" FontSize="16" FontWeight="SemiBold"/>
-            <TextBlock Grid.Row="0" Grid.Column="2" Text="{DynamicResource PreviewLabel}" FontSize="16" FontWeight="SemiBold"/>
+            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal">
+                <TextBlock Text="{DynamicResource PreviewLabel}" FontSize="16" FontWeight="SemiBold"/>
+                <StackPanel Orientation="Horizontal" Margin="12,0,0,0" Visibility="{Binding MarkdownOutputEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Button Content="{DynamicResource RawMarkdownPreviewLabel}" Click="OnShowRawMarkdown" ToolTip="{DynamicResource RawMarkdownPreviewToolTip}" MinHeight="0" Padding="5,1" Margin="0,0,5,0"/>
+                    <Button Content="{DynamicResource RenderedMarkdownPreviewLabel}" FontWeight="Bold" Click="OnShowRenderedMarkdown" ToolTip="{DynamicResource RenderedMarkdownPreviewToolTip}" MinHeight="0" Padding="5,1"/>
+                </StackPanel>
+            </StackPanel>
             <TextBox x:Name="InputEditor" Grid.Row="2" Grid.Column="0" Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14"/>
             <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <TextBlock Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap" FontSize="14" LineHeight="20" />
-                </ScrollViewer>
+                <Grid>
+                    <FlowDocumentScrollViewer x:Name="MarkdownPreview" Visibility="Collapsed" IsTabStop="True" Focusable="True" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Rendered Markdown preview"/>
+                    <ScrollViewer x:Name="PlainTextPreview" VerticalScrollBarVisibility="Auto">
+                        <TextBlock Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap" FontSize="14" LineHeight="20" />
+                    </ScrollViewer>
+                </Grid>
             </Border>
         </Grid>
         <StackPanel Grid.Row="5" Margin="0,14,0,0">
