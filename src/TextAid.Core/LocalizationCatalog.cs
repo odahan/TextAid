@@ -18,6 +18,9 @@ public sealed class LocalizationCatalog
     /// <summary>Gets a stable SHA-256 identity for compatibility with future language packs.</summary>
     public string SourceFingerprint => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\n", english.OrderBy(pair => pair.Key, StringComparer.Ordinal).Select(pair => $"{pair.Key}={pair.Value}")))));
 
+    /// <summary>Gets the authoritative English source values for compatible local extensions.</summary>
+    public IReadOnlyDictionary<string, string> SourceValues => english;
+
     /// <summary>Validates a generated JSON object against source keys and interpolation placeholders.</summary>
     public bool TryValidate(string json, out IReadOnlyDictionary<string, string> catalog)
     {
@@ -70,7 +73,7 @@ public sealed class LocalizationCatalog
         finally { if (File.Exists(temporary)) File.Delete(temporary); }
     }
 
-    private static HashSet<string> Placeholders(string value) => System.Text.RegularExpressions.Regex.Matches(value, "\\{[^{}]+\\}").Select(match => match.Value).ToHashSet(StringComparer.Ordinal);
+    internal static HashSet<string> Placeholders(string value) => System.Text.RegularExpressions.Regex.Matches(value, "\\{[^{}]+\\}").Select(match => match.Value).ToHashSet(StringComparer.Ordinal);
 }
 
 /// <summary>Identifies how a locale cache was resolved.</summary>

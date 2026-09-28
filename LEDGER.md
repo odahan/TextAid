@@ -788,3 +788,41 @@ G-010-002 becomes N/A only under these stated conditions. LOT-010 can close with
 
 Replaces: None
 Replaced by: None
+
+## D-042 — Render Markdown previews natively in WPF
+
+Date: 2026-09-28T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's post-V1 Markdown-preview instruction, following package research
+Related: R-002, R-003, R-007, LOT-013
+
+Decision:
+Create post-V1 LOT-013 to render Markdown-mode results in TextAid's WPF preview through `MdXaml` version 1.27.0 and its native `FlowDocument` output. The application retains the original Markdown string as the authoritative result for Replace and Copy. It does not embed a browser, render raw HTML, or generate RTF for the preview.
+
+Reason:
+The current Markdown option produces a formatted response but displays its syntax as plain text. Native `FlowDocument` rendering improves review without changing the safe transaction contract. MdXaml is compatible with `net10.0-windows`, while the direct Markdig WPF renderer is archived. RTF conversion does not improve an in-application preview and would introduce a disproportionate conversion dependency.
+
+Consequences:
+LOT-013 owns the package integration, dark-theme adaptation, safe rendering rules, and tests. Raw HTML, external images or resources, executable content, and rich-text clipboard replacement are excluded. R-003's dependency discipline remains applicable.
+
+Replaces: None
+Replaced by: None
+
+## D-043 — Accept V1 release qualification with proportionate evidence
+
+Date: 2026-09-28T22:07:56+02:00
+Decided by: Olivier
+Source: Olivier's LOT-011 closure authorization
+Related: LOT-011, G-011-001, G-011-002, R-009, R-011, R-012
+
+Decision:
+Accept the published V1 candidate SHA-256 `48BDA1471C6971242A60FB2EA1D1DE04AF930D5A2CFAC7A4E9733D70C3D67F8E` and close LOT-011 with TOTAL convergence. Use the automated build, test, publication, startup-registration evidence, and the completed validation accumulated throughout development. Do not extend the release with duplicate test campaigns solely to seek an unattainable absolute defect guarantee.
+
+Reason:
+Olivier confirmed that the software has been tested throughout construction and that its functions work. The remaining benefit of broader duplicate coverage is disproportionate to its cost; future defects are handled through normal corrective work.
+
+Consequences:
+G-011-001 and G-011-002 are PASS for the identified candidate. The separate-machine check remains explicitly DEFERRED under R-012 and is not represented as a portability PASS. LOT-012 and LOT-013 remain planned post-V1 work.
+
+Replaces: None
+Replaced by: None

@@ -600,3 +600,59 @@ Actor: Olivier and Codex
 Operation: Olivier confirmed the completed action workflow and visual corrections, then authorized LOT-005 closure. Codex recorded G-005-002 PASS and finalized TOTAL convergence.
 Affected artifacts: `Specs/005-declarative-actions/GATES-005.md`, `Specs/005-declarative-actions/CONVERGENCE-005.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: LOT-005 is Closed. Both active gates PASS; LOT-006 remains Planned.
+
+## 2026-09-28 — LOT-011 opened
+
+Actor: Olivier and Codex
+Operation: Olivier authorized the start of LOT-011. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-010 is closed and that no other lot occupies the active-work slot.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-011 is the active lot. Its current result includes the tested per-user Windows startup option; release evidence and human V1 acceptance remain pending.
+
+## 2026-09-28 — LOT-013 planned for rendered Markdown preview
+
+Actor: Olivier and Codex
+Operation: Olivier requested a post-V1 rendered Markdown preview and required a package decision before specification. Codex compared WPF Markdown, HTML, and RTF routes, then recorded D-042 and created LOT-013 around native MdXaml FlowDocument rendering.
+Affected artifacts: `LEDGER.md`, `Specs/013-markdown-preview/`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-013 is Planned after LOT-012. It preserves raw Markdown for Copy and Replace, excludes HTML/RTF rendering, and requires a dark, inert WPF preview.
+
+## 2026-09-28 — LOT-011 V1 candidate accepted
+
+Actor: Olivier and Codex
+Operation: Codex published the V1 candidate, recorded the deterministic build/test/startup-registration evidence, and Olivier accepted the proportionate release qualification based on validation accumulated during development.
+Affected artifacts: `publish.ps1` output, `Specs/011-v1-release/GATES-011.md`, `Specs/011-v1-release/CONVERGENCE-011.md`, `PORTABILITY-CHECKS.md`, `LEDGER.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: Both LOT-011 gates are PASS for EXE SHA-256 `48BDA1471C6971242A60FB2EA1D1DE04AF930D5A2CFAC7A4E9733D70C3D67F8E`; the separate-machine check remains deferred and visible.
+
+## 2026-09-28 — LOT-012 opened
+
+Actor: Olivier and Codex
+Operation: Olivier authorized implementation of LOT-012 after LOT-011 closure. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-011 is closed and that no other lot occupies the active-work slot.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-012 is the active lot. Its current scope is the personal translation-correction layer, portable language-pack import/export validation, translation-origin visibility, and the documented community-pack layout; no gate result is yet claimed.
+
+## 2026-09-28 — LOT-012 correction and pack workflow implemented
+
+Actor: Codex
+Operation: Implemented isolated per-language personal corrections, restoration to a suggested value, validated portable pack import/export, persisted provenance, active-origin display, the themed translation-review editor, and a repository-ready community-pack document. Added deterministic Core coverage for correction precedence, restoration, compatible import/export, fingerprint mismatch, placeholder loss, invalid JSON, and cache preservation after rejected packs.
+Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `docs/language-packs.md`, `Specs/012-language-corrections-packs/`.
+Outcome: G-012-001 is PASS after `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` completed with 100 tests passing. G-012-002 remains TO TEST pending the required human Windows walkthrough.
+
+## 2026-09-28 — Application version raised to 1.1.0
+
+Actor: Olivier and Codex
+Operation: Olivier requested the next application version. Codex changed the application version to `1.1.0` and published the canonical self-contained single-file Release executable.
+Affected artifacts: `src/TextAid.App/TextAid.App.csproj`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: The published executable reports ProductVersion `1.1.0` and FileVersion `1.1.0.0`; SHA-256 `92EFEE0C75DE75015B63DA8AB833A8B95DD74C2E1F43B10F641F4295BAA7C96E`.
+
+## 2026-09-28 — Translation-review persistence and dark theme corrected
+
+Actor: Olivier and Codex
+Operation: Olivier reported that unsaved review-grid corrections did not take effect when the window closed and that the editor used the system light DataGrid theme. Codex persists all pending valid corrections during window closure, keeps the window open for invalid values, reapplies the active locale after persistence, and adds explicit dark editor, grid, header, cell, and selection styling.
+Affected artifacts: `src/TextAid.App/ViewModels/TranslationReviewViewModel.cs`, `src/TextAid.App/Views/TranslationReviewWindow.xaml`, `src/TextAid.App/Views/TranslationReviewWindow.xaml.cs`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` passed with 100 tests. The 1.1.0 executable was republished for the required human visual verification.
+
+## 2026-09-28 — LOT-012 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed that G-012-001 and G-012-002 had been verified successfully and authorized closure. Codex recorded the human validation, finalized the LOT-012 convergence, and closed the lot.
+Affected artifacts: `Specs/012-language-corrections-packs/GATES-012.md`, `Specs/012-language-corrections-packs/FINDINGS-012.md`, `Specs/012-language-corrections-packs/CONVERGENCE-012.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-012 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `A8E313A196A4B09AE6990A7A59AF83AD9E0D8C87F87944DC0329B59FEE1E6C66`. Both gates are PASS; LOT-013 remains the next planned lot.

@@ -21,6 +21,7 @@ public partial class App : Application
     private StartupNoticeWindow? startupNoticeWindow;
     private AboutWindow? aboutWindow;
     private ActionsWindow? actionsWindow;
+    private TranslationReviewWindow? translationReviewWindow;
     private Mutex? instanceMutex;
     private readonly ResultActions resultActions = new(new Win32ResultActions());
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
@@ -406,6 +407,8 @@ public partial class App : Application
         settings.Click += (_, _) => ShowSettings();
         var actions = new MenuItem { Header = Label("ActionsLabel"), Style = itemStyle };
         actions.Click += (_, _) => ShowActions();
+        var translationReview = new MenuItem { Header = Label("TranslationReviewLabel"), Style = itemStyle };
+        translationReview.Click += (_, _) => ShowTranslationReview();
         var open = new MenuItem { Header = Label("OpenLabel"), Style = itemStyle };
         open.Click += (_, _) => _ = CaptureWithFeedbackAsync(0, hasCopiedText: false);
         var about = new MenuItem { Header = Label("AboutLabel"), Style = itemStyle };
@@ -416,6 +419,7 @@ public partial class App : Application
         menu.Items.Add(new Separator { Style = separatorStyle });
         menu.Items.Add(open);
         menu.Items.Add(actions);
+        menu.Items.Add(translationReview);
         menu.Items.Add(settings);
         menu.Items.Add(about);
         menu.Items.Add(new Separator { Style = separatorStyle });
@@ -486,6 +490,22 @@ public partial class App : Application
         actionsWindow.ActivateForUserInput();
     }
 
+    /// <summary>Opens the local correction editor for the configured UI language.</summary>
+    private void ShowTranslationReview()
+    {
+        if (translationReviewWindow is { IsVisible: true }) { translationReviewWindow.Activate(); return; }
+        string language = UserConfiguration.LoadConfiguration().UserLanguage;
+        translationReviewWindow = new TranslationReviewWindow(language);
+        translationReviewWindow.TranslationsChanged += (_, _) =>
+        {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            ApplyCachedLocale(configuration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
+        };
+        translationReviewWindow.Closed += (_, _) => translationReviewWindow = null;
+        translationReviewWindow.Show();
+        translationReviewWindow.Activate();
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
         debugLog.Write("application-stopped");
@@ -524,7 +544,10 @@ public partial class App : Application
         isUiTranslationRequired = !preferEnglishUi
             && !language.Equals("en", StringComparison.OrdinalIgnoreCase)
             && result.Status != LocaleCatalogLoadStatus.Loaded;
-        IReadOnlyDictionary<string, string> values = result.Values;
+        string localesDirectory = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales");
+        IReadOnlyDictionary<string, string> values = result.Status == LocaleCatalogLoadStatus.Loaded
+            ? new LanguagePackService(catalog).ApplyOverrides(result.Values, LanguagePackService.GetOverridesPath(localesDirectory, language))
+            : result.Values;
         foreach ((string key, string value) in values) Resources[key] = value;
         BuiltInActionCatalog.DisplayNameResolver = id => UiStrings.TryGet($"Action.{id}");
         localeFallbackNotice = result.Status switch

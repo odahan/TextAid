@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.Input;
 using TextAid.AI;
 using TextAid.Core;
 using TextAid.App.Localization;
+using TextAid.Platform.Windows;
 
 namespace TextAid.App.ViewModels;
 
@@ -26,6 +27,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly OllamaChatClientFactory chatClientFactory = new();
     private readonly OpenAiCompatibleChatClientFactory externalChatClientFactory = new();
     private readonly AiClientFactory aiClientFactory = new();
+    private readonly IWindowsStartupRegistration startupRegistration = new WindowsStartupRegistration();
 
     [ObservableProperty] private string endpoint = "http://127.0.0.1:11434";
     [ObservableProperty] private string? selectedModel;
@@ -55,6 +57,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string selectedLocalizationProfile = "local-default";
     [ObservableProperty] private bool isGeneratingLocale;
     [ObservableProperty] private bool isLoadingExternalModels;
+    [ObservableProperty] private bool startWithWindows;
 
     public ObservableCollection<string> Models { get; } = [];
     public ObservableCollection<string> ExternalModels { get; } = [];
@@ -113,6 +116,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ExternalEnabled = external?.IsEnabled ?? false;
             DebugEnabled = UserConfiguration.LoadDebugMode();
             FullDebugEnabled = UserConfiguration.LoadFullDebugMode();
+            StartWithWindows = startupRegistration.IsEnabled();
             await LoadModelsAsync();
         }
         catch (Exception)
@@ -222,6 +226,17 @@ public sealed partial class SettingsViewModel : ObservableObject
             UserConfiguration.SaveFullDebugMode(FullDebugEnabled);
             UserConfiguration.SaveUserPreferences(UserLanguage, PreferredTranslationLanguage, NormalShortcut, TranslationShortcut);
             UserConfiguration.SaveLocalizationPreferences(PreferEnglishUi, SelectedLocalizationProfile);
+            try
+            {
+                startupRegistration.SetEnabled(StartWithWindows);
+            }
+            catch
+            {
+                try { StartWithWindows = startupRegistration.IsEnabled(); }
+                catch { }
+                Status = UiStrings.Get("WindowsStartupUpdateFailureMessage");
+                return;
+            }
             NetworkSecret = string.Empty;
             ExternalSecret = string.Empty;
             Status = DebugEnabled && FullDebugEnabled

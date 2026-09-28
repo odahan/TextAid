@@ -81,6 +81,8 @@
                             <TextBlock Text="{DynamicResource GeneralPreferencesTitle}" FontSize="16" FontWeight="SemiBold"/>
                             <TextBlock Text="{DynamicResource GeneralValidationMessage}" Margin="0,4,0,14" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
                             <TextBlock Text="{DynamicResource GeneralLanguageHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                            <CheckBox Content="{DynamicResource StartWithWindowsLabel}" IsChecked="{Binding StartWithWindows}" Margin="0,14,0,0"/>
+                            <TextBlock Text="{DynamicResource StartWithWindowsHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,2,0,0"/>
                             <Button Content="{DynamicResource ReloadConfigurationLabel}" Command="{Binding ReloadConfigurationCommand}" HorizontalAlignment="Left" Margin="0,14,0,0"/>
                         </StackPanel>
                     </ScrollViewer>
