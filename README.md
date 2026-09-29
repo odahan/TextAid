@@ -48,6 +48,26 @@ This repository is maintained with **SAW 3.2 (SDD Another Way)**, a method creat
 
 The product intent, enduring rules, decisions, project status, and historical specifications remain in the repository. Before changing a planned lot or its validation state, follow the entry procedure in [the SAW 3.2 / Pro-Spec 3 reference](docs/PROSPEC-3-SPECIFICATION.md). French source copies are retained beside the translated documents with the `.FR.md` suffix.
 
+## AI-centric bootstrap
+
+To conduct this project with an AI, use this prompt:
+
+> **Read the `README.md` file and execute the next step.**
+
+The active bootstrap is deliberately contained in this README. An AI must first read the product intent in `PROJECT.md`, enduring constraints in `RULES.md`, all active decisions in `LEDGER.md` (and any referenced obsolete decisions), and the current plan in `STATUS.md`. It must then read the active lot's `SPEC`, `FINDINGS`, `GATES`, and, where present, `CONVERGENCE`. Consult `HISTORY.md` when chronology helps recovery or audit.
+
+`STATUS.md` is the sole authority for lot state. It identifies the next `Planned` lot and its dependencies; only one lot may be `In-progress`, `Ready-to-close`, or `Blocked` at a time. A human decision is required to move a lot to `In-progress`, to close it, to validate a HUMAN gate, to accept a deviation, or to make another significant change of meaning.
+
+While a lot is active, implement its `SPEC`, record knowledge in `FINDINGS`, keep the result location, remaining work, blockers, and next action recoverable through `STATUS.md`, and append significant operations to `HISTORY.md`. Evaluate every gate against an identifiable result. A lot may close only when every applicable gate is validly `PASS` or `N/A`, all requirements and findings have been accounted for, and a human accepts the closure. Update `STATUS.md` last.
+
+> If you need an AI powerful enough to manage your project, and the project is large enough to require a method, then the AI being used is sufficient to manage all of the method's bureaucracy.
+
+The complete historical bootstrap is preserved unchanged in [docs/README.BOOTSTRAP.md](docs/README.BOOTSTRAP.md). The active instructions above supersede only its former references to an external Pro-Spec tool, which SAW 3.2 no longer uses.
+
+## Method validation
+
+TextAid was built both for its own purpose and to put SAW to the test. Its development used only GPT-5.6 Terra with Medium reasoning effort and an OpenAI USD 20 subscription. The project demonstrates the practical feasibility of fully automated software design and development (SDD) under the SAW method.
+
 ## Documentation
 
 - [Product intent](PROJECT.md)
@@ -55,6 +75,7 @@ The product intent, enduring rules, decisions, project status, and historical sp
 - [Language-pack layout](docs/language-packs.md)
 - [Source specification map](docs/SOURCE-MAP.md)
 - [SAW 3.2 / Pro-Spec 3 reference](docs/PROSPEC-3-SPECIFICATION.md)
+- [Original bootstrap README](docs/README.BOOTSTRAP.md)
 
 ## License and attribution
 
