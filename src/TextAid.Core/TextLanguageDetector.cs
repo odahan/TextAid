@@ -8,7 +8,7 @@ public static class TextLanguageDetector
     private static readonly IReadOnlyDictionary<string, HashSet<string>> Signals = new Dictionary<string, HashSet<string>>
     {
         ["en"] = ["the", "and", "this", "that", "with", "from", "for", "please", "your", "have", "will", "text", "are", "not"],
-        ["fr"] = ["le", "la", "les", "et", "ce", "cette", "avec", "pour", "dans", "vous", "est", "texte", "des", "une"],
+        ["fr"] = ["le", "la", "les", "et", "ce", "cette", "avec", "pour", "dans", "vous", "est", "texte", "des", "une", "un", "du", "au", "quel", "quelle", "quels", "quelles"],
         ["es"] = ["el", "la", "los", "las", "y", "con", "para", "que", "texto", "una", "este", "por", "del"],
         ["it"] = ["il", "la", "gli", "le", "e", "con", "per", "che", "testo", "una", "questo", "del", "sono"],
         ["de"] = ["der", "die", "das", "und", "mit", "für", "diese", "diesen", "sie", "text", "eine", "einer", "ist", "nicht", "von", "den"],

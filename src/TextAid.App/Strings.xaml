@@ -5,10 +5,10 @@
   <sys:String x:Key="MarkdownOutputLabel">Markdown output</sys:String>
   <sys:String x:Key="UiTranslationRequiredLabel">● UI translation needed</sys:String>
   <sys:String x:Key="UnchangedOutputLanguageLabel">Unchanged</sys:String>
-  <sys:String x:Key="ProcessLabel">Process</sys:String><sys:String x:Key="ReplaceLabel">Replace</sys:String><sys:String x:Key="CopyLabel">Copy</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
-  <sys:String x:Key="NewLabel">New</sys:String>
+  <sys:String x:Key="ProcessLabel">Process</sys:String><sys:String x:Key="ProceedLabel">Proceed</sys:String><sys:String x:Key="ReplaceLabel">Replace</sys:String><sys:String x:Key="CopyLabel">Copy</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
+  <sys:String x:Key="NewLabel">New</sys:String><sys:String x:Key="FreeLabel">Free</sys:String>
   <sys:String x:Key="ActionsLabel">Actions</sys:String><sys:String x:Key="NewActionLabel">New action</sys:String><sys:String x:Key="OpenActionsFolderLabel">Open actions folder</sys:String><sys:String x:Key="ActionEditorLabel">Action editor</sys:String><sys:String x:Key="StableIdLabel">Stable ID</sys:String><sys:String x:Key="DisplayNameOverrideLabel">Display-name override</sys:String><sys:String x:Key="EnabledActionLabel">Enabled</sys:String><sys:String x:Key="ModelProfileLabel">Model profile</sys:String><sys:String x:Key="OutputLanguageLabel">Output language</sys:String><sys:String x:Key="AskForInstructionsLabel">Ask for user instructions</sys:String><sys:String x:Key="QuestionToAskLabel">Question to ask</sys:String><sys:String x:Key="PromptTemplateLabel">Prompt template</sys:String>
-  <sys:String x:Key="MainWindowHeading">TextAid — Transform &amp; Translate Any Text</sys:String><sys:String x:Key="ApplicationMenuToolTip">Application menu</sys:String><sys:String x:Key="ConfigurePresetToolTip">Configure this preset</sys:String><sys:String x:Key="FullLogLabel">● Full log</sys:String>
+  <sys:String x:Key="MainWindowHeading">TextAId — Transform &amp; Translate Any Text</sys:String><sys:String x:Key="ApplicationMenuToolTip">Application menu</sys:String><sys:String x:Key="ConfigurePresetToolTip">Configure this preset</sys:String><sys:String x:Key="FullLogLabel">● Full log</sys:String>
   <sys:String x:Key="ReloadActionsLabel">Reload actions</sys:String><sys:String x:Key="ReloadConfigurationLabel">Reload configuration</sys:String>
   <sys:String x:Key="DeleteActionLabel">Delete action</sys:String>
   <sys:String x:Key="DeleteActionConfirmation">Delete '{0}'? This cannot be undone.</sys:String>

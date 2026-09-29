@@ -15,6 +15,7 @@ public sealed class MarkdownPreviewRendererTests
 
             Assert.True(MarkdownPreviewRenderer.TryCreateDocument(markdown, out FlowDocument? document));
             Assert.NotNull(document);
+            Assert.Contains("Segoe UI Variable Text", document!.FontFamily.Source, StringComparison.OrdinalIgnoreCase);
             Assert.Contains(document!.Blocks, block => block is List);
             Assert.Contains(AllElements(document), element => element is Bold);
             Assert.Contains(AllElements(document), element => element is Italic);

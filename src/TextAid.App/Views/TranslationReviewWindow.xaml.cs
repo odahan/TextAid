@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Interop;
 using Microsoft.Win32;
 using TextAid.App.Localization;
@@ -46,5 +47,15 @@ public partial class TranslationReviewWindow : Window
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         if (!viewModel.TryPersistPendingCorrections()) e.Cancel = true;
+    }
+
+    private void OnTranslationSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (TranslationGrid.SelectedItem is not null) TranslationGrid.ScrollIntoView(TranslationGrid.SelectedItem);
+    }
+
+    private void Window_Deactivated(object sender, EventArgs e)
+    {
+
     }
 }

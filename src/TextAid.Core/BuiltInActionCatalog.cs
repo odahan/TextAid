@@ -40,14 +40,14 @@ public static class BuiltInActionCatalog
     /// <summary>Determines whether an action ID is supplied by TextAid.</summary>
     public static bool IsBuiltIn(string id) => DisplayNames.ContainsKey(id);
 
-    /// <summary>Writes missing built-in action files without overwriting existing user data.</summary>
+    /// <summary>Writes missing built-in action files and restores the system-owned Translate action.</summary>
     public static void EnsureCreated(string actionsDirectory)
     {
         Directory.CreateDirectory(actionsDirectory);
         foreach (ActionDefinition action in Create())
         {
             string path = Path.Combine(actionsDirectory, $"{action.Id}.json");
-            if (File.Exists(path)) continue;
+            if (action.IsReserved || !File.Exists(path))
             File.WriteAllText(path, JsonSerializer.Serialize(action, ActionJson.Options));
         }
     }

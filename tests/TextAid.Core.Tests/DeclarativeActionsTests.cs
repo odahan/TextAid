@@ -13,6 +13,16 @@ public sealed class DeclarativeActionsTests
         Assert.Equal("Start <TEXT>Bonjour {{unknown}}</TEXT> End", result);
     }
 
+    [Fact]
+    public void Render_ReplacesAnswerOrUsesAnEmptyStringWhenNoAnswerWasProvided()
+    {
+        string withAnswer = TemplateRenderer.Render("Text: {{text}}; answer: {{answer}}", "Source", "Use a friendly tone.");
+        string withoutAnswer = TemplateRenderer.Render("Text: {{text}}; answer: {{answer}}", "Source");
+
+        Assert.Equal("Text: Source; answer: Use a friendly tone.", withAnswer);
+        Assert.Equal("Text: Source; answer: ", withoutAnswer);
+    }
+
     [Theory]
     [InlineData("{{language}}")]
     [InlineData("{{text")]
@@ -74,7 +84,7 @@ public sealed class DeclarativeActionsTests
     }
 
     [Fact]
-    public void Load_RejectsAChangedReservedTranslateAction()
+    public void Load_RestoresTheBuiltInReservedTranslateAction()
     {
         using var directory = new TemporaryDirectory();
         var loader = new ActionLoader(actionsDirectory: directory.Path);
@@ -83,9 +93,28 @@ public sealed class DeclarativeActionsTests
         ActionDefinition translate = JsonSerializer.Deserialize<ActionDefinition>(File.ReadAllText(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })! with { PromptTemplate = "Do something else." };
         File.WriteAllText(path, JsonSerializer.Serialize(translate));
 
-        InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() => loader.Load());
+        ActionDefinition restored = Assert.Single(loader.Load(), action => action.Id == "translate");
+        ActionDefinition expected = Assert.Single(BuiltInActionCatalog.Create(), action => action.Id == "translate");
 
-        Assert.Equal("The reserved Translate action cannot be modified.", exception.Message);
+        Assert.Equal(expected, restored);
+    }
+
+    [Fact]
+    public void Save_CreatesAUserActionAfterRestoringTranslate()
+    {
+        using var directory = new TemporaryDirectory();
+        var loader = new ActionLoader(actionsDirectory: directory.Path);
+        _ = loader.Load();
+        string path = System.IO.Path.Combine(directory.Path, "translate.json");
+        ActionDefinition translate = JsonSerializer.Deserialize<ActionDefinition>(File.ReadAllText(path), new JsonSerializerOptions { PropertyNameCaseInsensitive = true })! with
+        {
+            PromptTemplate = "An invalid system action."
+        };
+        File.WriteAllText(path, JsonSerializer.Serialize(translate));
+
+        loader.Save(new ActionDefinition("polish", "Polish", true, "Process {{text}}", "local-default", null, "Unchanged", false));
+
+        Assert.Contains(loader.Load(), action => action.Id == "polish");
     }
 
     [Fact]

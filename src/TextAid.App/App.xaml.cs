@@ -143,7 +143,7 @@ public partial class App : Application
                 status = (string)FindResource("TranslatingCapturedTextMessage");
             }
             bool isFullLogActive = UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode();
-            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, StartTransformation, EditInstructions, ResetSession, status, isFullLogActive, isUiTranslationRequired);
+            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, (window, invocation) => StartTransformation(window, invocation), EditInstructions, ResetSession, StartFreeTransformation, status, isFullLogActive, isUiTranslationRequired);
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.ActivateForUserInput();
@@ -194,7 +194,9 @@ public partial class App : Application
             debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
 
             if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
-            string instruction = TemplateRenderer.Render(action.PromptTemplate, inputText);
+            string instruction = session.IsFreeMode
+                ? "Respond directly to the user message."
+                : TemplateRenderer.Render(action.PromptTemplate, inputText, supplementaryInstructions);
             string outputLanguageCode = string.IsNullOrWhiteSpace(session.OutputLanguage) ? "Unchanged" : session.OutputLanguage;
             if (!outputLanguageCode.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
             {
@@ -213,8 +215,8 @@ public partial class App : Application
                 instruction = $"{instruction}\n\nFormat the entire result as GitHub-flavored Markdown. Use Markdown only; do not wrap it in a fenced code block unless the requested content itself is code.";
             else
                 instruction = $"{instruction}\n\nReturn plain text only. Do not use Markdown syntax, including headings, emphasis markers, lists, tables, links, block quotes, or fenced code blocks.";
-            instruction = $"{instruction}\n\nKeep emojis unchanged by default. An explicit instruction to modify emojis takes priority.";
-            if (!string.IsNullOrWhiteSpace(supplementaryInstructions))
+            instruction = $"{instruction}\n\nEMOJI POLICY: Preserve every emoji from the input exactly as it appears. Do not introduce emojis, icons, or decorative symbols unless the user explicitly requests them in this invocation. Do not remove or alter input emojis unless the user explicitly asks you to do so.";
+            if (!session.IsFreeMode && !string.IsNullOrWhiteSpace(supplementaryInstructions) && !TemplateRenderer.ContainsAnswerPlaceholder(action.PromptTemplate))
                 instruction = $"{instruction}\n\nAdditional user instructions for this invocation:\n{supplementaryInstructions}";
             debugLog.WriteFullText("transformation-input", inputText);
             debugLog.WriteFullText("transformation-prompt", instruction);
@@ -229,6 +231,7 @@ public partial class App : Application
                     settings),
                 session.Cancellation.Token);
             if (!window.IsLoaded || !session.TryCompleteGeneration(generation, output)) return;
+            session.SupplementaryInstructions = null;
             debugLog.Write("transformation-completed", ("outputLength", output.Length));
             debugLog.WriteFullText("transformation-output", output);
             window.ShowResult(output);
@@ -281,9 +284,10 @@ public partial class App : Application
     }
 
     /// <summary>Starts a user-requested transformation from the editable session input.</summary>
-    private void StartTransformation(MainWindow window, InvocationSession session)
+    private void StartTransformation(MainWindow window, InvocationSession session, bool isFreeInvocation = false)
     {
         if (string.IsNullOrWhiteSpace(session.InputText)) return;
+        if (!isFreeInvocation) session.UseStandardActionMode();
         ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
         ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
         if (action is null)
@@ -293,7 +297,16 @@ public partial class App : Application
             return;
         }
 
-        if (action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion)) return;
+        if (!session.IsFreeMode && action.IsReserved && session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
+        {
+            session.OutputLanguage = QuickTranslationRouting.SelectDestination(
+                session.DetectedInputLanguage ?? TextLanguageDetector.Detect(session.InputText),
+                configuration.UserLanguage,
+                configuration.PreferredTranslationLanguage);
+            window.RefreshOutputLanguage();
+        }
+
+        if (!session.IsFreeMode && action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion)) return;
         string inputSnapshot = session.InputText;
         string? instructionsSnapshot = session.SupplementaryInstructions;
         int generation = session.StartNewGeneration();
@@ -334,6 +347,15 @@ public partial class App : Application
 
     /// <summary>Prepares the existing window for a separate manual transformation.</summary>
     private static void ResetSession(MainWindow window, InvocationSession session) => window.ResetForNewInput();
+
+    /// <summary>Runs one isolated user message without an action prompt or supplementary instructions.</summary>
+    private void StartFreeTransformation(MainWindow window, InvocationSession session)
+    {
+        var dialog = new FreeWindow { Owner = window };
+        if (dialog.ShowDialog() != true) return;
+        window.SetFreeInput(dialog.Input);
+        StartTransformation(window, session, isFreeInvocation: true);
+    }
 
     private static bool TryCollectInstructions(MainWindow owner, InvocationSession session, string? question = null)
     {
@@ -478,14 +500,20 @@ public partial class App : Application
     private void ShowActions()
     {
         if (actionsWindow is { IsVisible: true }) { actionsWindow.ActivateForUserInput(); return; }
-        actionsWindow = new ActionsWindow();
-        actionsWindow.ActionsChanged += (_, _) =>
+        void ReloadSessionActions()
         {
             if (sessionWindow is null) return;
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
             sessionWindow.ReloadActions(new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load());
+        }
+
+        actionsWindow = new ActionsWindow();
+        actionsWindow.ActionsChanged += (_, _) => ReloadSessionActions();
+        actionsWindow.Closed += (_, _) =>
+        {
+            ReloadSessionActions();
+            actionsWindow = null;
         };
-        actionsWindow.Closed += (_, _) => actionsWindow = null;
         actionsWindow.Show();
         actionsWindow.ActivateForUserInput();
     }

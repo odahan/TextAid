@@ -20,6 +20,50 @@ public sealed class ConnectionsAndProfilesTests
         Assert.False(session.MarkdownOutputEnabled);
     }
 
+    [Fact]
+    public void InvocationSession_FreeInput_ClearsSupplementaryInstructionsAndReplacementTarget()
+    {
+        using var session = new InvocationSession((nint)42, "captured") { SupplementaryInstructions = "Use a formal tone." };
+
+        session.StartFreeInput("Write exactly this message.");
+
+        Assert.True(session.IsFreeMode);
+        Assert.Equal(0, session.SourceWindow);
+        Assert.Equal("Write exactly this message.", session.InputText);
+        Assert.Null(session.SupplementaryInstructions);
+        Assert.Null(session.OutputText);
+        Assert.Equal(InvocationState.Ready, session.State);
+    }
+
+    [Fact]
+    public void InvocationSession_StandardActionMode_RetainsFreeInputButClearsFreeMode()
+    {
+        using var session = new InvocationSession(0, "captured");
+        session.StartFreeInput("Free message");
+
+        session.UseStandardActionMode();
+
+        Assert.False(session.IsFreeMode);
+        Assert.Equal("Free message", session.InputText);
+    }
+
+    [Fact]
+    public void InvocationSession_FreeInput_DetectsTheLanguageOfTheCopiedText()
+    {
+        using var session = new InvocationSession(0, string.Empty);
+
+        session.StartFreeInput("Quelle est la formule du gaz parfait qui relie pression volume et température d'un gaz ?");
+
+        Assert.Equal("fr", session.DetectedInputLanguage);
+    }
+
+    [Fact]
+    public void TextLanguageDetector_RecognizesAShortFrenchQuestion()
+    {
+        Assert.Equal("fr", TextLanguageDetector.Detect("Quelle est la formule du gaz parfait ?"));
+    }
+
+
     [Theory]
     [InlineData("en", "en", "fr", "fr")]
     [InlineData("fr-CA", "en", "fr", "en")]

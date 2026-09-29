@@ -135,6 +135,11 @@ public sealed partial class EditableAction : ObservableObject
     { this.id = id; this.displayNameOverride = displayNameOverride; this.isEnabled = isEnabled; this.profileId = profileId; this.temperatureOverride = temperatureOverride; this.outputLanguageDefault = outputLanguageDefault; this.askForUserInstructions = askForUserInstructions; this.promptTemplate = promptTemplate; IsReserved = isReserved; this.userInstructionsQuestion = userInstructionsQuestion; }
 
     public string Label => string.IsNullOrWhiteSpace(DisplayNameOverride) ? BuiltInActionCatalog.GetDisplayName(Id) : DisplayNameOverride;
+
+    partial void OnDisplayNameOverrideChanged(string value) => OnPropertyChanged(nameof(Label));
+
+    partial void OnIdChanged(string value) => OnPropertyChanged(nameof(Label));
+
     /// <summary>Raises a label update after the application locale changes.</summary>
     public void RefreshLocalizedLabel() => OnPropertyChanged(nameof(Label));
     public static EditableAction From(ActionDefinition action) => new(action.Id, action.DisplayNameOverride ?? "", action.IsEnabled, action.ProfileId, action.TemperatureOverride, action.OutputLanguageDefault, action.AskForUserInstructions, action.PromptTemplate, action.IsReserved, action.UserInstructionsQuestion ?? "");

@@ -16,6 +16,7 @@ public sealed partial class TranslationReviewViewModel : ObservableObject
     private readonly string language;
 
     [ObservableProperty] private TranslationReviewItem? selectedItem;
+    [ObservableProperty] private string searchText = string.Empty;
     [ObservableProperty] private string status = string.Empty;
 
     /// <summary>Creates a review session that never changes the English source or suggested cache directly.</summary>
@@ -42,6 +43,22 @@ public sealed partial class TranslationReviewViewModel : ObservableObject
 
     /// <summary>Raised after deletion returns the application to its English default UI state.</summary>
     public event EventHandler? LanguageCacheDeleted;
+
+    partial void OnSearchTextChanged(string value)
+    {
+        TranslationReviewItem? firstMatch = FindMatch(value, 0);
+        if (firstMatch is not null) SelectedItem = firstMatch;
+    }
+
+    [RelayCommand]
+    private void FindNext()
+    {
+        if (string.IsNullOrWhiteSpace(SearchText)) return;
+
+        int currentIndex = SelectedItem is null ? -1 : Items.IndexOf(SelectedItem);
+        TranslationReviewItem? nextMatch = FindMatch(SearchText, currentIndex + 1);
+        if (nextMatch is not null) SelectedItem = nextMatch;
+    }
 
     [RelayCommand]
     private void SaveCorrection()
@@ -147,6 +164,25 @@ public sealed partial class TranslationReviewViewModel : ObservableObject
 
     private string CachePath => Path.Combine(localesDirectory, language + ".json");
     private string OverridesPath => LanguagePackService.GetOverridesPath(localesDirectory, language);
+
+    private TranslationReviewItem? FindMatch(string text, int startIndex)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        for (int index = Math.Max(startIndex, 0); index < Items.Count; index++)
+        {
+            TranslationReviewItem item = Items[index];
+            if (Matches(item, text)) return item;
+        }
+
+        return null;
+    }
+
+    private static bool Matches(TranslationReviewItem item, string text) =>
+        item.Key.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+        item.English.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+        item.Suggested.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+        item.PersonalOverride.Contains(text, StringComparison.OrdinalIgnoreCase);
 
     private void Reload()
     {

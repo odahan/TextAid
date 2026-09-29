@@ -18,12 +18,12 @@ public partial class MainWindow : Window
     private readonly Action showApplicationMenu;
     private readonly InvocationSession session;
 
-    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, string status, bool isFullLogActive, bool isUiTranslationRequired)
+    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, Action<MainWindow, InvocationSession> free, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
         InitializeComponent();
         this.session = session;
         this.showApplicationMenu = showApplicationMenu ?? throw new ArgumentNullException(nameof(showApplicationMenu));
-        var viewModel = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
+        var viewModel = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), () => free(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         DataContext = viewModel;
 
@@ -75,6 +75,9 @@ public partial class MainWindow : Window
     /// <summary>Updates the persistent Full log indicator without closing the active session.</summary>
     public void SetFullLogActive(bool active) => ((MainViewModel)DataContext).SetFullLogActive(active);
 
+    /// <summary>Refreshes the visible output language after automatic Translate routing.</summary>
+    public void RefreshOutputLanguage() => ((MainViewModel)DataContext).RefreshOutputLanguage();
+
     /// <summary>Updates the persistent UI-translation warning without closing the active session.</summary>
     public void SetUiTranslationRequired(bool required) => ((MainViewModel)DataContext).SetUiTranslationRequired(required);
 
@@ -83,6 +86,9 @@ public partial class MainWindow : Window
 
     /// <summary>Refreshes the action selector after a validated editor save.</summary>
     public void ReloadActions(IReadOnlyList<ActionDefinition> actions) => ((MainViewModel)DataContext).ReloadActions(actions);
+
+    /// <summary>Replaces the captured selection with isolated Free input.</summary>
+    public void SetFreeInput(string input) => ((MainViewModel)DataContext).SetFreeInput(input);
 
     /// <summary>Refreshes action captions after the active UI locale changes.</summary>
     public void RefreshLocalizedActionLabels() => ((MainViewModel)DataContext).RefreshLocalizedActionLabels();

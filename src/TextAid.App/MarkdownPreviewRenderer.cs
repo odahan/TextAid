@@ -47,12 +47,14 @@ public static partial class MarkdownPreviewRenderer
         document.Foreground = foreground;
         document.Background = surface;
         document.PagePadding = new Thickness(0);
+        document.FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI");
         document.FontSize = 14;
         document.LineHeight = 20;
 
         foreach (TextElement element in EnumerateTextElements(document))
         {
             element.Foreground = foreground;
+            element.FontFamily = document.FontFamily;
             if (element is Span span && IsCodeSpan(span)) span.Background = FindBrush("SurfaceAltBrush", Brushes.DimGray);
             if (element is Hyperlink hyperlink)
             {

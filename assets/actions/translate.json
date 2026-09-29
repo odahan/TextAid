@@ -2,7 +2,7 @@
   "id": "translate",
   "displayNameOverride": null,
   "isEnabled": true,
-  "promptTemplate": "Translate the input text into the selected output language. Return only the translation.",
+  "promptTemplate": "Translate the input text into the selected output language. Return only the translated text. Preserve the source meaning, names, numbers, and formatting. Preserve source emojis exactly when present; never add emojis.",
   "profileId": "local-default",
   "temperatureOverride": null,
   "outputLanguageDefault": "Unchanged",

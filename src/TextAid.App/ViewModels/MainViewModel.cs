@@ -16,11 +16,13 @@ public sealed class MainViewModel : ObservableObject
     private bool isUiTranslationRequired;
     private ConnectionCategory? activeConnectionCategory;
     private IReadOnlyList<LanguageOption> outputLanguages = CreateOutputLanguages();
+    private string detectedLanguageName = string.Empty;
 
-    public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
+    public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
         Session = session;
         inputText = session.InputText;
+        UpdateDetectedLanguage();
         Actions = new ObservableCollection<ActionDefinition>(actions);
         Presets = new ObservableCollection<ActionPreset>(Enumerable.Range(1, 4).Select(slot => new ActionPreset(slot, FindAction(presetActionIds.ElementAtOrDefault(slot - 1)))));
         selectedAction = Actions.FirstOrDefault(action => action.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase)) ?? Actions.FirstOrDefault();
@@ -35,6 +37,7 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand = new RelayCommand(process, () => CanProcess);
         InstructionsCommand = new RelayCommand(instructions, () => !IsTransforming);
         NewCommand = new RelayCommand(reset, () => !IsTransforming);
+        FreeCommand = new RelayCommand(free, () => !IsTransforming);
         CancelCommand = new RelayCommand(close);
         SelectPresetCommand = new RelayCommand<ActionPreset>(SelectPreset, preset => preset?.Action is not null && !IsTransforming);
     }
@@ -88,12 +91,19 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!SetProperty(ref inputText, value)) return;
-            Session.InputText = value;
+            Session.SetInputText(value);
+            UpdateDetectedLanguage();
             OnPropertyChanged(nameof(CanProcess));
             ProcessCommand.NotifyCanExecuteChanged();
         }
     }
     public string? OutputText => Session.OutputText;
+    /// <summary>Gets the detected input language name, or an empty value when detection is inconclusive.</summary>
+    public string DetectedLanguageName
+    {
+        get => detectedLanguageName;
+        private set => SetProperty(ref detectedLanguageName, value);
+    }
     public string Status { get; private set; }
     public bool IsFullLogActive
     {
@@ -141,6 +151,7 @@ public sealed class MainViewModel : ObservableObject
     public IRelayCommand ProcessCommand { get; }
     public IRelayCommand InstructionsCommand { get; }
     public IRelayCommand NewCommand { get; }
+    public IRelayCommand FreeCommand { get; }
     public IRelayCommand CancelCommand { get; }
     public IRelayCommand<ActionPreset> SelectPresetCommand { get; }
 
@@ -201,6 +212,7 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
+        FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
 
@@ -221,6 +233,7 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
+        FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
 
@@ -229,6 +242,7 @@ public sealed class MainViewModel : ObservableObject
     {
         Session.ResetForNewInput();
         inputText = string.Empty;
+        UpdateDetectedLanguage();
         selectedAction = Actions.FirstOrDefault();
         Session.ActionId = selectedAction?.Id;
         Status = UiStrings.Get("EnterTextProcessMessage");
@@ -245,7 +259,25 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
+        FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Displays an isolated Free input in the session without retaining a replacement target.</summary>
+    public void SetFreeInput(string input)
+    {
+        Session.StartFreeInput(input);
+        inputText = input;
+        UpdateDetectedLanguage();
+        OnPropertyChanged(nameof(InputText));
+        OnPropertyChanged(nameof(DetectedLanguageName));
+        OnPropertyChanged(nameof(OutputText));
+        OnPropertyChanged(nameof(CanUseResult));
+        OnPropertyChanged(nameof(CanReplaceResult));
+        OnPropertyChanged(nameof(CanProcess));
+        CopyCommand.NotifyCanExecuteChanged();
+        ReplaceCommand.NotifyCanExecuteChanged();
+        ProcessCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>Updates controls for a processing request started by the user.</summary>
@@ -261,11 +293,15 @@ public sealed class MainViewModel : ObservableObject
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
         ProcessCommand.NotifyCanExecuteChanged();
+        FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>Updates the visible Full log warning when the Settings toggles change.</summary>
     public void SetFullLogActive(bool active) => IsFullLogActive = active;
+
+    /// <summary>Refreshes the output-language selection after automatic translation routing.</summary>
+    public void RefreshOutputLanguage() => OnPropertyChanged(nameof(SelectedOutputLanguage));
 
     /// <summary>Updates the locale-cache warning after a cache or UI-language preference changes.</summary>
     public void SetUiTranslationRequired(bool required) => IsUiTranslationRequired = required;
@@ -283,6 +319,14 @@ public sealed class MainViewModel : ObservableObject
     }
 
     private ActionDefinition? FindAction(string? actionId) => Actions.FirstOrDefault(action => action.Id.Equals(actionId, StringComparison.OrdinalIgnoreCase));
+
+    private void UpdateDetectedLanguage()
+    {
+        string? languageCode = Session.DetectedInputLanguage;
+        DetectedLanguageName = LanguageCatalog.Supported
+            .FirstOrDefault(language => language.Code.Equals(languageCode, StringComparison.OrdinalIgnoreCase))
+            ?.EnglishName ?? string.Empty;
+    }
 
     private static IReadOnlyList<LanguageOption> CreateOutputLanguages()
     {
