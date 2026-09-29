@@ -8,6 +8,10 @@
 
 TextAid captures selected text from another Windows application, applies one configurable AI transformation, shows the result, and lets the user replace the original selection, copy the result, or cancel. It uses a local Ollama model by default; a remote provider is an explicit user choice.
 
+## App preview
+
+![TextAid translating selected text](assets/Screenshots/02%20Call%20TextAid%20to%20translate.png)
+
 ## Features
 
 - Capture selected text with `Ctrl+C`, then `C` to choose an action, or `Ctrl+C`, then `T` for immediate translation.
