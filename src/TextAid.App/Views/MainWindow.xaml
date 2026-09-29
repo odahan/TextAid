@@ -99,8 +99,13 @@
                         </ItemsControl>
                     </StackPanel>
                 </Border>
-                <Grid ColumnDefinitions="*,*,*">
-                    <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal" Margin="0,8,0,8"  >
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="20*"/>
+                        <ColumnDefinition Width="40*"/>
+                    </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" HorizontalAlignment="Left" Orientation="Horizontal" Margin="0,8,0,8"  >
                         <TextBlock Text="{DynamicResource ActionLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
                         <ComboBox Width="220" ItemsSource="{Binding Actions}" SelectedItem="{Binding SelectedAction}">
                             <ComboBox.ItemTemplate>
@@ -110,12 +115,12 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
                     </StackPanel>
-                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" Orientation="Horizontal" Margin="28,8,28,8">
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Center" Orientation="Horizontal" Margin="0,8,0,8">
                         <TextBlock Text="{DynamicResource MarkdownOutputLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
                         <ToggleButton Style="{StaticResource SwitchToggle}" IsChecked="{Binding MarkdownOutputEnabled}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,8,0,8" >
-                        <TextBlock Text="{DynamicResource OutputLanguageLabel}" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                        <TextBlock Width="120" Text="{DynamicResource OutputLanguageLabel}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,5,0" FontWeight="SemiBold" Foreground="{DynamicResource ForegroundMutedBrush}"/>
                         <ComboBox Width="250" ItemsSource="{Binding OutputLanguages}" SelectedValuePath="Code" SelectedValue="{Binding SelectedOutputLanguage}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
@@ -153,7 +158,7 @@
                     <Grid>
                         <FlowDocumentScrollViewer x:Name="MarkdownPreview" Visibility="Collapsed" IsTabStop="True" Focusable="True" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Rendered Markdown preview"/>
                         <ScrollViewer x:Name="PlainTextPreview" VerticalScrollBarVisibility="Auto">
-                            <TextBlock Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" FontSize="14" LineHeight="20" />
+                            <TextBox Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" FontSize="14" IsReadOnly="true" AcceptsReturn="True"/>
                         </ScrollViewer>
                     </Grid>
                 </Border>

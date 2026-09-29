@@ -1,58 +1,221 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime">
-  <sys:String x:Key="ProductName">TextAid</sys:String><sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
-  <sys:String x:Key="CapturedText">Captured text</sys:String><sys:String x:Key="PreviewLabel">Transformation preview</sys:String><sys:String x:Key="RawMarkdownPreviewLabel">**bold**</sys:String><sys:String x:Key="RenderedMarkdownPreviewLabel">bold</sys:String><sys:String x:Key="RawMarkdownPreviewToolTip">Show raw Markdown</sys:String><sys:String x:Key="RenderedMarkdownPreviewToolTip">Show rendered Markdown</sys:String>
-  <sys:String x:Key="ActionLabel">Action</sys:String>
-  <sys:String x:Key="MarkdownOutputLabel">Markdown output</sys:String>
-  <sys:String x:Key="UiTranslationRequiredLabel">● UI translation needed</sys:String>
-  <sys:String x:Key="UnchangedOutputLanguageLabel">Unchanged</sys:String>
-  <sys:String x:Key="ProcessLabel">Process</sys:String><sys:String x:Key="ProceedLabel">Proceed</sys:String><sys:String x:Key="ReplaceLabel">Replace</sys:String><sys:String x:Key="CopyLabel">Copy</sys:String><sys:String x:Key="CancelLabel">Cancel</sys:String>
-  <sys:String x:Key="NewLabel">New</sys:String><sys:String x:Key="FreeLabel">Free</sys:String>
-  <sys:String x:Key="ActionsLabel">Actions</sys:String><sys:String x:Key="NewActionLabel">New action</sys:String><sys:String x:Key="OpenActionsFolderLabel">Open actions folder</sys:String><sys:String x:Key="ActionEditorLabel">Action editor</sys:String><sys:String x:Key="StableIdLabel">Stable ID</sys:String><sys:String x:Key="DisplayNameOverrideLabel">Display-name override</sys:String><sys:String x:Key="EnabledActionLabel">Enabled</sys:String><sys:String x:Key="ModelProfileLabel">Model profile</sys:String><sys:String x:Key="OutputLanguageLabel">Output language</sys:String><sys:String x:Key="AskForInstructionsLabel">Ask for user instructions</sys:String><sys:String x:Key="QuestionToAskLabel">Question to ask</sys:String><sys:String x:Key="PromptTemplateLabel">Prompt template</sys:String>
-  <sys:String x:Key="MainWindowHeading">TextAId — Transform &amp; Translate Any Text</sys:String><sys:String x:Key="ApplicationMenuToolTip">Application menu</sys:String><sys:String x:Key="ConfigurePresetToolTip">Configure this preset</sys:String><sys:String x:Key="FullLogLabel">● Full log</sys:String>
-  <sys:String x:Key="ReloadActionsLabel">Reload actions</sys:String><sys:String x:Key="ReloadConfigurationLabel">Reload configuration</sys:String>
-  <sys:String x:Key="DeleteActionLabel">Delete action</sys:String>
-  <sys:String x:Key="DeleteActionConfirmation">Delete '{0}'? This cannot be undone.</sys:String>
-  <sys:String x:Key="ActionsEditorHelp">Select an action to edit its settings and prompt.</sys:String><sys:String x:Key="NewActionHelp">Complete the new action, then save it.</sys:String><sys:String x:Key="ActionsReloadedMessage">Actions reloaded.</sys:String><sys:String x:Key="ActionsReloadFailureMessage">TextAid kept the current action list because the reload failed. Check the action files and try again.</sys:String><sys:String x:Key="ReservedTranslateDeleteError">The reserved Translate action cannot be deleted.</sys:String><sys:String x:Key="ActionDeletedMessage">Action deleted and the active action set was refreshed.</sys:String><sys:String x:Key="ActionSavedMessage">Action saved and applied to new sessions.</sys:String><sys:String x:Key="ActionOperationFailureMessage">TextAid could not update the action. Check its settings and try again.</sys:String>
-  <sys:String x:Key="LocalModelsHelp">Load the models installed in your local Ollama instance.</sys:String><sys:String x:Key="NoLocalModelsMessage">Ollama is available, but no local models were found. Install one with 'ollama pull &lt;model&gt;'.</sys:String><sys:String x:Key="ChooseLocalModelMessage">Choose a local model, then save your settings.</sys:String><sys:String x:Key="OllamaUnreachableMessage">TextAid could not reach Ollama. Check the local endpoint and that Ollama is running.</sys:String><sys:String x:Key="ConfigurationReloadedMessage">Configuration reloaded.</sys:String><sys:String x:Key="ConfigurationReloadFailureMessage">TextAid kept the previous valid configuration because the saved configuration could not be reloaded.</sys:String><sys:String x:Key="TestingOllamaMessage">Testing the local Ollama connection…</sys:String><sys:String x:Key="OllamaAvailableMessage">Ollama is available at this endpoint.</sys:String><sys:String x:Key="OllamaConnectionRejectedMessage">Ollama did not accept a connection at this endpoint.</sys:String><sys:String x:Key="OllamaEndpointUnreachableMessage">TextAid could not reach Ollama. Check the endpoint and that Ollama is running.</sys:String>
-  <sys:String x:Key="SettingsSavedFullLogMessage">Settings saved. Full diagnostic logging is enabled locally; credentials are always redacted.</sys:String><sys:String x:Key="SettingsSavedDebugMessage">Settings saved. Debug logging is enabled for this session and records technical metadata only.</sys:String><sys:String x:Key="SettingsSavedMessage">Settings saved. Debug logging is disabled; no new diagnostic log is created.</sys:String><sys:String x:Key="EnglishSourceCatalogMessage">English is already the source UI catalog.</sys:String><sys:String x:Key="GeneratingUiTranslationMessage">Generating the UI translation with the selected profile…</sys:String><sys:String x:Key="LocaleCacheCreatedEnglishMessage">The validated locale cache was created. The UI remains English because that preference is enabled.</sys:String><sys:String x:Key="LocaleCacheCreatedMessage">The validated locale cache was created. Save Settings to apply it.</sys:String><sys:String x:Key="LocaleGenerationFailureMessage">TextAid could not generate a valid UI translation. English remains available.</sys:String><sys:String x:Key="LocaleCatalogInvalidMessage">The provider returned an incomplete or invalid UI catalog. English remains available.</sys:String><sys:String x:Key="LocaleProviderUnavailableMessage">TextAid could not complete the UI translation request with the selected provider. English remains available.</sys:String><sys:String x:Key="DebugFolderOpenedMessage">Opened the local TextAid debug-log folder.</sys:String>
-  <sys:String x:Key="GeneralTabLabel">General</sys:String><sys:String x:Key="ProfilesTabLabel">Profiles</sys:String><sys:String x:Key="LanguageTabLabel">Language</sys:String><sys:String x:Key="GeneralPreferencesTitle">TextAid preferences</sys:String><sys:String x:Key="GeneralValidationMessage">Changes are validated before they replace the active configuration.</sys:String><sys:String x:Key="GeneralLanguageHelp">Use the Language tab to select the application and translation languages, and to configure the two invocation shortcuts.</sys:String><sys:String x:Key="StartWithWindowsLabel">Start TextAid when I sign in to Windows</sys:String><sys:String x:Key="StartWithWindowsHelp">This creates a startup entry for this Windows user only. Administrator privileges are not required.</sys:String><sys:String x:Key="WindowsStartupUpdateFailureMessage">TextAid could not update its Windows startup setting. Check that your user account can change startup apps, then try again.</sys:String><sys:String x:Key="ProfilesTitle">Model profiles</sys:String><sys:String x:Key="LanguageAndShortcutsTitle">Language and shortcuts</sys:String><sys:String x:Key="ApplicationLanguageLabel">Application language</sys:String><sys:String x:Key="ApplicationLanguageHelp">This changes the TextAid interface only. It does not choose a translation destination.</sys:String><sys:String x:Key="KeepEnglishUiLabel">Keep the TextAid UI in English</sys:String><sys:String x:Key="LocaleGenerationProfileLabel">Profile used to generate a language cache</sys:String><sys:String x:Key="GenerateUiTranslationLabel">Generate UI translation</sys:String><sys:String x:Key="PreferredTranslationLanguageLabel">Preferred output language for quick Translate</sys:String><sys:String x:Key="PreferredTranslationLanguageHelp">Used by Ctrl+C, then T to choose its destination. It does not change the TextAid interface language.</sys:String><sys:String x:Key="ChooseShortcutLabel">Choose shortcut</sys:String><sys:String x:Key="TranslateShortcutLabel">Translate shortcut</sys:String><sys:String x:Key="NoModelConfiguredLabel">No model configured</sys:String>
-  <sys:String x:Key="ProfilesCategoryHelp">The built-in profiles select their connection category: local-default (This device only), network-default (On-premises), and external-default (External). Actions select one profile and never fall back silently.</sys:String><sys:String x:Key="ProfilesActionsHelp">Edit an action's selected model profile in Actions from the application menu.</sys:String><sys:String x:Key="LocaleGenerationProfileHelp">All connection profiles are listed. The selected connection must be active only when generating a UI translation. This choice does not change normal actions.</sys:String><sys:String x:Key="ChooseShortcutHelp">Default: Ctrl+C, then C. A different application may consume any reassigned binding.</sys:String><sys:String x:Key="TranslateShortcutHelp">Default: Ctrl+C, then T. TextAid applies only valid, non-conflicting sequences.</sys:String>
-  <sys:String x:Key="TranslationReviewLabel">Translation review</sys:String><sys:String x:Key="TranslationReviewTitle">Review UI translations</sys:String><sys:String x:Key="TranslationReviewHelp">Edit a personal correction for a selected key. It takes precedence over the suggested cache and never changes the English source or a reviewed pack.</sys:String><sys:String x:Key="StableKeyLabel">Stable key</sys:String><sys:String x:Key="EnglishSourceLabel">English source</sys:String><sys:String x:Key="SuggestedTranslationLabel">Suggested translation</sys:String><sys:String x:Key="PersonalOverrideLabel">Personal override</sys:String><sys:String x:Key="TranslationOriginLabel">Origin</sys:String><sys:String x:Key="SaveCorrectionLabel">Save correction</sys:String><sys:String x:Key="RestoreSuggestedLabel">Restore suggested</sys:String><sys:String x:Key="ImportLanguagePackLabel">Import language pack</sys:String><sys:String x:Key="ExportLanguagePackLabel">Export language pack</sys:String><sys:String x:Key="TranslationCorrectionSavedMessage">Personal correction saved.</sys:String><sys:String x:Key="TranslationCorrectionInvalidMessage">The correction must keep the source placeholders and cannot be empty.</sys:String><sys:String x:Key="TranslationRestoredMessage">The suggested translation was restored.</sys:String><sys:String x:Key="TranslationReviewStorageFailureMessage">TextAid could not update the local correction file.</sys:String><sys:String x:Key="TranslationReviewEnglishFallbackMessage">No compatible suggested cache is active. English is shown as the suggested value.</sys:String><sys:String x:Key="LanguagePackExportedMessage">Language pack exported without personal corrections.</sys:String><sys:String x:Key="LanguagePackExportFailureMessage">TextAid could not export a compatible language pack.</sys:String><sys:String x:Key="LanguagePackImportedMessage">Compatible language pack imported. Personal corrections were preserved.</sys:String><sys:String x:Key="LanguagePackImportFailureMessage">TextAid rejected the language pack. The active cache and personal corrections were not changed.</sys:String>
-  <sys:String x:Key="ThisDeviceOnlyTabLabel">This device only</sys:String><sys:String x:Key="OnPremisesTabLabel">On-premises</sys:String><sys:String x:Key="ExternalTabLabel">External</sys:String><sys:String x:Key="DebugTabLabel">Debug</sys:String><sys:String x:Key="ActiveLabel">Active</sys:String><sys:String x:Key="OllamaEndpointLabel">Ollama endpoint</sys:String><sys:String x:Key="TestConnectionLabel">Test connection</sys:String><sys:String x:Key="LoadLocalModelsLabel">Load local models</sys:String><sys:String x:Key="ConnectionStatusLabel">Connection status</sys:String><sys:String x:Key="ModelLabel">Model</sys:String><sys:String x:Key="TemperatureLabel">Temperature</sys:String><sys:String x:Key="ContextSizeLabel">Context size (tokens)</sys:String><sys:String x:Key="TimeoutLabel">Timeout (seconds)</sys:String><sys:String x:Key="ThinkingLabel">Thinking</sys:String><sys:String x:Key="EndpointLabel">Endpoint</sys:String><sys:String x:Key="ThisDeviceOnlyIndicatorLabel">Using this device only</sys:String><sys:String x:Key="OnPremisesIndicatorLabel">Using an On-premises connection</sys:String><sys:String x:Key="ExternalIndicatorLabel">Using an External connection</sys:String>
-  <sys:String x:Key="OnPremisesTitle">Ollama on an administered network</sys:String><sys:String x:Key="OnPremisesPrivacyHelp">TextAid cannot verify the ownership, routing, or handling of this endpoint.</sys:String><sys:String x:Key="ExternalTitle">OpenAI-compatible service</sys:String><sys:String x:Key="ExternalPrivacyHelp">External service use is a deliberate configuration choice.</sys:String><sys:String x:Key="OptionalApiKeyLabel">API key (optional; leave blank to retain the saved key)</sys:String><sys:String x:Key="ApiKeyLabel">API key (leave blank to retain the saved key)</sys:String><sys:String x:Key="LoadExternalModelsLabel">Load external models</sys:String><sys:String x:Key="ExternalModelsHelp">Enter an API key, then load and choose one of the available models.</sys:String><sys:String x:Key="NoExternalModelsMessage">The External endpoint responded, but no models are available to this key.</sys:String><sys:String x:Key="ChooseExternalModelMessage">Choose an External model, then save your settings.</sys:String><sys:String x:Key="ExternalModelsUnavailableMessage">TextAid could not load models from the External endpoint. Check its endpoint and API key.</sys:String>
-  <sys:String x:Key="OptionalDiagnosticLogTitle">Optional diagnostic log</sys:String><sys:String x:Key="DebugDisabledHelp">Debug is off by default. When enabled, TextAid creates one log for the current session in %LOCALAPPDATA%\TextAid.</sys:String><sys:String x:Key="EnableDebugLogLabel">Enable debug log</sys:String><sys:String x:Key="EnableFullLogLabel">Enable full log (contains diagnostic text)</sys:String><sys:String x:Key="FullLogWarning">Full log stays on this computer and is never sent automatically. It can include input, prompts, output, and raw error messages so support can diagnose a problem. You may obfuscate passages in Notepad before sharing it. API keys, tokens, passwords, and secrets are always redacted.</sys:String><sys:String x:Key="OpenDebugFolderLabel">Open debug-log folder</sys:String><sys:String x:Key="SafeLogHelp">The log contains technical event names, failure categories, and exception types only. It never records API keys, secrets, clipboard contents, input text, generated output, or prompts.</sys:String>
-  <sys:String x:Key="SettingsConnectionsHelp">Configure each AI connection independently.</sys:String><sys:String x:Key="LoopbackEndpointToolTip">This device only accepts localhost, 127.0.0.1, or ::1.</sys:String>
-  <sys:String x:Key="ReviewResultCopyMessage">Review the local transformation, then choose Copy or Cancel.</sys:String><sys:String x:Key="ReviewResultReplaceMessage">Review the local transformation, then choose Replace, Copy, or Cancel.</sys:String><sys:String x:Key="EnterTextProcessMessage">Enter or paste text, then choose Process.</sys:String><sys:String x:Key="UnassignedActionLabel">Unassigned</sys:String>
-  <sys:String x:Key="InstructionsLabel">Instructions</sys:String><sys:String x:Key="InstructionsTitle">Supplementary instructions</sys:String><sys:String x:Key="InstructionsMessage">Optional guidance for this one transformation.</sys:String><sys:String x:Key="SaveLabel">Save</sys:String>
-  <sys:String x:Key="TransformingMessage">Transforming your text with the local model…</sys:String><sys:String x:Key="WarmingUpLocalModelMessage">Preparing the local model. This can take a moment…</sys:String>
-  <sys:String x:Key="TranslatingCapturedTextMessage">Translating the captured text…</sys:String>
-  <sys:String x:Key="ConfigurationDowngradeCancelledMessage">The configuration downgrade was cancelled.</sys:String>
-  <sys:String x:Key="SelectedActionUnavailableMessage">The selected action is no longer available.</sys:String>
-  <sys:String x:Key="TransformingLabel">Model is working</sys:String><sys:String x:Key="LocalModelWorkingLabel">Local model is working</sys:String><sys:String x:Key="NetworkModelWorkingLabel">Network model is working</sys:String><sys:String x:Key="ExternalModelWorkingLabel">External model is working</sys:String><sys:String x:Key="ExternalProviderRequestFailure">The External provider rejected or could not complete this request. Check the API key, selected model, endpoint, and your provider access.</sys:String><sys:String x:Key="ExternalAuthenticationFailure">The External provider did not accept the saved API key. Enter it again in Settings, then save.</sys:String><sys:String x:Key="ExternalModelUnavailableFailure">The selected External model is unavailable to this API key. Load the model list again and choose another model.</sys:String><sys:String x:Key="ExternalRateLimitFailure">The External provider temporarily refused the request because of a rate limit or account quota. Wait, then try again.</sys:String><sys:String x:Key="ExternalRequestRejectedFailure">The External provider rejected this request. The selected model may not support the requested API operation.</sys:String>
-  <sys:String x:Key="EnterTextMessage">Enter or paste text, then choose Process or use a preset.</sys:String>
-  <sys:String x:Key="ReadyToProcessMessage">Review or edit the text, then choose Process or use a preset.</sys:String>
-  <sys:String x:Key="NoModelError">Select a local Ollama model in Settings before running a transformation.</sys:String>
-  <sys:String x:Key="TransformationTimeoutError">The selected provider did not respond in time. You can cancel this session and try again.</sys:String>
-  <sys:String x:Key="TransformationError">TextAid could not complete the local transformation. Check that Ollama is running and try again.</sys:String>
-  <sys:String x:Key="EnabledLabel">Disable</sys:String><sys:String x:Key="DisabledLabel">Enable</sys:String>
-  <sys:String x:Key="OpenLabel">Open</sys:String><sys:String x:Key="SettingsLabel">Settings</sys:String><sys:String x:Key="AboutLabel">About</sys:String><sys:String x:Key="ExitLabel">Exit</sys:String>
-  <sys:String x:Key="SettingsMessage">Configuration editing is coming in a later version.</sys:String>
-  <sys:String x:Key="CloseLabel">Close</sys:String><sys:String x:Key="OpenSettingsLabel">Open Settings</sys:String>
-  <sys:String x:Key="ProviderSetupTitle">Set up an AI provider</sys:String>
-  <sys:String x:Key="ProviderSetupMessage">TextAid could not find a usable local Ollama setup. Install Ollama and download a model, or configure an On-premises Ollama server on your network, or configure an External OpenAI-compatible service with its API key. Provider access is always an explicit choice; Settings remains available while no provider is ready.</sys:String>
-  <sys:String x:Key="ClipboardError">Unable to access the clipboard.</sys:String>
-  <sys:String x:Key="NoTextError">No text selected.</sys:String>
-  <sys:String x:Key="SourceWindowError">Unable to identify the source window.</sys:String>
-  <sys:String x:Key="SessionError">Unable to open the TextAid session.</sys:String>
-  <sys:String x:Key="ClipboardWriteError">Unable to copy the result to the clipboard. You can cancel this session.</sys:String>
-  <sys:String x:Key="InvalidTargetError">The original window is no longer available. The result remains in the clipboard; you can cancel this session.</sys:String>
-  <sys:String x:Key="FocusFailedError">TextAid could not safely restore the original window. The result remains in the clipboard; you can cancel this session.</sys:String>
-  <sys:String x:Key="ModifiersPressedError">Release Ctrl, Alt, Shift, and Windows keys, then try again. The result remains in the clipboard.</sys:String>
-  <sys:String x:Key="PasteFailedError">TextAid could not paste safely. The result remains in the clipboard; you can cancel this session.</sys:String>
-  <sys:String x:Key="ElevatedApplicationNote">Replace may be unavailable for applications running as administrator. Copy remains available.</sys:String>
-  <sys:String x:Key="LocaleCacheStaleFallbackMessage">The selected UI translation was made for an older English catalog. TextAid is using English until you generate or import a compatible translation.</sys:String>
-  <sys:String x:Key="LocaleCacheInvalidFallbackMessage">The selected UI translation is invalid. TextAid is using English; generate or import a compatible translation to restore it.</sys:String>
-  <sys:String x:Key="LocaleCacheUnreadableFallbackMessage">The selected UI translation could not be read. TextAid is using English; check the locale cache and try again.</sys:String>
-  <sys:String x:Key="DeleteLanguageCacheLabel">Delete language cache</sys:String><sys:String x:Key="DeleteLanguageCacheConfirmation">Delete the generated language cache for this language? Personal corrections are kept.</sys:String><sys:String x:Key="LanguageCacheDeletedMessage">The generated language cache was deleted. Personal corrections were kept.</sys:String><sys:String x:Key="LanguageCacheDeletionFailureMessage">TextAid could not delete the language cache.</sys:String>
-  <sys:String x:Key="Action.translate">Translate</sys:String><sys:String x:Key="Action.correct">Correct</sys:String><sys:String x:Key="Action.rewrite">Rewrite</sys:String><sys:String x:Key="Action.shorten">Shorten</sys:String><sys:String x:Key="Action.expand">Expand</sys:String><sys:String x:Key="Action.simplify">Simplify</sys:String><sys:String x:Key="Action.change-tone">Change tone</sys:String><sys:String x:Key="Action.summarize">Summarize</sys:String><sys:String x:Key="Action.answer-this-mail">Answer this mail</sys:String><sys:String x:Key="Action.Synonymes">Synonyms</sys:String><sys:String x:Key="Action.humanize">Humanize</sys:String>
+    <sys:String x:Key="ProductName">TextAid</sys:String>
+    <sys:String x:Key="Subtitle">Local-first text transformer &amp; translator</sys:String>
+    <sys:String x:Key="CapturedText">Captured text</sys:String>
+    <sys:String x:Key="PreviewLabel">Transformation preview</sys:String>
+    <sys:String x:Key="RawMarkdownPreviewLabel">**bold**</sys:String>
+    <sys:String x:Key="RenderedMarkdownPreviewLabel">bold</sys:String>
+    <sys:String x:Key="RawMarkdownPreviewToolTip">Show raw Markdown</sys:String>
+    <sys:String x:Key="RenderedMarkdownPreviewToolTip">Show rendered Markdown</sys:String>
+    <sys:String x:Key="ActionLabel">Action</sys:String>
+    <sys:String x:Key="MarkdownOutputLabel">Markdown output</sys:String>
+    <sys:String x:Key="UiTranslationRequiredLabel">● UI translation needed</sys:String>
+    <sys:String x:Key="UnchangedOutputLanguageLabel">Unchanged</sys:String>
+    <sys:String x:Key="ProcessLabel">Process</sys:String>
+    <sys:String x:Key="ProceedLabel">Proceed</sys:String>
+    <sys:String x:Key="ReplaceLabel">Replace</sys:String>
+    <sys:String x:Key="CopyLabel">Copy</sys:String>
+    <sys:String x:Key="CancelLabel">Cancel</sys:String>
+    <sys:String x:Key="NewLabel">New</sys:String>
+    <sys:String x:Key="FreeLabel">Free</sys:String>
+    <sys:String x:Key="ActionsLabel">Actions</sys:String>
+    <sys:String x:Key="NewActionLabel">New action</sys:String>
+    <sys:String x:Key="OpenActionsFolderLabel">Open actions folder</sys:String>
+    <sys:String x:Key="ActionEditorLabel">Action editor</sys:String>
+    <sys:String x:Key="StableIdLabel">Stable ID</sys:String>
+    <sys:String x:Key="DisplayNameOverrideLabel">Display-name override</sys:String>
+    <sys:String x:Key="EnabledActionLabel">Enabled</sys:String>
+    <sys:String x:Key="ModelProfileLabel">Model profile</sys:String>
+    <sys:String x:Key="OutputLanguageLabel">Output language</sys:String>
+    <sys:String x:Key="AskForInstructionsLabel">Ask for user instructions</sys:String>
+    <sys:String x:Key="QuestionToAskLabel">Question to ask</sys:String>
+    <sys:String x:Key="PromptTemplateLabel">Prompt template</sys:String>
+    <sys:String x:Key="MainWindowHeading">TextAId — Transform &amp; Translate Any Text</sys:String>
+    <sys:String x:Key="ApplicationMenuToolTip">Application menu</sys:String>
+    <sys:String x:Key="ConfigurePresetToolTip">Configure this preset</sys:String>
+    <sys:String x:Key="FullLogLabel">● Full log</sys:String>
+    <sys:String x:Key="ReloadActionsLabel">Reload actions</sys:String>
+    <sys:String x:Key="ReloadConfigurationLabel">Reload configuration</sys:String>
+    <sys:String x:Key="DeleteActionLabel">Delete action</sys:String>
+    <sys:String x:Key="DeleteActionConfirmation">Delete '{0}'? This cannot be undone.</sys:String>
+    <sys:String x:Key="ActionsEditorHelp">Select an action to edit its settings and prompt.</sys:String>
+    <sys:String x:Key="NewActionHelp">Complete the new action, then save it.</sys:String>
+    <sys:String x:Key="ActionsReloadedMessage">Actions reloaded.</sys:String>
+    <sys:String x:Key="ActionsReloadFailureMessage">TextAid kept the current action list because the reload failed. Check the action files and try again.</sys:String>
+    <sys:String x:Key="ReservedTranslateDeleteError">The reserved Translate action cannot be deleted.</sys:String>
+    <sys:String x:Key="ActionDeletedMessage">Action deleted and the active action set was refreshed.</sys:String>
+    <sys:String x:Key="ActionSavedMessage">Action saved and applied to new sessions.</sys:String>
+    <sys:String x:Key="ActionOperationFailureMessage">TextAid could not update the action. Check its settings and try again.</sys:String>
+    <sys:String x:Key="LocalModelsHelp">Load the models installed in your local Ollama instance.</sys:String>
+    <sys:String x:Key="NoLocalModelsMessage">Ollama is available, but no local models were found. Install one with 'ollama pull &lt;model&gt;'.</sys:String>
+    <sys:String x:Key="ChooseLocalModelMessage">Choose a local model, then save your settings.</sys:String>
+    <sys:String x:Key="OllamaUnreachableMessage">TextAid could not reach Ollama. Check the local endpoint and that Ollama is running.</sys:String>
+    <sys:String x:Key="ConfigurationReloadedMessage">Configuration reloaded.</sys:String>
+    <sys:String x:Key="ConfigurationReloadFailureMessage">TextAid kept the previous valid configuration because the saved configuration could not be reloaded.</sys:String>
+    <sys:String x:Key="TestingOllamaMessage">Testing the local Ollama connection…</sys:String>
+    <sys:String x:Key="OllamaAvailableMessage">Ollama is available at this endpoint.</sys:String>
+    <sys:String x:Key="OllamaConnectionRejectedMessage">Ollama did not accept a connection at this endpoint.</sys:String>
+    <sys:String x:Key="OllamaEndpointUnreachableMessage">TextAid could not reach Ollama. Check the endpoint and that Ollama is running.</sys:String>
+    <sys:String x:Key="SettingsSavedFullLogMessage">Settings saved. Full diagnostic logging is enabled locally; credentials are always redacted.</sys:String>
+    <sys:String x:Key="SettingsSavedDebugMessage">Settings saved. Debug logging is enabled for this session and records technical metadata only.</sys:String>
+    <sys:String x:Key="SettingsSavedMessage">Settings saved. Debug logging is disabled; no new diagnostic log is created.</sys:String>
+    <sys:String x:Key="EnglishSourceCatalogMessage">English is already the source UI catalog.</sys:String>
+    <sys:String x:Key="GeneratingUiTranslationMessage">Generating the UI translation with the selected profile…</sys:String>
+    <sys:String x:Key="LocaleCacheCreatedEnglishMessage">The validated locale cache was created. The UI remains English because that preference is enabled.</sys:String>
+    <sys:String x:Key="LocaleCacheCreatedMessage">The validated locale cache was created. Save Settings to apply it.</sys:String>
+    <sys:String x:Key="LocaleGenerationFailureMessage">TextAid could not generate a valid UI translation. English remains available.</sys:String>
+    <sys:String x:Key="LocaleCatalogInvalidMessage">The provider returned an incomplete or invalid UI catalog. English remains available.</sys:String>
+    <sys:String x:Key="LocaleProviderUnavailableMessage">TextAid could not complete the UI translation request with the selected provider. English remains available.</sys:String>
+    <sys:String x:Key="DebugFolderOpenedMessage">Opened the local TextAid debug-log folder.</sys:String>
+    <sys:String x:Key="GeneralTabLabel">General</sys:String>
+    <sys:String x:Key="ProfilesTabLabel">Profiles</sys:String>
+    <sys:String x:Key="LanguageTabLabel">Language</sys:String>
+    <sys:String x:Key="GeneralPreferencesTitle">TextAid preferences</sys:String>
+    <sys:String x:Key="GeneralValidationMessage">Changes are validated before they replace the active configuration.</sys:String>
+    <sys:String x:Key="GeneralLanguageHelp">Use the Language tab to select the application and translation languages, and to configure the two invocation shortcuts.</sys:String>
+    <sys:String x:Key="StartWithWindowsLabel">Start TextAid when I sign in to Windows</sys:String>
+    <sys:String x:Key="StartWithWindowsHelp">This creates a startup entry for this Windows user only. Administrator privileges are not required.</sys:String>
+    <sys:String x:Key="WindowsStartupUpdateFailureMessage">TextAid could not update its Windows startup setting. Check that your user account can change startup apps, then try again.</sys:String>
+    <sys:String x:Key="ProfilesTitle">Model profiles</sys:String>
+    <sys:String x:Key="LanguageAndShortcutsTitle">Language and shortcuts</sys:String>
+    <sys:String x:Key="ApplicationLanguageLabel">Application language</sys:String>
+    <sys:String x:Key="ApplicationLanguageHelp">This changes the TextAid interface only. It does not choose a translation destination.</sys:String>
+    <sys:String x:Key="KeepEnglishUiLabel">Keep the TextAid UI in English</sys:String>
+    <sys:String x:Key="LocaleGenerationProfileLabel">Profile used to generate a language cache</sys:String>
+    <sys:String x:Key="GenerateUiTranslationLabel">Generate UI translation</sys:String>
+    <sys:String x:Key="PreferredTranslationLanguageLabel">Preferred output language for quick Translate</sys:String>
+    <sys:String x:Key="PreferredTranslationLanguageHelp">Used by Ctrl+C, then T to choose its destination. It does not change the TextAid interface language.</sys:String>
+    <sys:String x:Key="ChooseShortcutLabel">Choose shortcut</sys:String>
+    <sys:String x:Key="TranslateShortcutLabel">Translate shortcut</sys:String>
+    <sys:String x:Key="NoModelConfiguredLabel">No model configured</sys:String>
+    <sys:String x:Key="ProfilesCategoryHelp">The built-in profiles select their connection category: local-default (This device only), network-default (On-premises), and external-default (External). Actions select one profile and never fall back silently.</sys:String>
+    <sys:String x:Key="ProfilesActionsHelp">Edit an action's selected model profile in Actions from the application menu.</sys:String>
+    <sys:String x:Key="LocaleGenerationProfileHelp">All connection profiles are listed. The selected connection must be active only when generating a UI translation. This choice does not change normal actions.</sys:String>
+    <sys:String x:Key="ChooseShortcutHelp">Default: Ctrl+C, then C. A different application may consume any reassigned binding.</sys:String>
+    <sys:String x:Key="TranslateShortcutHelp">Default: Ctrl+C, then T. TextAid applies only valid, non-conflicting sequences.</sys:String>
+    <sys:String x:Key="TranslationReviewLabel">Translation review</sys:String>
+    <sys:String x:Key="TranslationReviewTitle">Review UI translations</sys:String>
+    <sys:String x:Key="TranslationReviewHelp">Edit a personal correction for a selected key. It takes precedence over the suggested cache and never changes the English source or a reviewed pack.</sys:String>
+    <sys:String x:Key="StableKeyLabel">Stable key</sys:String>
+    <sys:String x:Key="EnglishSourceLabel">English source</sys:String>
+    <sys:String x:Key="SuggestedTranslationLabel">Suggested translation</sys:String>
+    <sys:String x:Key="PersonalOverrideLabel">Personal override</sys:String>
+    <sys:String x:Key="TranslationOriginLabel">Origin</sys:String>
+    <sys:String x:Key="SaveCorrectionLabel">Save correction</sys:String>
+    <sys:String x:Key="RestoreSuggestedLabel">Restore suggested</sys:String>
+    <sys:String x:Key="ImportLanguagePackLabel">Import language pack</sys:String>
+    <sys:String x:Key="ExportLanguagePackLabel">Export language pack</sys:String>
+    <sys:String x:Key="TranslationCorrectionSavedMessage">Personal correction saved.</sys:String>
+    <sys:String x:Key="TranslationCorrectionInvalidMessage">The correction must keep the source placeholders and cannot be empty.</sys:String>
+    <sys:String x:Key="TranslationRestoredMessage">The suggested translation was restored.</sys:String>
+    <sys:String x:Key="TranslationReviewStorageFailureMessage">TextAid could not update the local correction file.</sys:String>
+    <sys:String x:Key="TranslationReviewEnglishFallbackMessage">No compatible suggested cache is active. English is shown as the suggested value.</sys:String>
+    <sys:String x:Key="LanguagePackExportedMessage">Language pack exported without personal corrections.</sys:String>
+    <sys:String x:Key="LanguagePackExportFailureMessage">TextAid could not export a compatible language pack.</sys:String>
+    <sys:String x:Key="LanguagePackImportedMessage">Compatible language pack imported. Personal corrections were preserved.</sys:String>
+    <sys:String x:Key="LanguagePackImportFailureMessage">TextAid rejected the language pack. The active cache and personal corrections were not changed.</sys:String>
+    <sys:String x:Key="ThisDeviceOnlyTabLabel">This device only</sys:String>
+    <sys:String x:Key="OnPremisesTabLabel">On-premises</sys:String>
+    <sys:String x:Key="ExternalTabLabel">External</sys:String>
+    <sys:String x:Key="DebugTabLabel">Debug</sys:String>
+    <sys:String x:Key="ActiveLabel">Active</sys:String>
+    <sys:String x:Key="OllamaEndpointLabel">Ollama endpoint</sys:String>
+    <sys:String x:Key="TestConnectionLabel">Test connection</sys:String>
+    <sys:String x:Key="LoadLocalModelsLabel">Load local models</sys:String>
+    <sys:String x:Key="ConnectionStatusLabel">Connection status</sys:String>
+    <sys:String x:Key="ModelLabel">Model</sys:String>
+    <sys:String x:Key="TemperatureLabel">Temperature</sys:String>
+    <sys:String x:Key="ContextSizeLabel">Context size (tokens)</sys:String>
+    <sys:String x:Key="TimeoutLabel">Timeout (seconds)</sys:String>
+    <sys:String x:Key="ThinkingLabel">Thinking</sys:String>
+    <sys:String x:Key="EndpointLabel">Endpoint</sys:String>
+    <sys:String x:Key="ThisDeviceOnlyIndicatorLabel">Using this device only</sys:String>
+    <sys:String x:Key="OnPremisesIndicatorLabel">Using an On-premises connection</sys:String>
+    <sys:String x:Key="ExternalIndicatorLabel">Using an External connection</sys:String>
+    <sys:String x:Key="OnPremisesTitle">Ollama on an administered network</sys:String>
+    <sys:String x:Key="OnPremisesPrivacyHelp">TextAid cannot verify the ownership, routing, or handling of this endpoint.</sys:String>
+    <sys:String x:Key="ExternalTitle">OpenAI-compatible service</sys:String>
+    <sys:String x:Key="ExternalPrivacyHelp">External service use is a deliberate configuration choice.</sys:String>
+    <sys:String x:Key="OptionalApiKeyLabel">API key (optional; leave blank to retain the saved key)</sys:String>
+    <sys:String x:Key="ApiKeyLabel">API key (leave blank to retain the saved key)</sys:String>
+    <sys:String x:Key="LoadExternalModelsLabel">Load external models</sys:String>
+    <sys:String x:Key="ExternalModelsHelp">Enter an API key, then load and choose one of the available models.</sys:String>
+    <sys:String x:Key="NoExternalModelsMessage">The External endpoint responded, but no models are available to this key.</sys:String>
+    <sys:String x:Key="ChooseExternalModelMessage">Choose an External model, then save your settings.</sys:String>
+    <sys:String x:Key="ExternalModelsUnavailableMessage">TextAid could not load models from the External endpoint. Check its endpoint and API key.</sys:String>
+    <sys:String x:Key="OptionalDiagnosticLogTitle">Optional diagnostic log</sys:String>
+    <sys:String x:Key="DebugDisabledHelp">Debug is off by default. When enabled, TextAid creates one log for the current session in %LOCALAPPDATA%\TextAid.</sys:String>
+    <sys:String x:Key="EnableDebugLogLabel">Enable debug log</sys:String>
+    <sys:String x:Key="EnableFullLogLabel">Enable full log (contains diagnostic text)</sys:String>
+    <sys:String x:Key="FullLogWarning">Full log stays on this computer and is never sent automatically. It can include input, prompts, output, and raw error messages so support can diagnose a problem. You may obfuscate passages in Notepad before sharing it. API keys, tokens, passwords, and secrets are always redacted.</sys:String>
+    <sys:String x:Key="OpenDebugFolderLabel">Open debug-log folder</sys:String>
+    <sys:String x:Key="SafeLogHelp">The log contains technical event names, failure categories, and exception types only. It never records API keys, secrets, clipboard contents, input text, generated output, or prompts.</sys:String>
+    <sys:String x:Key="SettingsConnectionsHelp">Configure each AI connection independently.</sys:String>
+    <sys:String x:Key="LoopbackEndpointToolTip">This device only accepts localhost, 127.0.0.1, or ::1.</sys:String>
+    <sys:String x:Key="ReviewResultCopyMessage">Review the local transformation, then choose Copy or Cancel.</sys:String>
+    <sys:String x:Key="ReviewResultReplaceMessage">Review the local transformation, then choose Replace, Copy, or Cancel.</sys:String>
+    <sys:String x:Key="EnterTextProcessMessage">Enter or paste text, then choose Process.</sys:String>
+    <sys:String x:Key="UnassignedActionLabel">Unassigned</sys:String>
+    <sys:String x:Key="InstructionsLabel">Instructions</sys:String>
+    <sys:String x:Key="InstructionsTitle">Supplementary instructions</sys:String>
+    <sys:String x:Key="InstructionsMessage">Optional guidance for this one transformation.</sys:String>
+    <sys:String x:Key="SaveLabel">Save</sys:String>
+    <sys:String x:Key="TransformingMessage">Transforming your text with the local model…</sys:String>
+    <sys:String x:Key="WarmingUpLocalModelMessage">Preparing the local model. This can take a moment…</sys:String>
+    <sys:String x:Key="TranslatingCapturedTextMessage">Translating the captured text…</sys:String>
+    <sys:String x:Key="ConfigurationDowngradeCancelledMessage">The configuration downgrade was cancelled.</sys:String>
+    <sys:String x:Key="SelectedActionUnavailableMessage">The selected action is no longer available.</sys:String>
+    <sys:String x:Key="TransformingLabel">Model is working</sys:String>
+    <sys:String x:Key="LocalModelWorkingLabel">Local model is working</sys:String>
+    <sys:String x:Key="NetworkModelWorkingLabel">Network model is working</sys:String>
+    <sys:String x:Key="ExternalModelWorkingLabel">External model is working</sys:String>
+    <sys:String x:Key="ExternalProviderRequestFailure">The External provider rejected or could not complete this request. Check the API key, selected model, endpoint, and your provider access.</sys:String>
+    <sys:String x:Key="ExternalAuthenticationFailure">The External provider did not accept the saved API key. Enter it again in Settings, then save.</sys:String>
+    <sys:String x:Key="ExternalModelUnavailableFailure">The selected External model is unavailable to this API key. Load the model list again and choose another model.</sys:String>
+    <sys:String x:Key="ExternalRateLimitFailure">The External provider temporarily refused the request because of a rate limit or account quota. Wait, then try again.</sys:String>
+    <sys:String x:Key="ExternalRequestRejectedFailure">The External provider rejected this request. The selected model may not support the requested API operation.</sys:String>
+    <sys:String x:Key="EnterTextMessage">Enter or paste text, then choose Process or use a preset.</sys:String>
+    <sys:String x:Key="ReadyToProcessMessage">Review or edit the text, then choose Process or use a preset.</sys:String>
+    <sys:String x:Key="NoModelError">Select a local Ollama model in Settings before running a transformation.</sys:String>
+    <sys:String x:Key="TransformationTimeoutError">The selected provider did not respond in time. You can cancel this session and try again.</sys:String>
+    <sys:String x:Key="TransformationError">TextAid could not complete the local transformation. Check that Ollama is running and try again.</sys:String>
+    <sys:String x:Key="EnabledLabel">Disable</sys:String>
+    <sys:String x:Key="DisabledLabel">Enable</sys:String>
+    <sys:String x:Key="OpenLabel">Open</sys:String>
+    <sys:String x:Key="SettingsLabel">Settings</sys:String>
+    <sys:String x:Key="AboutLabel">About</sys:String>
+    <sys:String x:Key="ExitLabel">Exit</sys:String>
+    <sys:String x:Key="SettingsMessage">Configuration editing is coming in a later version.</sys:String>
+    <sys:String x:Key="CloseLabel">Close</sys:String>
+    <sys:String x:Key="OpenSettingsLabel">Open Settings</sys:String>
+    <sys:String x:Key="ProviderSetupTitle">Set up an AI provider</sys:String>
+    <sys:String x:Key="ProviderSetupMessage">TextAid could not find a usable local Ollama setup. Install Ollama and download a model, or configure an On-premises Ollama server on your network, or configure an External OpenAI-compatible service with its API key. Provider access is always an explicit choice; Settings remains available while no provider is ready.</sys:String>
+    <sys:String x:Key="ClipboardError">Unable to access the clipboard.</sys:String>
+    <sys:String x:Key="NoTextError">No text selected.</sys:String>
+    <sys:String x:Key="SourceWindowError">Unable to identify the source window.</sys:String>
+    <sys:String x:Key="SessionError">Unable to open the TextAid session.</sys:String>
+    <sys:String x:Key="ClipboardWriteError">Unable to copy the result to the clipboard. You can cancel this session.</sys:String>
+    <sys:String x:Key="InvalidTargetError">The original window is no longer available. The result remains in the clipboard; you can cancel this session.</sys:String>
+    <sys:String x:Key="FocusFailedError">TextAid could not safely restore the original window. The result remains in the clipboard; you can cancel this session.</sys:String>
+    <sys:String x:Key="ModifiersPressedError">Release Ctrl, Alt, Shift, and Windows keys, then try again. The result remains in the clipboard.</sys:String>
+    <sys:String x:Key="PasteFailedError">TextAid could not paste safely. The result remains in the clipboard; you can cancel this session.</sys:String>
+    <sys:String x:Key="ElevatedApplicationNote">Replace may be unavailable for applications running as administrator. Copy remains available.</sys:String>
+    <sys:String x:Key="LocaleCacheStaleFallbackMessage">The selected UI translation was made for an older English catalog. TextAid is using English until you generate or import a compatible translation.</sys:String>
+    <sys:String x:Key="LocaleCacheInvalidFallbackMessage">The selected UI translation is invalid. TextAid is using English; generate or import a compatible translation to restore it.</sys:String>
+    <sys:String x:Key="LocaleCacheUnreadableFallbackMessage">The selected UI translation could not be read. TextAid is using English; check the locale cache and try again.</sys:String>
+    <sys:String x:Key="DeleteLanguageCacheLabel">Delete language cache</sys:String>
+    <sys:String x:Key="DeleteLanguageCacheConfirmation">Delete the generated language cache for this language? Personal corrections are kept.</sys:String>
+    <sys:String x:Key="LanguageCacheDeletedMessage">The generated language cache was deleted. Personal corrections were kept.</sys:String>
+    <sys:String x:Key="LanguageCacheDeletionFailureMessage">TextAid could not delete the language cache.</sys:String>
+    <sys:String x:Key="Action.translate">Translate</sys:String>
+    <sys:String x:Key="Action.correct">Correct</sys:String>
+    <sys:String x:Key="Action.rewrite">Rewrite</sys:String>
+    <sys:String x:Key="Action.shorten">Shorten</sys:String>
+    <sys:String x:Key="Action.expand">Expand</sys:String>
+    <sys:String x:Key="Action.simplify">Simplify</sys:String>
+    <sys:String x:Key="Action.change-tone">Change tone</sys:String>
+    <sys:String x:Key="Action.summarize">Summarize</sys:String>
+    <sys:String x:Key="Action.answer-this-mail">Answer this mail</sys:String>
+    <sys:String x:Key="Action.Synonymes">Synonyms</sys:String>
+    <sys:String x:Key="Action.humanize">Humanize</sys:String>
 </ResourceDictionary>

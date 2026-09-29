@@ -9,7 +9,7 @@ internal static class UiStrings
 
     public static string? TryGet(string key)
     {
-        string value = Get(key);
+        var value = Get(key);
         return value.Equals(key, StringComparison.Ordinal) ? null : value;
     }
 }
