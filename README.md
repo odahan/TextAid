@@ -66,7 +66,7 @@ The complete historical bootstrap is preserved unchanged in [docs/README.BOOTSTR
 
 ## Method validation
 
-TextAid was built both for its own purpose and to put SAW to the test. Its development used only GPT-5.6 Terra with Medium reasoning effort and an OpenAI USD 20 subscription. The project demonstrates that Microsoft’s Spec-Driven Development (SDD) can be adapted into a practical, fully AI-centric method. SAW is that adaptation: an alternative to the support provided by Microsoft’s Spec-Kit for applying SDD in a real project.
+TextAid was built both for its own purpose and to put SAW to the test. Its development used only GPT-5.6 Terra with Medium reasoning effort and an OpenAI USD 20 subscription. The project demonstrates that Microsoft’s Spec-Driven Development (SDD) can be adapted into a practical, fully AI-centric method. SAW (SDD Another Way) is that adaptation: an alternative to the support provided by Microsoft’s Spec-Kit for applying SDD in a real project.
 
 ## Documentation
 
