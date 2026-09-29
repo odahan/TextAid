@@ -73,8 +73,8 @@
                         <Button Content="{DynamicResource ExportLanguagePackLabel}" Click="OnExport" Margin="0,0,8,0"/>
                         <Button Content="{DynamicResource DeleteLanguageCacheLabel}" Command="{Binding DeleteLanguageCacheCommand}"/>
                         <TextBlock FontFamily="Segoe MDL2 Assets" FontSize="20" Text="" VerticalAlignment="Center" Margin="20,0,4,0"/>
-                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" d:Text="Champ de recherche" Foreground="{DynamicResource ForegroundMutedBrush}" MinWidth="110" Margin="0,0,4,0"/>
-                        <Button Width="30" Command="{Binding FindNextCommand}" FontFamily="Segoe UI Symbol" Content="&#x25BC;" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" d:Text="Recherche" Foreground="{DynamicResource ForegroundMutedBrush}" MinWidth="100" MaxWidth="140" Margin="0,0,4,0"/>
+                        <Button Width="30" Command="{Binding FindNextCommand}" FontFamily="Segoe UI Symbol" Content="&#x25BC;" MinWidth="25" MaxWidth="30" Height="16" />
                     </StackPanel>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
