@@ -21,10 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextAid.Core.Tests", "tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextAid.Platform.Windows.Tests", "tests\TextAid.Platform.Windows.Tests\TextAid.Platform.Windows.Tests.csproj", "{0663F2AA-2CC0-462A-A8BF-09DBADFF01FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextAid.TestTarget", "tools\TextAid.TestTarget\TextAid.TestTarget.csproj", "{A7DFEE2C-9501-409A-A41D-A697C728E386}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -119,18 +115,6 @@ Global
 		{0663F2AA-2CC0-462A-A8BF-09DBADFF01FE}.Release|x64.Build.0 = Release|Any CPU
 		{0663F2AA-2CC0-462A-A8BF-09DBADFF01FE}.Release|x86.ActiveCfg = Release|Any CPU
 		{0663F2AA-2CC0-462A-A8BF-09DBADFF01FE}.Release|x86.Build.0 = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|x64.Build.0 = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Debug|x86.Build.0 = Debug|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|x64.ActiveCfg = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|x64.Build.0 = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|x86.ActiveCfg = Release|Any CPU
-		{A7DFEE2C-9501-409A-A41D-A697C728E386}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +127,5 @@ Global
 		{EFC480D9-C99F-4620-A99E-B827CD5B7CF0} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{34435CFB-9592-44C0-A67A-8F25DA015D90} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{0663F2AA-2CC0-462A-A8BF-09DBADFF01FE} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
-		{A7DFEE2C-9501-409A-A41D-A697C728E386} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 EndGlobal

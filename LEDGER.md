@@ -740,7 +740,7 @@ Source: Olivier's local qwen3.5:9b test feedback
 Related: D-038, R-022, R-023, LOT-010
 
 Decision:
-Strengthen the editable `Humanize` action with concrete removal rules suitable for a capable but non-frontier local model, and set its temperature to 0.2. The prompt must direct the model to remove rhetorical patterns rather than substitute an equivalent formulation, including balanced contrast patterns such as “à la fois…”, unsupported hype, and adjective clusters. Its factual-preservation and bounded-editorial limits remain unchanged.
+Strengthen the editable `Humanize` action with concrete removal rules suitable for a capable but non-frontier local model, and set its temperature to 0.2. The prompt must direct the model to remove rhetorical patterns rather than substitute an equivalent formulation, including balanced contrast patterns, unsupported hype, and adjective clusters. Its factual-preservation and bounded-editorial limits remain unchanged.
 
 Reason:
 The first local results correctly normalized punctuation but retained or merely restated several targeted patterns. A more explicit, lower-variance instruction is more reliable for the local model in use.

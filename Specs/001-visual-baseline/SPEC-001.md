@@ -1,4 +1,4 @@
-# LOT-001 — Pré-V0.1 — Visual baseline
+# LOT-001 — Pre-V0.1 — Visual baseline
 
 > Before working on this lot, read the repository root README.md.
 

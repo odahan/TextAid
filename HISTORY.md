@@ -1,6 +1,13 @@
 # Project history
 
-This append-only record uses concise entries with timestamp, actor, operation, affected artifacts, and outcome. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
+This record uses concise entries with date, actor, operation, affected artifacts, and outcome. Entries are organized in reverse chronological order by their recorded date; because no time is recorded, the existing relative order is retained within each day. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
+
+## 2026-09-29 — LOT-013 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Codex implemented and published the native MdXaml rendered Markdown preview, its raw/rendered selectors, dark inert rendering safeguards, fallback behavior, and deterministic WPF coverage. Olivier accepted the Windows preview walkthrough and authorized closure after the selector, Markdown-off, cache-deletion, and global English-reset corrections.
+Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/`, `tests/`, `Specs/013-markdown-preview/`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: LOT-013 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `F3D9715551624D3A382DD351CFD5C1EF511F3A35BC87479DE2563D344A923E7A`. Both gates are PASS; the separate-machine portability check is deferred under R-012.
 
 ## 2026-09-28 — LOT-010 closed with accepted deferred compatibility checks
 
@@ -40,7 +47,7 @@ Outcome: G-010-001 is PASS on executable SHA-256 `1FBB9C060A723212EDD40DE9A7D5DD
 ## 2026-09-28 — LOT-010 Humanize prompt tuned for local generation
 
 Actor: Olivier and Codex
-Operation: Olivier tested the first `Humanize` action with qwen3.5:9b. The model normalized punctuation and preserved direct factual prose, but retained the intended targets by substituting a balanced “à la fois…” construction and keeping hype or adjective clusters. Codex made the prompt concrete about removing rather than rephrasing these patterns, and reduced its temperature from 0.35 to 0.2 for more stable local execution.
+Operation: Olivier tested the first `Humanize` action with qwen3.5:9b. The model normalized punctuation and preserved direct factual prose, but retained the intended targets by substituting another balanced construction and keeping hype or adjective clusters. Codex made the prompt concrete about removing rather than rephrasing these patterns, and reduced its temperature from 0.35 to 0.2 for more stable local execution.
 Affected artifacts: `assets/actions/humanize.json`, the initialized distributable `actions/humanize.json`, `tests/TextAid.Core.Tests/DeclarativeActionsTests.cs`, and LOT-010 traceability records.
 Outcome: The action remains bounded, fact-preserving, editable, and not framed as detector evasion. A focused local retest of the three original samples is pending.
 
@@ -75,7 +82,7 @@ Outcome: The source text remains a distinct MAF user message; the concise wordin
 ## 2026-09-28 — LOT-010 unchanged-language preservation
 
 Actor: Olivier and Codex
-Operation: Olivier reported that a French Rewrite with `Inchangée` selected returned English text. Codex added an explicit no-translation instruction for the neutral output-language choice; selected output languages retain their target-language instruction. After Olivier observed that the generic wording was still insufficient specifically for Rewrite, the neutral route was refined to name a confidently detected supported source language explicitly.
+Operation: Olivier reported that a French Rewrite with the localized `Unchanged` option selected returned English text. Codex added an explicit no-translation instruction for the neutral output-language choice; selected output languages retain their target-language instruction. After Olivier observed that the generic wording was still insufficient specifically for Rewrite, the neutral route was refined to name a confidently detected supported source language explicitly.
 Affected artifacts: `Specs/010-hardening/FINDINGS-010.md`, `src/TextAid.App/App.xaml.cs`.
 Outcome: The selection's semantics are now enforced at the model boundary. Focused French Rewrite validation is pending.
 
@@ -92,6 +99,62 @@ Actor: Olivier and Codex
 Operation: Olivier confirmed complete validation of the V0.7 Settings, localization, direct-translation, result-safety, Copy, and shortcut walkthrough, explicitly authorized TOTAL closure of LOT-008, and authorized the opening of LOT-009 whose implementation work had already begun.
 Affected artifacts: `Specs/008-settings-localization/GATES-008.md`, `Specs/008-settings-localization/CONVERGENCE-008.md`, `STATUS.md`.
 Outcome: G-008-001 AUTO and G-008-002 HUMAN are PASS on V0.7 candidate commit `c61d5777f14a0baf5f841311ed8e5e79affc8cf1`, published as `TextAid.exe` SHA-256 `433F4AF73D29EF6E5B8C7E12AD3CE8746E12FB03BC6F50E2852AF0411774C310`. LOT-008 is Closed with TOTAL convergence; LOT-009 is In-progress.
+
+## 2026-09-28 — LOT-011 opened
+
+Actor: Olivier and Codex
+Operation: Olivier authorized the start of LOT-011. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-010 is closed and that no other lot occupies the active-work slot.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-011 is the active lot. Its current result includes the tested per-user Windows startup option; release evidence and human V1 acceptance remain pending.
+
+## 2026-09-28 — LOT-013 planned for rendered Markdown preview
+
+Actor: Olivier and Codex
+Operation: Olivier requested a post-V1 rendered Markdown preview and required a package decision before specification. Codex compared WPF Markdown, HTML, and RTF routes, then recorded D-042 and created LOT-013 around native MdXaml FlowDocument rendering.
+Affected artifacts: `LEDGER.md`, `Specs/013-markdown-preview/`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-013 is Planned after LOT-012. It preserves raw Markdown for Copy and Replace, excludes HTML/RTF rendering, and requires a dark, inert WPF preview.
+
+## 2026-09-28 — LOT-011 V1 candidate accepted
+
+Actor: Olivier and Codex
+Operation: Codex published the V1 candidate, recorded the deterministic build/test/startup-registration evidence, and Olivier accepted the proportionate release qualification based on validation accumulated during development.
+Affected artifacts: `publish.ps1` output, `Specs/011-v1-release/GATES-011.md`, `Specs/011-v1-release/CONVERGENCE-011.md`, `PORTABILITY-CHECKS.md`, `LEDGER.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: Both LOT-011 gates are PASS for EXE SHA-256 `48BDA1471C6971242A60FB2EA1D1DE04AF930D5A2CFAC7A4E9733D70C3D67F8E`; the separate-machine check remains deferred and visible.
+
+## 2026-09-28 — LOT-012 opened
+
+Actor: Olivier and Codex
+Operation: Olivier authorized implementation of LOT-012 after LOT-011 closure. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-011 is closed and that no other lot occupies the active-work slot.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-012 is the active lot. Its current scope is the personal translation-correction layer, portable language-pack import/export validation, translation-origin visibility, and the documented community-pack layout; no gate result is yet claimed.
+
+## 2026-09-28 — LOT-012 correction and pack workflow implemented
+
+Actor: Codex
+Operation: Implemented isolated per-language personal corrections, restoration to a suggested value, validated portable pack import/export, persisted provenance, active-origin display, the themed translation-review editor, and a repository-ready community-pack document. Added deterministic Core coverage for correction precedence, restoration, compatible import/export, fingerprint mismatch, placeholder loss, invalid JSON, and cache preservation after rejected packs.
+Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `docs/language-packs.md`, `Specs/012-language-corrections-packs/`.
+Outcome: G-012-001 is PASS after `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` completed with 100 tests passing. G-012-002 remains TO TEST pending the required human Windows walkthrough.
+
+## 2026-09-28 — Application version raised to 1.1.0
+
+Actor: Olivier and Codex
+Operation: Olivier requested the next application version. Codex changed the application version to `1.1.0` and published the canonical self-contained single-file Release executable.
+Affected artifacts: `src/TextAid.App/TextAid.App.csproj`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: The published executable reports ProductVersion `1.1.0` and FileVersion `1.1.0.0`; SHA-256 `92EFEE0C75DE75015B63DA8AB833A8B95DD74C2E1F43B10F641F4295BAA7C96E`.
+
+## 2026-09-28 — Translation-review persistence and dark theme corrected
+
+Actor: Olivier and Codex
+Operation: Olivier reported that unsaved review-grid corrections did not take effect when the window closed and that the editor used the system light DataGrid theme. Codex persists all pending valid corrections during window closure, keeps the window open for invalid values, reapplies the active locale after persistence, and adds explicit dark editor, grid, header, cell, and selection styling.
+Affected artifacts: `src/TextAid.App/ViewModels/TranslationReviewViewModel.cs`, `src/TextAid.App/Views/TranslationReviewWindow.xaml`, `src/TextAid.App/Views/TranslationReviewWindow.xaml.cs`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` passed with 100 tests. The 1.1.0 executable was republished for the required human visual verification.
+
+## 2026-09-28 — LOT-012 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed that G-012-001 and G-012-002 had been verified successfully and authorized closure. Codex recorded the human validation, finalized the LOT-012 convergence, and closed the lot.
+Affected artifacts: `Specs/012-language-corrections-packs/GATES-012.md`, `Specs/012-language-corrections-packs/FINDINGS-012.md`, `Specs/012-language-corrections-packs/CONVERGENCE-012.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-012 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `A8E313A196A4B09AE6990A7A59AF83AD9E0D8C87F87944DC0329B59FEE1E6C66`. Both gates are PASS; LOT-013 remains the next planned lot.
 
 ## 2026-09-27 — Locale-cache correction foundation and planned language packs
 
@@ -205,12 +268,75 @@ Operation: Olivier explicitly accepted the prepared LOT-007 TOTAL convergence an
 Affected artifacts: `Specs/007-privacy-debug/CONVERGENCE-007.md`, `STATUS.md`, `HISTORY.md`.
 Outcome: LOT-007 is Closed. G-007-001 AUTO and G-007-002 HUMAN are PASS; F-007-001 is resolved.
 
-## 2026-09-25 — Pro-Spec project initialized
+## 2026-09-27 — LOT-004 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly validated and accepted LOT-004.
+Affected artifacts: `Specs/004-ollama-maf/GATES-004.md`, `Specs/004-ollama-maf/CONVERGENCE-004.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: The V0.3 EXE SHA-256 `2280762B84063F78B89AAED76CB1E9D3752EB237C2B8D26300CF4A40F3295A72` has both active gates PASS. No LOT-004 finding was recorded. LOT-004 is Closed with TOTAL convergence; the separate clean-machine check remains deferred under R-012.
+
+## 2026-09-27 — Declarative action storage and editing refined
+
+Actor: Olivier and Codex
+Operation: Olivier clarified that action JSON is visible unversioned user data beside the executable, that generic template variables are not useful in V0.4, and that editing belongs in a dedicated Actions page accessible from application menus. Codex recorded D-015, superseded R-019 with R-022, added R-023, and refined planned LOT-005, LOT-006, and LOT-008 requirements and LOT-005 gates.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `STATUS.md`, `Specs/005-declarative-actions/`, `Specs/006-connections-profiles/SPEC-006.md`, `Specs/008-settings-localization/SPEC-008.md`.
+Outcome: No lot state, implementation, executable, or gate evaluation changed. LOT-005 remains Planned and awaits a separate human start decision.
+
+## 2026-09-27 — Immediate translation action reserved
+
+Actor: Olivier and Codex
+Operation: Olivier clarified that the direct Translate shortcut must retain fixed behavior. Codex recorded D-016 and R-024, making the built-in declarative Translate action protected while retaining the shared action loading and execution path.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/008-settings-localization/SPEC-008.md`.
+Outcome: Other built-in and user actions remain editable. No implementation, lot state, executable, or gate evaluation changed.
+
+## 2026-09-27 — LOT-005 started
+
+Actor: Olivier and Codex
+Operation: Olivier explicitly authorized implementation of LOT-005 after the LOT-004 closure and the recorded action-model refinements.
+Affected artifacts: `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-005 moved from Planned to In-progress. Its active work is the visible unversioned action store, declarative action execution, and normal-session action choice; no gate result is yet claimed.
+
+## 2026-09-27 — Built-in email reply action added to LOT-005
+
+Actor: Olivier and Codex
+Operation: Olivier requested a built-in Answer this mail action that requires supplementary user context. Codex recorded D-017 and updated the active LOT-005 specification and gate.
+Affected artifacts: `LEDGER.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/005-declarative-actions/GATES-005.md`, `HISTORY.md`.
+Outcome: The active lot now supplies nine built-in actions. No gate is evaluated by this planning update.
+
+## 2026-09-27 — LOT-005 declarative-actions candidate published
 
 Actor: Codex
-Operation: Decomposed the retained TextAid V1 source specification into planned Pro-Spec lots; initialized the global artifacts and copied the normative Pro-Spec 3 reference locally.
-Affected artifacts: `README.md`, `PROJECT.md`, `RULES.md`, `STATUS.md`, `LEDGER.md`, `HISTORY.md`, `Specs/`, `docs/PROSPEC-3-SPECIFICATION.md`.
-Outcome: Planning baseline created. No implementation, gate validation, lot start, or human closure is claimed.
+Operation: Implemented the unversioned action loader, validator, text-only template renderer, nine built-in actions, action selector, per-invocation Instructions dialog, action request snapshot, and protected declarative Translate action. Built and tested the solution, then ran the canonical publisher.
+Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `Specs/005-declarative-actions/GATES-005.md`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
+Outcome: G-005-001 is PASS. The only published V0.4 executable is 178,376,111 bytes, SHA-256 `461B21E646B03E9B5D3ABFE5900819E095BEC86B6D8FD28AD7053C77478B8F8A`. G-005-002 remains TO TEST pending Olivier's running-app extensibility walkthrough.
+
+## 2026-09-27 — Single-EXE action initialization restored
+
+Actor: Olivier and Codex
+Operation: Olivier chose a single EXE with embedded default actions instead of publishing action files. He further chose a silent persisted fallback beside the settings file when the executable directory cannot accept action storage. Codex recorded D-019/R-026, embedded the action JSON files, and aligned the future Actions-page folder command.
+Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `publish.ps1`, `src/TextAid.Core/`, `src/TextAid.App/`, `Specs/008-settings-localization/SPEC-008.md`, `Specs/010-hardening/SPEC-010.md`, `Specs/011-v1-release/`.
+Outcome: The earlier direct-deployment decision is superseded before any final V0.4 publication under it. A new V0.4 EXE must be built and published through `publish.ps1`.
+
+## 2026-09-27 — Combo interaction and accent contrast corrected
+
+Actor: Olivier and Codex
+Operation: Olivier reported a light combo scrollbar, a click target limited to the arrow, and unreadable light-button text. Codex made the full combo surface toggle its popup, added dark scrollbar templates, and recorded D-020 while applying explicit black text to every shared accent button.
+Affected artifacts: `LEDGER.md`, `HISTORY.md`, `src/TextAid.App/Themes/Colors.xaml`, `src/TextAid.App/Themes/Controls.xaml`.
+Outcome: The shared visual system is corrected; the updated release must be republished for desktop validation.
+
+## 2026-09-27 — New session reset added
+
+Actor: Olivier and Codex
+Operation: Olivier requested an in-window reset for a separate manual transformation. Codex recorded D-021 and added a New command that clears the session while removing the original replacement target.
+Affected artifacts: `LEDGER.md`, `HISTORY.md`, `Specs/005-declarative-actions/SPEC-005.md`, `src/TextAid.Core/InvocationSession.cs`, `src/TextAid.App/`.
+Outcome: A New session is safe for manual input and cannot Replace into the source captured by the preceding session.
+
+## 2026-09-27 — LOT-005 closed with total convergence
+
+Actor: Olivier and Codex
+Operation: Olivier confirmed the completed action workflow and visual corrections, then authorized LOT-005 closure. Codex recorded G-005-002 PASS and finalized TOTAL convergence.
+Affected artifacts: `Specs/005-declarative-actions/GATES-005.md`, `Specs/005-declarative-actions/CONVERGENCE-005.md`, `STATUS.md`, `HISTORY.md`.
+Outcome: LOT-005 is Closed. Both active gates PASS; LOT-006 remains Planned.
 
 ## 2026-09-26 — LOT-001 visual candidate prepared
 
@@ -524,13 +650,6 @@ Operation: Olivier clarified that the explicit editable Process flow applies to 
 Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/008-settings-localization/SPEC-008.md`, `HISTORY.md`.
 Outcome: D-014/R-021 are constrained by the existing R-018 quick-translation rule; no LOT-004 code or published executable changes.
 
-## 2026-09-27 — LOT-004 closed with total convergence
-
-Actor: Olivier and Codex
-Operation: Olivier explicitly validated and accepted LOT-004.
-Affected artifacts: `Specs/004-ollama-maf/GATES-004.md`, `Specs/004-ollama-maf/CONVERGENCE-004.md`, `STATUS.md`, `HISTORY.md`.
-Outcome: The V0.3 EXE SHA-256 `2280762B84063F78B89AAED76CB1E9D3752EB237C2B8D26300CF4A40F3295A72` has both active gates PASS. No LOT-004 finding was recorded. LOT-004 is Closed with TOTAL convergence; the separate clean-machine check remains deferred under R-012.
-
 ## 2026-09-26 — LOT-003 Replace retest passed in common applications
 
 Actor: Olivier and Codex
@@ -538,128 +657,9 @@ Operation: Olivier retested the final corrected V0.2 EXE in Notepad, Visual Stud
 Affected artifacts: `Specs/003-safe-accept/GATES-003.md`, `Specs/003-safe-accept/FINDINGS-003.md`, `HISTORY.md`.
 Outcome: Replace succeeds in all four reported applications, confirming the corrected `SendInput` path. G-003-002 remains TO TEST for the unreported TestTarget, Copy, controlled-failure, and layout/foreground conditions.
 
-## 2026-09-27 — Declarative action storage and editing refined
-
-Actor: Olivier and Codex
-Operation: Olivier clarified that action JSON is visible unversioned user data beside the executable, that generic template variables are not useful in V0.4, and that editing belongs in a dedicated Actions page accessible from application menus. Codex recorded D-015, superseded R-019 with R-022, added R-023, and refined planned LOT-005, LOT-006, and LOT-008 requirements and LOT-005 gates.
-Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `STATUS.md`, `Specs/005-declarative-actions/`, `Specs/006-connections-profiles/SPEC-006.md`, `Specs/008-settings-localization/SPEC-008.md`.
-Outcome: No lot state, implementation, executable, or gate evaluation changed. LOT-005 remains Planned and awaits a separate human start decision.
-
-## 2026-09-27 — Immediate translation action reserved
-
-Actor: Olivier and Codex
-Operation: Olivier clarified that the direct Translate shortcut must retain fixed behavior. Codex recorded D-016 and R-024, making the built-in declarative Translate action protected while retaining the shared action loading and execution path.
-Affected artifacts: `LEDGER.md`, `RULES.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/008-settings-localization/SPEC-008.md`.
-Outcome: Other built-in and user actions remain editable. No implementation, lot state, executable, or gate evaluation changed.
-
-## 2026-09-27 — LOT-005 started
-
-Actor: Olivier and Codex
-Operation: Olivier explicitly authorized implementation of LOT-005 after the LOT-004 closure and the recorded action-model refinements.
-Affected artifacts: `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-005 moved from Planned to In-progress. Its active work is the visible unversioned action store, declarative action execution, and normal-session action choice; no gate result is yet claimed.
-
-## 2026-09-27 — Built-in email reply action added to LOT-005
-
-Actor: Olivier and Codex
-Operation: Olivier requested a built-in Answer this mail action that requires supplementary user context. Codex recorded D-017 and updated the active LOT-005 specification and gate.
-Affected artifacts: `LEDGER.md`, `Specs/005-declarative-actions/SPEC-005.md`, `Specs/005-declarative-actions/GATES-005.md`, `HISTORY.md`.
-Outcome: The active lot now supplies nine built-in actions. No gate is evaluated by this planning update.
-
-## 2026-09-27 — LOT-005 declarative-actions candidate published
+## 2026-09-25 — Pro-Spec project initialized
 
 Actor: Codex
-Operation: Implemented the unversioned action loader, validator, text-only template renderer, nine built-in actions, action selector, per-invocation Instructions dialog, action request snapshot, and protected declarative Translate action. Built and tested the solution, then ran the canonical publisher.
-Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `Specs/005-declarative-actions/GATES-005.md`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
-Outcome: G-005-001 is PASS. The only published V0.4 executable is 178,376,111 bytes, SHA-256 `461B21E646B03E9B5D3ABFE5900819E095BEC86B6D8FD28AD7053C77478B8F8A`. G-005-002 remains TO TEST pending Olivier's running-app extensibility walkthrough.
-
-## 2026-09-27 — Single-EXE action initialization restored
-
-Actor: Olivier and Codex
-Operation: Olivier chose a single EXE with embedded default actions instead of publishing action files. He further chose a silent persisted fallback beside the settings file when the executable directory cannot accept action storage. Codex recorded D-019/R-026, embedded the action JSON files, and aligned the future Actions-page folder command.
-Affected artifacts: `LEDGER.md`, `RULES.md`, `PROJECT.md`, `publish.ps1`, `src/TextAid.Core/`, `src/TextAid.App/`, `Specs/008-settings-localization/SPEC-008.md`, `Specs/010-hardening/SPEC-010.md`, `Specs/011-v1-release/`.
-Outcome: The earlier direct-deployment decision is superseded before any final V0.4 publication under it. A new V0.4 EXE must be built and published through `publish.ps1`.
-
-## 2026-09-27 — Combo interaction and accent contrast corrected
-
-Actor: Olivier and Codex
-Operation: Olivier reported a light combo scrollbar, a click target limited to the arrow, and unreadable light-button text. Codex made the full combo surface toggle its popup, added dark scrollbar templates, and recorded D-020 while applying explicit black text to every shared accent button.
-Affected artifacts: `LEDGER.md`, `HISTORY.md`, `src/TextAid.App/Themes/Colors.xaml`, `src/TextAid.App/Themes/Controls.xaml`.
-Outcome: The shared visual system is corrected; the updated release must be republished for desktop validation.
-
-## 2026-09-27 — New session reset added
-
-Actor: Olivier and Codex
-Operation: Olivier requested an in-window reset for a separate manual transformation. Codex recorded D-021 and added a New command that clears the session while removing the original replacement target.
-Affected artifacts: `LEDGER.md`, `HISTORY.md`, `Specs/005-declarative-actions/SPEC-005.md`, `src/TextAid.Core/InvocationSession.cs`, `src/TextAid.App/`.
-Outcome: A New session is safe for manual input and cannot Replace into the source captured by the preceding session.
-
-## 2026-09-27 — LOT-005 closed with total convergence
-
-Actor: Olivier and Codex
-Operation: Olivier confirmed the completed action workflow and visual corrections, then authorized LOT-005 closure. Codex recorded G-005-002 PASS and finalized TOTAL convergence.
-Affected artifacts: `Specs/005-declarative-actions/GATES-005.md`, `Specs/005-declarative-actions/CONVERGENCE-005.md`, `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-005 is Closed. Both active gates PASS; LOT-006 remains Planned.
-
-## 2026-09-28 — LOT-011 opened
-
-Actor: Olivier and Codex
-Operation: Olivier authorized the start of LOT-011. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-010 is closed and that no other lot occupies the active-work slot.
-Affected artifacts: `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-011 is the active lot. Its current result includes the tested per-user Windows startup option; release evidence and human V1 acceptance remain pending.
-
-## 2026-09-28 — LOT-013 planned for rendered Markdown preview
-
-Actor: Olivier and Codex
-Operation: Olivier requested a post-V1 rendered Markdown preview and required a package decision before specification. Codex compared WPF Markdown, HTML, and RTF routes, then recorded D-042 and created LOT-013 around native MdXaml FlowDocument rendering.
-Affected artifacts: `LEDGER.md`, `Specs/013-markdown-preview/`, `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-013 is Planned after LOT-012. It preserves raw Markdown for Copy and Replace, excludes HTML/RTF rendering, and requires a dark, inert WPF preview.
-
-## 2026-09-28 — LOT-011 V1 candidate accepted
-
-Actor: Olivier and Codex
-Operation: Codex published the V1 candidate, recorded the deterministic build/test/startup-registration evidence, and Olivier accepted the proportionate release qualification based on validation accumulated during development.
-Affected artifacts: `publish.ps1` output, `Specs/011-v1-release/GATES-011.md`, `Specs/011-v1-release/CONVERGENCE-011.md`, `PORTABILITY-CHECKS.md`, `LEDGER.md`, `STATUS.md`, `HISTORY.md`.
-Outcome: Both LOT-011 gates are PASS for EXE SHA-256 `48BDA1471C6971242A60FB2EA1D1DE04AF930D5A2CFAC7A4E9733D70C3D67F8E`; the separate-machine check remains deferred and visible.
-
-## 2026-09-28 — LOT-012 opened
-
-Actor: Olivier and Codex
-Operation: Olivier authorized implementation of LOT-012 after LOT-011 closure. Codex changed its authoritative status from Planned to In-progress after confirming that LOT-011 is closed and that no other lot occupies the active-work slot.
-Affected artifacts: `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-012 is the active lot. Its current scope is the personal translation-correction layer, portable language-pack import/export validation, translation-origin visibility, and the documented community-pack layout; no gate result is yet claimed.
-
-## 2026-09-28 — LOT-012 correction and pack workflow implemented
-
-Actor: Codex
-Operation: Implemented isolated per-language personal corrections, restoration to a suggested value, validated portable pack import/export, persisted provenance, active-origin display, the themed translation-review editor, and a repository-ready community-pack document. Added deterministic Core coverage for correction precedence, restoration, compatible import/export, fingerprint mismatch, placeholder loss, invalid JSON, and cache preservation after rejected packs.
-Affected artifacts: `src/TextAid.Core/`, `src/TextAid.App/`, `tests/TextAid.Core.Tests/`, `docs/language-packs.md`, `Specs/012-language-corrections-packs/`.
-Outcome: G-012-001 is PASS after `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` completed with 100 tests passing. G-012-002 remains TO TEST pending the required human Windows walkthrough.
-
-## 2026-09-28 — Application version raised to 1.1.0
-
-Actor: Olivier and Codex
-Operation: Olivier requested the next application version. Codex changed the application version to `1.1.0` and published the canonical self-contained single-file Release executable.
-Affected artifacts: `src/TextAid.App/TextAid.App.csproj`, `src/TextAid.App/bin/Publish/TextAid.exe`.
-Outcome: The published executable reports ProductVersion `1.1.0` and FileVersion `1.1.0.0`; SHA-256 `92EFEE0C75DE75015B63DA8AB833A8B95DD74C2E1F43B10F641F4295BAA7C96E`.
-
-## 2026-09-28 — Translation-review persistence and dark theme corrected
-
-Actor: Olivier and Codex
-Operation: Olivier reported that unsaved review-grid corrections did not take effect when the window closed and that the editor used the system light DataGrid theme. Codex persists all pending valid corrections during window closure, keeps the window open for invalid values, reapplies the active locale after persistence, and adds explicit dark editor, grid, header, cell, and selection styling.
-Affected artifacts: `src/TextAid.App/ViewModels/TranslationReviewViewModel.cs`, `src/TextAid.App/Views/TranslationReviewWindow.xaml`, `src/TextAid.App/Views/TranslationReviewWindow.xaml.cs`, `src/TextAid.App/bin/Publish/TextAid.exe`.
-Outcome: `dotnet test TextAid.sln -m:1 -p:NuGetAudit=false` passed with 100 tests. The 1.1.0 executable was republished for the required human visual verification.
-
-## 2026-09-28 — LOT-012 closed with total convergence
-
-Actor: Olivier and Codex
-Operation: Olivier confirmed that G-012-001 and G-012-002 had been verified successfully and authorized closure. Codex recorded the human validation, finalized the LOT-012 convergence, and closed the lot.
-Affected artifacts: `Specs/012-language-corrections-packs/GATES-012.md`, `Specs/012-language-corrections-packs/FINDINGS-012.md`, `Specs/012-language-corrections-packs/CONVERGENCE-012.md`, `STATUS.md`, `HISTORY.md`.
-Outcome: LOT-012 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `A8E313A196A4B09AE6990A7A59AF83AD9E0D8C87F87944DC0329B59FEE1E6C66`. Both gates are PASS; LOT-013 remains the next planned lot.
-
-## 2026-09-29 — LOT-013 closed with total convergence
-
-Actor: Olivier and Codex
-Operation: Codex implemented and published the native MdXaml rendered Markdown preview, its raw/rendered selectors, dark inert rendering safeguards, fallback behavior, and deterministic WPF coverage. Olivier accepted the Windows preview walkthrough and authorized closure after the selector, Markdown-off, cache-deletion, and global English-reset corrections.
-Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/`, `tests/`, `Specs/013-markdown-preview/`, `STATUS.md`, `src/TextAid.App/bin/Publish/TextAid.exe`.
-Outcome: LOT-013 is Closed with TOTAL convergence on the published 1.1.0 EXE, SHA-256 `F3D9715551624D3A382DD351CFD5C1EF511F3A35BC87479DE2563D344A923E7A`. Both gates are PASS; the separate-machine portability check is deferred under R-012.
+Operation: Decomposed the retained TextAid V1 source specification into planned Pro-Spec lots; initialized the global artifacts and copied the normative Pro-Spec 3 reference locally.
+Affected artifacts: `README.md`, `PROJECT.md`, `RULES.md`, `STATUS.md`, `LEDGER.md`, `HISTORY.md`, `Specs/`, `docs/PROSPEC-3-SPECIFICATION.md`.
+Outcome: Planning baseline created. No implementation, gate validation, lot start, or human closure is claimed.

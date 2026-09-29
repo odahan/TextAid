@@ -14,7 +14,7 @@ Replaced by: None
 
 Status: ACTIVE
 Source: Initial project rule; source sections 7–11, 94
-Rule: The product MUST target .NET 10, C#, WPF, and Windows x64. The target solution has `TextAid.App`, `TextAid.Core`, `TextAid.AI`, `TextAid.Platform.Windows`, the three matching test projects, and `TextAid.TestTarget`. Core MUST have no WPF, Win32, or OllamaSharp dependency; Windows integration MUST remain in Platform.Windows. The WPF UI MUST use MVVM with CommunityToolkit.Mvvm; code-behind is limited to view and Win32 concerns.
+Rule: The product MUST target .NET 10, C#, WPF, and Windows x64. The target solution has `TextAid.App`, `TextAid.Core`, `TextAid.AI`, `TextAid.Platform.Windows`, and the three matching test projects. Core MUST have no WPF, Win32, or OllamaSharp dependency; Windows integration MUST remain in Platform.Windows. The WPF UI MUST use MVVM with CommunityToolkit.Mvvm; code-behind is limited to view and Win32 concerns.
 Replaces: None
 Replaced by: None
 

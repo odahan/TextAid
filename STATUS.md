@@ -4,7 +4,7 @@
 
 | Lot reference | Parent | Title | Status | Replaced by | Comment |
 |---|---|---|---|---|---|
-| LOT-001 | — | [Pré-V0.1 — Visual baseline](Specs/001-visual-baseline/SPEC-001.md) | Closed | — | Candidate 2 accepted by Olivier; both gates PASS; TOTAL convergence recorded in `CONVERGENCE-001.md`. |
+| LOT-001 | — | [Pre-V0.1 — Visual baseline](Specs/001-visual-baseline/SPEC-001.md) | Closed | — | Candidate 2 accepted by Olivier; both gates PASS; TOTAL convergence recorded in `CONVERGENCE-001.md`. |
 | LOT-002 | — | [V0.1 — Windows shell and foundations](Specs/002-windows-shell/SPEC-002.md) | Closed | — | Olivier accepted TOTAL convergence on the V0.1 EXE; all four gates PASS and all findings are terminal. The separate-machine portability check passed after closure for the final EXE; see `PORTABILITY-CHECKS.md`. |
 | LOT-003 | — | [V0.2 — Safe result actions](Specs/003-safe-accept/SPEC-003.md) | Closed | — | Olivier accepted TOTAL convergence; both gates PASS and all four findings are terminal. See `CONVERGENCE-003.md`. |
 | LOT-004 | — | [V0.3 — MAF and local Ollama](Specs/004-ollama-maf/SPEC-004.md) | Closed | — | Olivier accepted TOTAL convergence on the V0.3 EXE; both gates PASS and no findings were recorded. See `CONVERGENCE-004.md`. |

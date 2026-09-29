@@ -1,171 +1,169 @@
-# Pro-Spec 3 — Spécification normative du protocole
+# SAW 3.2 — Pro-Spec 3 Protocol Specification
 
-## 1. Statut du document
+SAW (SDD Another Way) is a method created by Olivier Dahan © 2025–2026. SAW 3.2 carries forward Pro-Spec 3.
 
-Ce document définit le protocole documentaire de Pro-Spec 3.
+## 1. Document Status
 
-Révision normative : `2026-09-24.5`.
+This document defines the SAW 3.2 documentation protocol, which carries forward Pro-Spec 3.
 
-Il décrit :
+Normative Revision: `2026-09-24.5`.
 
-- les artefacts obligatoires ;
-- leur contenu ;
-- leurs règles de mutation ;
-- le cycle de vie d'un lot ;
-- les validations ;
-- la fermeture ;
-- la capitalisation ;
-- le regroupement facultatif de projets dans une Application ;
-- les conditions minimales de conformité d'un outil Pro-Spec.
+It describes:
 
-Le protocole manuel constitue la référence.
+- mandatory artifacts;
+- their content;
+- their mutation rules;
+- the lifecycle of a batch;
+- validations;
+- closure;
+- capitalization;
+- the optional grouping of projects into an Application;
+- the minimum compliance conditions of the method.
 
-Un outil Pro-Spec est facultatif.
+The manual protocol constitutes the reference.
 
-Un projet Pro-Spec MUST rester utilisable sans outil Pro-Spec, sans agent particulier, sans IDE et sans système de gestion de versions imposé.
+A Pro-Spec project MUST remain usable without a special agent, without an IDE and without an imposed version control system.
 
-La présente version n'autorise pas l'exécution parallèle de plusieurs lots dans un même projet. Des projets distincts d'une même Application MAY être exécutés simultanément selon la section 20 bis.
+This version does not authorize parallel execution of several batches in the same project. Distinct projects of the same Application MAY be executed simultaneously according to section 20 bis.
 
-## 2. Vocabulaire normatif
+## 2. Normative Vocabulary
 
-Les mots suivants ont une signification normative stable, quelle que soit la langue du document :
+The following words have a stable normative meaning, regardless of the document language:
 
-| Mot | Signification |
+| Word | Meaning |
 |---|---|
-| `MUST` | Obligation absolue. |
-| `MUST NOT` | Interdiction absolue. |
-| `SHOULD` | Recommandation forte. Tout écart SHOULD être justifié. |
-| `SHOULD NOT` | Pratique fortement déconseillée. Tout écart SHOULD être justifié. |
-| `MAY` | Possibilité facultative. |
+| `MUST` | Absolute obligation. |
+| `MUST NOT` | Absolute prohibition. |
+| `SHOULD` | Strong recommendation. Any deviation SHOULD be justified. |
+| `SHOULD NOT` | Strongly discouraged practice. Any deviation SHOULD be justified. |
+| `MAY` | Optional possibility. |
 
-## 3. Objet de Pro-Spec 3
+## 3. Object of Pro-Spec 3
 
-Pro-Spec 3 est une méthode de délégation et de continuité fondée sur un protocole documentaire léger.
+Pro-Spec 3 is a delegation and continuity method based on a lightweight documentation protocol.
 
-Un « projet Pro-Spec » est une unité de pilotage documentaire. Il MAY représenter une application entière, une sous-fonction ou un autre périmètre de travail identifiable ; il ne suppose ni un projet distinct au sens organisationnel habituel, ni un dépôt de code séparé. Chaque unité conserve néanmoins sa propre racine documentaire et ses artefacts de projet.
+A « Pro-Spec project » is a documentation management unit. It MAY represent an entire application, a sub-function or another identifiable scope of work; it assumes neither a distinct project in the usual organizational sense nor a separate code repository. Each unit nevertheless retains its own documentation root and project artifacts.
 
-La taille de l'équipe ou du projet n'est pas un critère d'applicabilité de Pro-Spec.
+The size of the team or project is not a criterion for applicability of Pro-Spec.
 
-Pro-Spec se distingue par l'absence de dépendance matérielle ou logicielle propre à la méthode.
+Pro-Spec distinguishes itself by the absence of material or software dependency specific to the method.
 
-Il n'impose notamment :
+It notably imposes:
 
-- aucun matériel spécifique ;
-- aucun logiciel Pro-Spec ;
-- aucun script ;
-- aucun preset ;
-- aucun environnement Python ;
-- aucun IDE ;
-- aucun système de gestion de versions ;
-- aucun agent ou fournisseur de LLM.
+- no specific hardware;
+- no script;
+- no preset;
+- no Python environment;
+- no IDE;
+- no version control system;
+- no agent or LLM provider.
 
-Un système capable de conserver et de modifier des fichiers Markdown suffit à appliquer la méthode manuellement.
+A system capable of storing and modifying Markdown files is sufficient to apply the method manually.
 
-L'humain reste au centre des décisions.
+The human remains at the center of decisions.
 
-Aucune décision n'est automatique.
+No decision is automatic.
 
-Une vérification déterministe ou une opération documentaire MAY être automatisée.
+A deterministic verification or a documentation operation MAY be assisted by ordinary commands.
 
-Cette automatisation MUST NOT se substituer à une décision humaine exigée par le protocole.
+Such assistance MUST NOT substitute for a human decision required by the protocol.
 
-Il permet de conserver explicitement :
+It allows explicitly preserving:
 
-- l'intention ;
-- le périmètre ;
-- les règles ;
-- les décisions ;
-- l'état du travail ;
-- les connaissances acquises ;
-- les validations ;
-- les écarts entre intention et résultat.
+- intention;
+- scope;
+- rules;
+- decisions;
+- work status;
+- acquired knowledge;
+- validations;
+- gaps between intention and result.
 
-Les artefacts Markdown constituent le protocole.
+Markdown artifacts constitute the protocol.
 
-Le logiciel éventuel ne fait qu'en faciliter l'application.
+Ordinary editor commands and checks MAY facilitate its application, but the method is fully expressed by its Markdown artifacts.
 
-## 4. Principes
+## 4. Principles
 
-### 4.1 Transparence
+### 4.1 Transparency
 
-Toute règle gouvernant le travail MUST être lisible dans les artefacts.
+Any rule governing work MUST be readable in the artifacts.
 
-Un comportement indispensable MUST NOT résider uniquement dans :
+An indispensable behavior MUST NOT reside solely in:
 
-- un programme ;
-- un plugin ;
-- un prompt caché ;
-- un runtime externe ;
-- une conversation antérieure.
+- a program;
+- a plugin;
+- a hidden prompt;
+- an external runtime;
+- a previous conversation.
 
-### 4.2 Indépendance
+### 4.2 Independence
 
-Pro-Spec MUST NOT imposer :
+Pro-Spec MUST NOT impose:
 
-- Git ;
-- un autre système de gestion de versions ;
-- un IDE ;
-- un agent ;
-- un fournisseur de LLM ;
-- un système de branches ;
-- l'utilitaire Pro-Spec.
+- Git;
+- another version control system;
+- an IDE;
+- an agent;
+- an LLM provider;
+- a branch system;
 
-### 4.3 Source de vérité
+### 4.3 Source of Truth
 
-Les fichiers Markdown sont la source de vérité.
+Markdown files are the source of truth.
 
-Une représentation propriétaire MUST NOT faire autorité à leur place.
+A proprietary representation MUST NOT make authority in their place.
 
-### 4.4 Séparation des responsabilités
+### 4.4 Separation of Responsibilities
 
-Chaque artefact répond à une question distincte.
+Each artifact answers a distinct question.
 
-Une information SHOULD rester dans l'artefact auquel elle appartient.
+Information SHOULD remain in the artifact to which it belongs.
 
-Les autres artefacts SHOULD la référencer sans la recopier.
+Other artifacts SHOULD reference it without copying it.
 
-### 4.5 Répartition des traitements
+### 4.5 Distribution of Processing
 
 ```text
-opération déterministe   → programme ou commande
-compréhension sémantique → LLM
-intention durable        → Markdown
-validation métier        → humain
+deterministic operation   → program or command
+semantic understanding    → LLM
+lasting intention         → Markdown
+business validation       → human
 ```
 
-### 4.6 Proportionnalité
+### 4.6 Proportionality
 
-Une automatisation SHOULD retirer davantage de complexité qu'elle n'en introduit.
+Any supporting practice SHOULD remove more complexity than it introduces.
 
-## 5. Artefacts
+## 5. Artifacts
 
-Pro-Spec 3 définit neuf artefacts requis et un artefact global conseillé : `HISTORY.md`.
+Pro-Spec 3 defines nine required artifacts and one recommended global artifact: `HISTORY.md`.
 
-### 5.1 Artefacts globaux
+### 5.1 Global Artifacts
 
-| Artefact | Question |
+| Artifact | Question |
 |---|---|
-| `README.md` | Comment travailler dans ce projet ? |
-| `PROJECT.md` | Qu'est-ce que le projet et pourquoi existe-t-il ? |
-| `RULES.md` | Quelles règles actives gouvernent le projet ? |
-| `STATUS.md` | Quel est l'état courant des lots ? |
-| `LEDGER.md` | Quelles décisions durables ont été prises et pourquoi ? |
-| `HISTORY.md` | Quelles opérations significatives ont été effectuées, par qui et quand ? |
+| `README.md` | How to work in this project? |
+| `PROJECT.md` | What is the project and why does it exist? |
+| `RULES.md` | Which active rules govern the project? |
+| `STATUS.md` | What is the current status of batches? |
+| `LEDGER.md` | Which lasting decisions have been taken and why? |
+| `HISTORY.md` | Which significant operations were performed, by whom and when? |
 
-Les cinq premiers artefacts globaux sont requis. `HISTORY.md` est fortement conseillé, mais un très petit projet MAY l'omettre sans perdre sa conformité à Pro-Spec 3. Sa présence et sa forme SHOULD être indiquées dans `README.md` pour que les exécutants sachent où consigner les opérations.
+The first five global artifacts are required. `HISTORY.md` is strongly recommended, but a very small project MAY omit it without losing its compliance to Pro-Spec 3. Its presence and form SHOULD be indicated in `README.md` so that executors know where to record operations.
 
-### 5.2 Artefacts d'un lot
+### 5.2 Batch Artifacts
 
-| Artefact | Question |
+| Artifact | Question |
 |---|---|
-| `SPEC-xxx.md` | Que doit accomplir le lot ? |
-| `FINDINGS-xxx.md` | Qu'a-t-on appris pendant le lot ? |
-| `GATES-xxx.md` | À quelles conditions le lot peut-il être fermé ? |
-| `CONVERGENCE-xxx.md` | Qu'a-t-on obtenu et pourquoi le lot est-il fermé ? |
+| `SPEC-xxx.md` | What must the batch accomplish? |
+| `FINDINGS-xxx.md` | What was learned during the batch? |
+| `GATES-xxx.md` | Under what conditions can the batch be closed? |
+| `CONVERGENCE-xxx.md` | What was obtained and why is the batch closed? |
 
-## 6. Organisation disque
+## 6. Disk Organization
 
-### 6.1 Lot principal
+### 6.1 Main Batch
 
 ```text
 /
@@ -183,11 +181,11 @@ Les cinq premiers artefacts globaux sont requis. `HISTORY.md` est fortement cons
         └── CONVERGENCE-001.md
 ```
 
-`CONVERGENCE-001.md` MAY être absent avant la préparation de la fermeture.
+`CONVERGENCE-001.md` MAY be absent before preparation of closure.
 
-`HISTORY.md` MAY être absent dans un très petit projet selon la section 14 bis.
+`HISTORY.md` MAY be absent in a very small project according to section 14 bis.
 
-### 6.2 Sous-lot
+### 6.2 Sub-batch
 
 ```text
 Specs/
@@ -199,233 +197,233 @@ Specs/
         └── CONVERGENCE-001-002.md
 ```
 
-Le lot parent conserve son identifiant.
+The parent batch retains its identifier.
 
-`LOT-001` MUST NOT devenir `LOT-001-000` après sa création.
+`LOT-001` MUST NOT become `LOT-001-000` after its creation.
 
-### 6.3 Noms
+### 6.3 Names
 
-Les noms de fichiers normatifs sont en anglais.
+Normative file names are in English.
 
-Les noms de dossiers utilisent :
+Folder names use:
 
 ```text
-<identifiant-numérique>-<nom-court>
+<numeric-identifier>-<short-name>
 ```
 
-Le nom court SHOULD être :
+The short name SHOULD be:
 
-- descriptif ;
-- stable ;
-- écrit en minuscules ;
-- séparé par des tirets ;
-- indépendant de l'état du lot actif.
+- descriptive;
+- stable;
+- written in lowercase;
+- separated by hyphens;
+- independent of the active batch status.
 
-## 7. Identifiants
+## 7. Identifiers
 
-### 7.1 Règles générales
+### 7.1 General Rules
 
-Tout identifiant MUST être unique dans le projet.
+Any identifier MUST be unique in the project.
 
-Tout identifiant MUST être immuable.
+Any identifier MUST be immutable.
 
-Un identifiant retiré, annulé ou rendu obsolète MUST NOT être réutilisé.
+An identifier removed, cancelled or rendered obsolete MUST NOT be reused.
 
-L'identifiant fait autorité.
+The identifier makes authority.
 
-Un lien Markdown est facultatif.
+A Markdown link is optional.
 
-### 7.2 Formes canoniques
+### 7.2 Canonical Forms
 
-| Élément | Forme | Exemple |
+| Element | Form | Example |
 |---|---|---|
-| Lot | `LOT-nnn` | `LOT-001` |
-| Sous-lot | `LOT-nnn-nnn` | `LOT-001-002` |
-| Exigence | `REQ-<lot>-nnn` | `REQ-001-003` |
-| Exigence de sous-lot | `REQ-<lot>-<sous-lot>-nnn` | `REQ-001-002-003` |
+| Batch | `LOT-nnn` | `LOT-001` |
+| Sub-batch | `LOT-nnn-nnn` | `LOT-001-002` |
+| Requirement | `REQ-<lot>-nnn` | `REQ-001-003` |
+| Sub-batch Requirement | `REQ-<lot>-<sub-lot>-nnn` | `REQ-001-002-003` |
 | Finding | `F-<lot>-nnn` | `F-001-010` |
-| Finding de sous-lot | `F-<lot>-<sous-lot>-nnn` | `F-001-002-010` |
+| Sub-batch Finding | `F-<lot>-<sub-lot>-nnn` | `F-001-002-010` |
 | Gate | `G-<lot>-nnn` | `G-001-004` |
-| Gate de sous-lot | `G-<lot>-<sous-lot>-nnn` | `G-001-002-004` |
-| Décision | `D-nnn` | `D-023` |
-| Règle | `R-nnn` | `R-012` |
-| Événement d'historique | `EVT-nnnnnn` | `EVT-000042` |
+| Sub-batch Gate | `G-<lot>-<sub-lot>-nnn` | `G-001-002-004` |
+| Decision | `D-nnn` | `D-023` |
+| Rule | `R-nnn` | `R-012` |
+| History Event | `EVT-nnnnnn` | `EVT-000042` |
 
-Les segments numériques utilisent trois chiffres complétés par des zéros, sauf `EVT`, qui en utilise six.
+Numeric segments use three digits padded with zeros, except `EVT`, which uses six.
 
-`EVT` est utilisé seulement si le projet choisit le format détaillé de `HISTORY.md`.
+`EVT` is used only if the project chooses the detailed format of `HISTORY.md`.
 
-### 7.3 Références d'archives
+### 7.3 Archive References
 
-Une incarnation archivée utilise une référence de la forme :
+An archived incarnation uses a reference of the form:
 
 ```text
 LOT-001-OBSOLETE-001
 ```
 
-Cette référence n'est pas un nouvel identifiant logique de lot.
+This reference is not a new logical batch identifier.
 
-L'identifiant logique reste `LOT-001`.
+The logical identifier remains `LOT-001`.
 
-Le suffixe distingue les incarnations conservées du même lot logique.
+The suffix distinguishes preserved incarnations of the same logical batch.
 
-Une référence d'archive attribuée MUST être unique et MUST NOT être réutilisée.
+An assigned archive reference MUST be unique and MUST NOT be reused.
 
-### 7.4 Références
+### 7.4 References
 
-Référence minimale :
+Minimal reference:
 
 ```markdown
 Source: F-001-010
 ```
 
-Référence avec lien facultatif :
+Reference with optional link:
 
 ```markdown
 Source: [F-001-010](../Specs/001-export-pdf/FINDINGS-001.md#f-001-010)
 ```
 
-Un lien cassé ne rend pas l'identifiant invalide.
+A broken link does not render the identifier invalid.
 
-## 8. Dates et personnes
+## 8. Dates and People
 
-### 8.1 Format par défaut
+### 8.1 Default Format
 
-Le format par défaut est :
+The default format is:
 
 ```text
 YYYY-MM-DDTHH:mm:ss
 ```
 
-Exemple :
+Example:
 
 ```text
 2026-09-24T15:10:00
 ```
 
-### 8.2 Projet international
+### 8.2 International Project
 
-Un projet international SHOULD imposer un décalage UTC :
+An international project SHOULD impose a UTC offset:
 
 ```text
 YYYY-MM-DDTHH:mm:ss±HH:mm
 ```
 
-Exemple :
+Example:
 
 ```text
 2026-09-24T15:10:00+02:00
 ```
 
-Le choix du format MUST être inscrit dans `RULES.md` lorsqu'il diffère du format par défaut.
+The choice of format MUST be recorded in `RULES.md` when it differs from the default format.
 
-### 8.3 Identité humaine
+### 8.3 Human Identity
 
-Une validation humaine exige un nom libre.
+Human validation requires a free name.
 
-Pro-Spec n'impose ni adresse électronique, ni compte, ni signature cryptographique.
+Pro-Spec imposes neither email address, nor account, nor cryptographic signature.
 
-Plusieurs personnes MAY être indiquées.
+Several people MAY be indicated.
 
-Pro-Spec ne détermine pas si une personne possède l'autorité requise.
+Pro-Spec does not determine if a person possesses the required authority.
 
-## 9. Obsolescence et remplacement
+## 9. Obsolescence and Replacement
 
-### 9.1 Marquage
+### 9.1 Marking
 
-Un élément qui cesse d'être actif MUST rester présent.
+An element that ceases to be active MUST remain present.
 
-Son titre MUST commencer par :
+Its title MUST begin with:
 
 ```text
 [OBSOLETE]
 ```
 
-Une date MAY être ajoutée :
+A date MAY be added:
 
 ```text
 [OBSOLETE 2026-09-24]
 ```
 
-Un élément remplacé MUST contenir :
+A replaced element MUST contain:
 
 ```text
-Replaced by: <identifiant>
+Replaced by: <identifier>
 ```
 
-Le remplaçant MUST contenir :
+The replacer MUST contain:
 
 ```text
-Replaces: <identifiant>
+Replaces: <identifier>
 ```
 
-La forme normative est `Replaced by`.
+The normative form is `Replaced by`.
 
-### 9.2 Conservation
+### 9.2 Preservation
 
-Le contenu d'un élément marqué `[OBSOLETE]` MUST être conservé.
+The content of an element marked `[OBSOLETE]` MUST be preserved.
 
-Il MUST NOT être réécrit après son obsolescence.
+It MUST NOT be rewritten after its obsolescence.
 
-Une correction typographique MAY être effectuée si elle ne change pas le sens.
+A typographical correction MAY be made if it does not change the meaning.
 
-### 9.3 Remplacement complet d'un document de lot
+### 9.3 Complete Replacement of a Batch Document
 
-Le document actif conserve le nom canonique :
+The active document retains the canonical name:
 
 ```text
 SPEC-001.md
 ```
 
-La première version entièrement remplacée devient :
+The first fully replaced version becomes:
 
 ```text
 SPEC-001-OBSOLETE-001.md
 ```
 
-Les remplacements suivants utilisent :
+Subsequent replacements use:
 
 ```text
 SPEC-001-OBSOLETE-002.md
 SPEC-001-OBSOLETE-003.md
 ```
 
-Le suffixe `OBSOLETE-nnn` identifie une archive documentaire.
+The suffix `OBSOLETE-nnn` identifies a documentation archive.
 
-Il ne crée pas un nouveau lot logique.
+It does not create a new logical batch.
 
-Un objectif réellement différent MUST recevoir un nouvel identifiant de lot.
+A genuinely different objective MUST receive a new batch identifier.
 
-### 9.4 Remplacement complet d'un lot
+### 9.4 Complete Replacement of a Batch
 
-Une incarnation obsolète MAY être conservée dans un dossier suffixé :
+An obsolete incarnation MAY be preserved in a suffixed folder:
 
 ```text
 001-export-pdf-OBSOLETE-001/
 ```
 
-Ses fichiers SHOULD utiliser le même suffixe.
+Its files SHOULD use the same suffix.
 
-Le remplacement actif reprend le chemin canonique du même lot logique.
+The active replacement resumes the canonical path of the same logical batch.
 
-`STATUS.md` MUST contenir une ligne pour l'incarnation obsolète et une ligne pour l'incarnation active.
+`STATUS.md` MUST contain a line for the obsolete incarnation and a line for the active incarnation.
 
 ## 10. `README.md`
 
-### 10.1 Responsabilité
+### 10.1 Responsibility
 
-`README.md` définit le protocole de travail du projet.
+`README.md` defines the project work protocol.
 
-Il MUST rester le point d'entrée universel.
+It MUST remain the universal entry point.
 
-Il MUST NOT contenir :
+It MUST NOT contain:
 
-- la définition détaillée du produit ;
-- les règles techniques détaillées ;
-- l'état détaillé des lots ;
-- l'historique des décisions.
+- detailed product definition;
+- detailed technical rules;
+- detailed batch status;
+- history of decisions.
 
-### 10.2 Sections minimales
+### 10.2 Minimal Sections
 
 ```markdown
 # Pro-Spec project protocol
@@ -441,66 +439,66 @@ Il MUST NOT contenir :
 ## Human-only decisions
 ```
 
-### 10.3 Bootstrap obligatoire
+### 10.3 Mandatory Bootstrap
 
-Pour travailler sur un lot, l'ordre de lecture est :
+To work on a batch, the reading order is:
 
 ```text
 1. README.md
 2. PROJECT.md
 3. RULES.md
-4. Toutes les décisions actives de LEDGER.md
-5. Les décisions obsolètes explicitement référencées
+4. All active decisions of LEDGER.md
+5. Explicitly referenced obsolete decisions
 6. STATUS.md
 7. SPEC-xxx.md
 8. FINDINGS-xxx.md
 9. GATES-xxx.md
-10. CONVERGENCE-xxx.md, si ce fichier existe
+10. CONVERGENCE-xxx.md, if this file exists
 ```
 
-La lecture de toutes les décisions actives est obligatoire.
+Reading all active decisions is mandatory.
 
-Le ledger ne contient que des décisions durables. Cette lecture évite qu'une décision applicable soit écartée par une détection de pertinence imparfaite.
+The ledger contains only lasting decisions. This reading prevents an applicable decision from being discarded by imperfect relevance detection.
 
-Une décision obsolète non référencée MAY ne pas être lue intégralement.
+An unreferenced obsolete decision MAY not be read in full.
 
-`HISTORY.md`, lorsqu'il existe, ne fait pas partie du bootstrap habituel. Il SHOULD être consulté lorsque la chronologie d'une opération aide à une reprise, une réconciliation ou un audit. Son absence ne bloque pas ces procédures.
+`HISTORY.md`, when it exists, does not part of the usual bootstrap. It SHOULD be consulted when the chronology of an operation helps a resumption, reconciliation or audit. Its absence does not block these procedures.
 
-### 10.4 Renvoi depuis un lot
+### 10.4 Reference from a Batch
 
-Les artefacts d'un lot MUST commencer par un renvoi court vers le `README.md` racine.
+Batch artifacts MUST begin with a short reference to the root `README.md`.
 
-Exemple :
+Example:
 
 ```markdown
 > Before working on this lot, read the repository root README.md.
 ```
 
-Les instructions du bootstrap MUST NOT être recopiées dans les fichiers du lot.
+Bootstrap instructions MUST NOT be copied into batch files.
 
-### 10.5 Autonomie documentaire
+### 10.5 Documentation Autonomy
 
-Depuis `README.md`, un exécutant MUST pouvoir retrouver toutes les règles nécessaires à l'application du protocole dans le projet, sans conversation antérieure ni convention locale non écrite.
+From `README.md`, an executor MUST be able to find all rules necessary for applying the protocol in the project, without previous conversation or unwritten local convention.
 
-La section `Protocol reference` MUST identifier la version et la révision de Pro-Spec appliquées, ainsi que l'emplacement accessible de la référence normative correspondante. Une référence à une version courante non identifiée ne suffit pas.
+The section `Protocol reference` MUST identify the version and revision of Pro-Spec applied, as well as the accessible location of the corresponding normative reference. A reference to an unidentified current version is not sufficient.
 
-Une transmission annoncée comme autonome MUST inclure cette référence normative et les documents nécessaires au bootstrap. La référence MAY être intégrée au `README.md` ou conservée dans un document local accessible depuis celui-ci ; elle ne constitue pas un onzième type d'artefact de projet.
+A transmission announced as autonomous MUST include this normative reference and documents necessary for bootstrap. The reference MAY be integrated into `README.md` or kept in a local document accessible from it; it does not constitute an eleventh type of project artifact.
 
-Les procédures applicables MUST être consultées avant leur exécution. Il n'est pas nécessaire de recopier toute la méthode dans chaque artefact.
+Applicable procedures MUST be consulted before execution. It is not necessary to copy the entire method into each artifact.
 
-L'autonomie documentaire suppose les compétences nécessaires au travail demandé. Elle MUST NOT supposer la connaissance de décisions ou de procédures propres au projet qui ne seraient pas écrites.
+Documentation autonomy assumes the necessary skills for the requested work. It MUST NOT assume knowledge of decisions or procedures specific to the project that are not written.
 
 ## 11. `PROJECT.md`
 
-### 11.1 Responsabilité
+### 11.1 Responsibility
 
-`PROJECT.md` définit ce qui est construit et pourquoi.
+`PROJECT.md` defines what is built and why.
 
-Lorsque le projet Pro-Spec correspond à une sous-fonction d'une Application, ce fichier en définit le périmètre propre et sa contribution à l'ensemble.
+When the Pro-Spec project corresponds to a sub-function of an Application, this file defines its own scope and its contribution to the whole.
 
-Il est très stable.
+It is very stable.
 
-### 11.2 Sections minimales
+### 11.2 Minimal Sections
 
 ```markdown
 # Project
@@ -514,42 +512,42 @@ Il est très stable.
 ## Glossary
 ```
 
-### 11.3 Contenu exclu
+### 11.3 Excluded Content
 
-`PROJECT.md` MUST NOT contenir :
+`PROJECT.md` MUST NOT contain:
 
-- l'état des lots ;
-- les tâches courantes ;
-- les choix techniques détaillés ;
-- l'historique des décisions.
+- batch status;
+- current tasks;
+- detailed technical choices;
+- history of decisions.
 
-### 11.4 Identifiants
+### 11.4 Identifiers
 
-Les éléments de `PROJECT.md` ne reçoivent pas d'identifiant par défaut.
+Elements of `PROJECT.md` do not receive a default identifier.
 
-Un identifiant MAY être ajouté si une référence stable est nécessaire.
+An identifier MAY be added if a stable reference is necessary.
 
 ## 12. `RULES.md`
 
-### 12.1 Responsabilité
+### 12.1 Responsibility
 
-`RULES.md` contient les contraintes actives du projet.
+`RULES.md` contains the active constraints of the project.
 
-Il peut notamment définir :
+It may notably define:
 
-- les plateformes ;
-- les langages ;
-- les runtimes ;
-- l'architecture ;
-- les bibliothèques imposées ou interdites ;
-- la sécurité ;
-- les tests ;
-- les conventions ;
-- le format des dates.
+- platforms;
+- languages;
+- runtimes;
+- architecture;
+- imposed or forbidden libraries;
+- security;
+- tests;
+- conventions;
+- date formats.
 
-### 12.2 Forme d'une règle initiale
+### 12.2 Form of an Initial Rule
 
-Une règle présente dès la création du projet ne nécessite pas de décision du ledger.
+A rule present at project creation does not require a ledger decision.
 
 ```markdown
 ## R-001 — Rule title
@@ -567,13 +565,13 @@ Replaces: None
 Replaced by: None
 ```
 
-`Rationale` est facultatif.
+`Rationale` is optional.
 
-### 12.3 Évolution d'une règle
+### 12.3 Evolution of a Rule
 
-Toute règle ajoutée ou modifiée après l'initialisation MUST référencer une décision du ledger.
+Any rule added or modified after initialization MUST reference a ledger decision.
 
-Ancienne règle :
+Old rule:
 
 ```markdown
 ## [OBSOLETE 2026-09-24] R-001 — Rule title
@@ -586,7 +584,7 @@ Rule:
 The project MUST ...
 ```
 
-Nouvelle règle :
+New rule:
 
 ```markdown
 ## R-008 — New rule title
@@ -599,43 +597,43 @@ Rule:
 The project MUST ...
 ```
 
-L'ancienne règle conserve son texte.
+The old rule retains its text.
 
-### 12.4 Circuit d'évolution
+### 12.4 Evolution Circuit
 
-Une évolution issue d'un finding suit ce circuit :
+An evolution resulting from a finding follows this circuit:
 
 ```text
 Finding
-→ décision humaine
+→ human decision
 → LEDGER.md
-→ ancienne règle marquée [OBSOLETE], si nécessaire
-→ nouvelle règle active
+→ old rule marked [OBSOLETE], if necessary
+→ new active rule
 ```
 
-### 12.5 Portée d'une évolution
+### 12.5 Scope of an Evolution
 
-Toute évolution d'une règle MUST préciser son champ d'application dans la règle ou par référence à sa décision : travaux futurs, lot courant, résultats déjà fermés désignés, ou ensemble des résultats concernés.
+Any evolution of a rule MUST specify its scope in the rule or by reference to its decision: future work, current batch, already closed results designated, or set of affected results.
 
-La décision MUST consigner l'examen des lots potentiellement affectés et les suites retenues. L'absence d'action nécessaire MUST être indiquée explicitement lorsqu'elle est la conclusion de cet examen.
+The decision MUST record the examination of potentially affected batches and retained follow-ups. The absence of necessary action MUST be indicated explicitly when it is the conclusion of this examination.
 
-Pour un lot en cours, l'effet sur les validations acquises MUST être traité selon la section 17.10.
+For a batch in progress, the effect on acquired validations MUST be treated according to section 17.10.
 
-Une nouvelle règle MUST NOT rouvrir automatiquement un lot fermé. Si un résultat fermé devient incompatible avec une règle qui lui est applicable, la décision MUST identifier ce résultat et le traitement retenu. Une reprise éventuelle reste une décision humaine et suit les sections 18.6 et 19.3.
+A new rule MUST NOT automatically reopen a closed batch. If a closed result becomes incompatible with an applicable rule, the decision MUST identify this result and the retained treatment. A possible resumption remains a human decision and follows sections 18.6 and 19.3.
 
-La convergence antérieure reste inchangée tant que le lot n'est pas repris. Elle atteste la fermeture dans son contexte d'origine, et non la conformité à toutes les règles futures.
+Previous convergence remains unchanged until the batch is resumed. It attests closure in its original context, not compliance with all future rules.
 
 ## 13. `STATUS.md`
 
-### 13.1 Responsabilité
+### 13.1 Responsibility
 
-`STATUS.md` donne l'état courant des lots.
+`STATUS.md` gives the current status of batches.
 
-Il ne constitue pas un historique détaillé.
+It does not constitute a detailed history.
 
-Il ne suit pas les personnes ou les agents ayant travaillé sur les lots.
+It does not follow people or agents who worked on batches.
 
-### 13.2 Forme minimale
+### 13.2 Minimal Form
 
 ```markdown
 | Lot reference | Parent | Title | Status | Replaced by | Comment |
@@ -645,49 +643,49 @@ Il ne suit pas les personnes ou les agents ayant travaillé sur les lots.
 | LOT-003 | — | Mobile mode | Cancelled | — | No longer required |
 ```
 
-`Lot reference` contient l'identifiant canonique ou la référence d'une incarnation archivée.
+`Lot reference` contains the canonical identifier or a reference to an archived incarnation.
 
-Un lot apparaît dans `STATUS.md` à partir de l'état `Planned`.
+A batch appears in `STATUS.md` from status `Planned`.
 
-Un brouillon MAY rester absent.
+A draft MAY remain absent.
 
-Toutes les incarnations obsolètes reconnues MUST apparaître.
+All recognized obsolete incarnations MUST appear.
 
-### 13.3 Autorité
+### 13.3 Authority
 
-`STATUS.md` est l'unique autorité sur l'état courant d'un lot.
+`STATUS.md` is the sole authority on the current status of a batch.
 
-L'état MUST NOT être recopié dans `SPEC`, `FINDINGS`, `GATES` ou `CONVERGENCE` comme état courant faisant autorité.
+Status MUST NOT be copied into `SPEC`, `FINDINGS`, `GATES` or `CONVERGENCE` as current authoritative status.
 
-### 13.4 Informations de reprise
+### 13.4 Resumption Information
 
-Avant de transmettre ou d'interrompre le travail sur un lot, les artefacts MUST permettre d'identifier :
+Before transmitting or interrupting work on a batch, artifacts MUST allow identifying:
 
-- le résultat disponible et son emplacement, ou l'absence de résultat ;
-- le travail restant connu ;
-- les blocages éventuels et les conditions de leur levée ;
-- la prochaine action ou décision nécessaire.
+- the available result and its location, or absence of result;
+- known remaining work;
+- possible blockages and conditions for their lifting;
+- next action or necessary decision.
 
-`STATUS.md` MUST fournir un résumé courant ou les références permettant de retrouver ces informations. Une section complémentaire par lot MAY être utilisée si la colonne `Comment` ne suffit pas.
+`STATUS.md` MUST provide a current summary or references allowing to find this information. A complementary section per batch MAY be used if column `Comment` is not sufficient.
 
-Les connaissances à l'origine d'un blocage restent dans `FINDINGS`, les validations restantes dans `GATES`, et l'intention ainsi que les dépendances dans `SPEC`. Ces informations SHOULD être référencées plutôt que recopiées.
+Knowledge at the origin of a blockage remains in `FINDINGS`, remaining validations in `GATES`, and intention as well as dependencies in `SPEC`. This information SHOULD be referenced rather than copied.
 
-Ce minimum de reprise ne constitue pas un journal d'activité. Une phrase MAY suffire si elle fournit toutes les informations nécessaires. Il MUST être actualisé lorsque la situation décrite change.
+This minimum resumption does not constitute an activity log. A sentence MAY suffice if it provides all necessary information. It MUST be updated when the described situation changes.
 
 ## 14. `LEDGER.md`
 
-### 14.1 Responsabilité
+### 14.1 Responsibility
 
-`LEDGER.md` conserve les décisions durables.
+`LEDGER.md` preserves lasting decisions.
 
-Il MUST NOT devenir :
+It MUST NOT become:
 
-- un journal de bord ;
-- une liste de tous les problèmes ;
-- une copie des findings ;
-- une liste de toutes les commandes exécutées.
+- a logbook;
+- a list of all problems;
+- a copy of findings;
+- a list of all commands executed.
 
-### 14.2 Forme d'une décision
+### 14.2 Form of a Decision
 
 ```markdown
 ## D-023 — Decision title
@@ -710,66 +708,66 @@ Replaces: None
 Replaced by: None
 ```
 
-Champs obligatoires :
+Mandatory fields:
 
-- `Date` ;
-- `Decided by` ;
-- `Decision` ;
+- `Date`;
+- `Decided by`;
+- `Decision`;
 - `Reason`.
 
-Champs facultatifs :
+Optional fields:
 
-- `Source` ;
-- `Related` ;
-- `Consequences` ;
-- `Replaces` ;
+- `Source`;
+- `Related`;
+- `Consequences`;
+- `Replaces`;
 - `Replaced by`.
 
-Une décision initiale MAY utiliser :
+An initial decision MAY use:
 
 ```text
 Source: None
 ```
 
-Plusieurs décideurs MAY être inscrits s'ils possèdent l'autorité nécessaire.
+Several decision-makers MAY be listed if they possess the necessary authority.
 
-Le caractère facultatif d'un champ ne dispense pas de conserver les informations exigées par une autre section. En particulier, la portée et les conséquences d'une évolution de règle MUST être documentées conformément à la section 12.5.
+The optional nature of a field does not exempt from preserving information required by another section. In particular, the scope and consequences of a rule evolution MUST be documented according to section 12.5.
 
 ### 14.3 Mutation
 
-Une décision validée est immuable.
+A validated decision is immutable.
 
-Une correction de fond produit une nouvelle décision.
+A substantive correction produces a new decision.
 
-L'ancienne décision devient `[OBSOLETE]` et référence la nouvelle.
+The old decision becomes `[OBSOLETE]` and references the new one.
 
-Une correction typographique sans changement de sens MAY être effectuée.
+A typographical correction without change of meaning MAY be made.
 
 ## 14 bis. `HISTORY.md`
 
-### 14 bis.1 Responsabilité et couverture
+### 14 bis.1 Responsibility and Coverage
 
-`HISTORY.md` est le journal chronologique des opérations significatives effectuées sur le projet documentaire. Il décrit les actes exécutés ; `LEDGER.md` conserve les décisions durables et leurs raisons, `STATUS.md` l'état courant, et les autres artefacts leur contenu propre. Une entrée d'historique ne remplace aucune de ces écritures.
+`HISTORY.md` is the chronological journal of significant operations performed on the documentation project. It describes acts executed; `LEDGER.md` preserves lasting decisions and their reasons, `STATUS.md` current status, and other artifacts their own content. A history entry does not replace any of these writings.
 
-Sa présence est fortement conseillée : même un journal sommaire facilite la compréhension de la chronologie. Un très petit projet MAY l'omettre. Le choix de le tenir manuellement, sous une forme concise ou détaillée, dépend de la taille du projet et des moyens disponibles. L'absence du fichier ou du format détaillé MUST NOT bloquer la planification, la validation ou la fermeture d'un lot.
+Its presence is strongly recommended: even a brief log facilitates understanding of chronology. A very small project MAY omit it. The choice to keep it manually, in a concise or detailed form, depends on project size and available means. The absence of the file or detailed format MUST NOT block planning, validation or closure of a batch.
 
-Lorsqu'un historique est tenu, l'exécutant humain ou l'outil SHOULD y consigner les opérations importantes qui modifient le projet documentaire : création et transitions d'un lot ; évolution d'une exigence, règle ou gate ; enregistrement d'une décision ou d'un finding ; validation ; convergence ; reprise ou réconciliation. Des opérations proches MAY être regroupées dans une même entrée intelligible. Les lectures, recherches et commandes sans effet documentaire MAY rester hors du journal. `HISTORY.md` ne constitue pas un journal exhaustif de développement.
+When a history is kept, the human executor SHOULD record important operations modifying the documentation project: creation and transitions of a batch; evolution of a requirement, rule or gate; recording of a decision or finding; validation; convergence; resumption or reconciliation. Nearby operations MAY be grouped in the same intelligible entry. Readings, searches and commands without documentary effect MAY remain outside the journal. `HISTORY.md` does not constitute an exhaustive development log.
 
-### 14 bis.2 Forme concise pour une tenue manuelle
+### 14 bis.2 Concise Form for Manual Keeping
 
-Une entrée manuelle MAY tenir sur une ligne. Elle SHOULD indiquer au moins la date, l'exécutant, l'opération et les références utiles lorsqu'elles existent :
+A manual entry MAY fit on one line. It SHOULD indicate at least the date, executor, operation and useful references when they exist:
 
 ```text
 2026-09-24T16:42:18+02:00 | Alex | Replaced REQ-001-002 with REQ-001-007 in SPEC-001.md | D-003
 ```
 
-Le format de date suit la section 8. Le nom de l'exécutant ne constitue ni une authentification ni l'identité du décideur. La décision et sa raison restent dans `LEDGER.md` lorsqu'elles y sont requises.
+Date format follows section 8. The executor name does not constitute authentication nor the identity of the decision-maker. The decision and its reason remain in `LEDGER.md` when required there.
 
-Une personne MAY résumer en une entrée plusieurs opérations liées après avoir vérifié leur résultat, par exemple à la fin d'une séance de travail. Elle ne doit pas inventer un horaire d'exécution qu'elle ne connaît pas ; la date de consignation peut alors être distinguée de la période décrite.
+A person MAY summarize several related operations in one entry after verifying their result, for example at the end of a work session. They must not invent an execution schedule they do not know; the recording date can then be distinguished from the described period.
 
-### 14 bis.3 Format détaillé conseillé
+### 14 bis.3 Recommended Detailed Format
 
-Quand le projet dispose des moyens nécessaires, chaque opération MAY être décrite par un événement identifié et des champs explicites, ce qui facilite le filtrage et le rapprochement avec les autres artefacts :
+When the project has the necessary means, each operation MAY be described by an identified event and explicit fields, which facilitates filtering and reconciliation with other artifacts:
 
 ```markdown
 ## EVT-000042 — Requirement replaced
@@ -787,33 +785,33 @@ REQ-001-002 was preserved as obsolete and replaced by REQ-001-007.
 Reciprocal replacement references were added.
 ```
 
-Dans ce format, `Date` suit la section 8 ; `Actor` nomme l'exécutant ; `References` identifie les objets concernés ; `Documents` donne leurs chemins relatifs à la racine du projet ; `Decision` renvoie à une décision du ledger, ou vaut `None` ; `Outcome` indique le résultat constaté, par exemple `Started`, `Applied`, `Interrupted` ou `Reconciled`. `Summary` MAY rester bref.
+In this format, `Date` follows section 8; `Actor` names the executor; `References` identifies affected objects; `Documents` gives their paths relative to project root; `Decision` refers to a ledger decision, or is `None`; `Outcome` indicates observed result, for example `Started`, `Applied`, `Interrupted` or `Reconciled`. `Summary` MAY remain brief.
 
-Les identifiants `EVT-nnnnnn` sont propres au format détaillé. S'ils sont utilisés, ils MUST être uniques et SHOULD être croissants ; une correction ou une réconciliation SHOULD référencer l'événement antérieur concerné. Un outil MAY utiliser ces champs pour afficher et filtrer le journal, sans imposer ce format aux projets tenus manuellement.
+Identifiers `EVT-nnnnnn` are specific to the detailed format. If used, they MUST be unique and SHOULD be increasing; a correction or reconciliation SHOULD reference the concerned previous event. The fields remain optional and do not impose this format on manually kept projects.
 
-### 14 bis.4 Écriture, correction et reprise
+### 14 bis.4 Writing, Correction and Resumption
 
-Le journal est tenu par ajout à la fin du fichier. Les entrées existantes SHOULD être conservées ; une correction SHOULD être faite par une nouvelle entrée précisant ce qui change. Une opération simple SHOULD être notée après son application. Pour une opération composée, une entrée de début et une entrée de résultat sont conseillées si le niveau de détail choisi le permet. Une tenue manuelle sommaire MAY ne consigner que le résultat vérifié.
+The journal is kept by adding to the end of the file. Existing entries SHOULD be preserved; a correction SHOULD be made by a new entry specifying what changes. A simple operation SHOULD be noted after its application. For a composed operation, a start entry and a result entry are advised if the chosen detail level allows it. A brief manual keeping MAY only record the verified result.
 
-Un événement `Started` sans résultat ultérieur signale une opération à vérifier. Pour toute reprise, l'exécutant MUST comparer les artefacts et appliquer la section 22.8 ; il MUST NOT déduire l'état réel du seul journal. S'il constate une écriture non consignée, il SHOULD ajouter une entrée de réconciliation sans inventer une date ou un acteur historique.
+An event `Started` without subsequent result signals an operation to verify. For any resumption, the executor MUST compare artifacts and apply section 22.8; they MUST NOT deduce the real status from the journal alone. If they notice unrecorded writing, they SHOULD add a reconciliation entry without inventing a date or historical actor.
 
-Le journal permet de reconstruire la chronologie des événements consignés, mais ne garantit ni la capture de chaque édition manuelle, ni la restitution exacte des anciennes versions de fichiers. Les archives, historiques de gates, convergences et éventuels mécanismes de versionnement conservent les contenus antérieurs selon leurs propres règles. Un outil SHOULD alimenter `HISTORY.md` lorsqu'il est utilisé par le projet, sans en faire une condition d'utilisation de l'outil ou de conformité du projet.
+The journal allows reconstructing chronology of recorded events, but does not guarantee capture of each manual edition nor exact restitution of old file versions. Archives, gate histories, convergences and possible versioning mechanisms preserve previous contents according to their own rules. The person recording a material change SHOULD feed `HISTORY.md` when the project keeps one.
 
 ## 15. `SPEC-xxx.md`
 
-### 15.1 Responsabilité
+### 15.1 Responsibility
 
-`SPEC` définit l'intention du lot.
+`SPEC` defines batch intention.
 
-Elle ne contient pas :
+It does not contain:
 
-- les règles globales ;
-- le journal de travail ;
-- les findings ;
-- les résultats des gates ;
-- la conclusion de fermeture.
+- global rules;
+- work log;
+- findings;
+- gate results;
+- closure conclusion.
 
-### 15.2 Sections minimales
+### 15.2 Minimal Sections
 
 ```markdown
 # LOT-001 — Lot title
@@ -833,11 +831,11 @@ Created: 2026-09-24T10:00:00
 ## Known constraints
 ```
 
-`Parent` et `Created` sont facultatifs.
+`Parent` and `Created` are optional.
 
-`Status` MUST NOT apparaître comme état faisant autorité.
+`Status` MUST NOT appear as authoritative status.
 
-### 15.3 Exigence active
+### 15.3 Active Requirement
 
 ```markdown
 ### REQ-001-001 — Requirement title
@@ -845,7 +843,7 @@ Created: 2026-09-24T10:00:00
 The system MUST ...
 ```
 
-### 15.4 Exigence remplacée
+### 15.4 Replaced Requirement
 
 ```markdown
 ### [OBSOLETE 2026-09-25] REQ-001-001 — Requirement title
@@ -856,7 +854,7 @@ Decision: D-031
 The system MUST ...
 ```
 
-Nouvelle exigence :
+New requirement:
 
 ```markdown
 ### REQ-001-006 — New requirement title
@@ -869,24 +867,24 @@ The system MUST ...
 
 ### 15.5 Mutation
 
-Avant `In-progress`, la spec MAY être complétée sans décision du ledger.
+Before `In-progress`, the spec MAY be completed without ledger decision.
 
-Après `In-progress` :
+After `In-progress`:
 
-- une correction sans changement de sens MAY être faite sans décision ;
-- un ajout, un retrait ou un changement de sens MUST référencer une décision du ledger ;
-- le contenu remplacé MUST rester visible ;
-- l'identifiant remplacé MUST NOT être réutilisé.
+- a correction without change of meaning MAY be made without decision;
+- an addition, removal or change of meaning of spec or gates MUST reference a ledger decision;
+- replaced content MUST remain visible;
+- replaced identifier MUST NOT be reused.
 
 ## 16. `FINDINGS-xxx.md`
 
-### 16.1 Responsabilité
+### 16.1 Responsibility
 
-`FINDINGS` conserve les connaissances acquises pendant le lot.
+`FINDINGS` preserves knowledge acquired during the batch.
 
-Un finding n'est pas automatiquement une décision.
+A finding is not automatically a decision.
 
-### 16.2 Forme d'un finding
+### 16.2 Form of a Finding
 
 ```markdown
 # Findings — LOT-001
@@ -911,13 +909,13 @@ Destinations:
 - Local
 ```
 
-`Evidence` et `Impact` sont facultatifs.
+`Evidence` and `Impact` are optional.
 
-L'auteur du finding n'est pas exigé.
+The finding author is not required.
 
-### 16.3 États
+### 16.3 States
 
-États possibles :
+Possible states:
 
 ```text
 OPEN
@@ -928,17 +926,17 @@ DEFERRED TO LOT
 DISCARDED
 ```
 
-Plusieurs états terminaux MAY être combinés lorsqu'un finding possède plusieurs destinations.
+Several terminal states MAY be combined when a finding has multiple destinations.
 
-`OPEN` ne se combine pas avec un état terminal.
+`OPEN` does not combine with a terminal state.
 
-`DISCARDED` ne se combine pas avec une promotion.
+`DISCARDED` does not combine with promotion.
 
-Un finding `DISCARDED` MUST contenir une raison.
+A `DISCARDED` finding MUST contain a reason.
 
 ### 16.4 Destinations
 
-Destinations possibles et cumulables :
+Possible and cumulative destinations:
 
 ```text
 Local
@@ -948,45 +946,45 @@ New lot: LOT-xxx
 Discarded
 ```
 
-La création d'un lot depuis un finding est une décision humaine.
+Creation of a batch from a finding is a human decision.
 
-Un finding `OPEN` n'interdit pas automatiquement `Ready-to-close`.
+An `OPEN` finding does not automatically forbid `Ready-to-close`.
 
-Il MUST être examiné avant la fermeture.
+It MUST be examined before closure.
 
-Sa destination finale MUST alors être renseignée.
+Its final destination MUST then be informed.
 
-### 16.5 Traitement requis à la fermeture
+### 16.5 Required Processing at Closure
 
-Un finding MUST NOT rester `OPEN` à la fermeture.
+A finding MUST NOT remain `OPEN` at closure.
 
-Chaque finding MUST posséder un ou plusieurs états terminaux cohérents avec ses destinations. Les décisions, règles et lots référencés MUST exister ; un lot destinataire MUST être au moins `Planned`.
+Each finding MUST possess one or several terminal states consistent with its destinations. Referenced decisions, rules and batches MUST exist; a recipient batch MUST be at least `Planned`.
 
-Une résolution locale MUST expliquer suffisamment le traitement effectué pour permettre sa compréhension ultérieure. Un rejet MUST conserver sa raison.
+Local resolution MUST explain sufficiently the processing performed to allow subsequent understanding. A rejection MUST retain its reason.
 
-Le traitement du finding MUST être achevé, mais le travail confié à un lot ultérieur MAY rester à réaliser. Ce report ne dispense pas d'accepter explicitement un éventuel écart aux exigences actives du lot fermé.
+Finding processing MUST be completed, but work entrusted to a subsequent batch MAY remain to be realized. This report does not exempt from explicitly accepting any gap to active requirements of the closed batch.
 
 ## 17. `GATES-xxx.md`
 
-### 17.1 Responsabilité
+### 17.1 Responsibility
 
-`GATES` définit les conditions de fermeture.
+`GATES` defines closure conditions.
 
-Il ne décrit pas l'implémentation.
+It does not describe implementation.
 
-Il MUST NOT devenir une seconde spec.
+It MUST NOT become a second spec.
 
-### 17.2 Création
+### 17.2 Creation
 
-`GATES` est créé avec le lot.
+`GATES` is created with the batch.
 
-Les gates MUST être définies avant le passage à `Planned`.
+Gates MUST be defined before passing to `Planned`.
 
-Après `In-progress`, tout ajout, retrait ou changement de sens d'une gate MUST référencer une décision du ledger.
+After `In-progress`, any addition, removal or change of meaning of a gate MUST reference a ledger decision.
 
 ### 17.3 Types
 
-Types autorisés :
+Allowed types:
 
 ```text
 AUTO
@@ -994,21 +992,21 @@ LLM
 HUMAN
 ```
 
-`AUTO` produit un verdict déterministe.
+`AUTO` produces a deterministic verdict.
 
-`LLM` produit une analyse sémantique.
+`LLM` produces semantic analysis.
 
-`HUMAN` réserve le verdict à un humain.
+`HUMAN` reserves the verdict to a human.
 
-Un agent ou un LLM MAY lancer une gate `AUTO`.
+An agent or LLM MAY launch an `AUTO` gate.
 
-Le type reste `AUTO` si le verdict provient d'une commande déterministe.
+Type remains `AUTO` if verdict comes from a deterministic command.
 
-Toute validation métier MUST être de type `HUMAN`, sauf décision humaine démontrant l'absence d'impact métier.
+Any business validation MUST be type `HUMAN`, except human decision demonstrating absence of business impact.
 
-### 17.4 États
+### 17.4 States
 
-États autorisés :
+Allowed states:
 
 ```text
 TO TEST
@@ -1017,10 +1015,10 @@ FAIL
 N/A
 ```
 
-Le passage à `N/A` exige :
+Passing to `N/A` requires:
 
-- une décision humaine ;
-- une entrée dans le ledger.
+- a human decision;
+- an entry in the ledger.
 
 ### 17.5 Gate AUTO
 
@@ -1061,10 +1059,10 @@ Evaluator:
 Rationale:
 ```
 
-Une gate LLM MUST conserver :
+An LLM gate MUST retain:
 
-- une justification concise ;
-- l'identification du modèle lorsqu'elle est disponible.
+- a concise justification;
+- model identification when available.
 
 ### 17.7 Gate HUMAN
 
@@ -1084,91 +1082,91 @@ Evaluated result:
 Comment:
 ```
 
-Pour obtenir `PASS`, une gate HUMAN MUST contenir :
+To obtain `PASS`, a HUMAN gate MUST contain:
 
-- un horodatage ;
-- le nom de l'humain.
+- a timestamp;
+- human name.
 
-Le commentaire et les preuves sont facultatifs.
+Comment and proofs are optional.
 
-Un LLM MUST NOT déclarer une gate HUMAN satisfaite.
+An LLM MUST NOT declare a HUMAN gate satisfied.
 
-### 17.8 Historique des tests
+### 17.8 Test History
 
-Une gate `FAIL` MAY redevenir `TO TEST`, puis `PASS`.
+A `FAIL` gate MAY become `TO TEST`, then `PASS`.
 
-Une gate `PASS` dont la validation n'est plus applicable MUST revenir à `TO TEST` selon la section 17.10.
+A `PASS` gate whose validation is no longer applicable MUST return to `TO TEST` according to section 17.10.
 
-Les tentatives antérieures MUST être conservées dans une section :
+Previous attempts MUST be preserved in a section:
 
 ```markdown
 ### Test history
 ```
 
-Avant toute réinitialisation ou nouvelle évaluation, le verdict précédent, sa date, l'identification du résultat évalué, les preuves ou justifications disponibles et l'identité du validateur lorsqu'elle est requise MUST être conservés dans cet historique. Cette obligation s'applique aussi aux tentatives réussies.
+Before any reset or new evaluation, previous verdict, its date, identification of evaluated result, available proofs or justifications and identity of validator when required MUST be preserved in this history. This obligation applies also to successful attempts.
 
-### 17.9 Gates actives, obsolètes et non applicables
+### 17.9 Active, Obsolete and Inapplicable Gates
 
-Une gate active est une condition de fermeture qui n'a pas été retirée ou remplacée par obsolescence. Seules les gates actives participent au verdict courant.
+An active gate is a closure condition that has not been removed or replaced by obsolescence. Only active gates participate in current verdict.
 
-| Situation | Effet sur la fermeture |
+| Situation | Effect on Closure |
 |---|---|
-| Gate active `PASS`, validation encore applicable | Condition satisfaite. |
-| Gate active `N/A`, avec décision humaine applicable | Condition déclarée non applicable. |
-| Gate active `TO TEST` ou `FAIL` | Fermeture interdite. |
-| Gate obsolète | Conservée pour l'histoire ; exclue du verdict courant. |
+| Active gate `PASS`, validation still applicable | Condition satisfied. |
+| Active gate `N/A`, with applicable human decision | Condition declared inapplicable. |
+| Active gate `TO TEST` or `FAIL` | Closure forbidden. |
+| Obsolete gate | Preserved for history; excluded from current verdict. |
 
-Le retrait ou le remplacement d'une gate MUST conserver sa définition et son historique, appliquer le marquage de la section 9 et, après démarrage, référencer la décision du ledger. Un remplacement MUST utiliser un nouvel identifiant et des références réciproques. Un retrait sans remplacement MUST en indiquer la raison.
+Removal or replacement of a gate MUST retain its definition and history, apply marking of section 9 and, after startup, reference the ledger decision. A replacement MUST use a new identifier and reciprocal references. A removal without replacement MUST indicate its reason.
 
-Le marquage `[OBSOLETE]` est distinct du champ `Status` de la gate ; il ne constitue pas un cinquième verdict.
+Marking `[OBSOLETE]` is distinct from gate `Status` field; it does not constitute a fifth verdict.
 
-Une gate `N/A` reste active. Sa décision MUST préciser la raison et les conditions de non-applicabilité. Le retrait d'une gate et son passage à `N/A` MUST NOT être confondus.
+A `N/A` gate remains active. Its decision MUST specify reason and non-applicability conditions. Removal of a gate and passing to `N/A` MUST NOT be confused.
 
-### 17.10 Validité après modification
+### 17.10 Validity After Modification
 
-Toute modification du résultat, d'une exigence, d'une règle applicable ou d'une condition de validation susceptible d'affecter une validation acquise MUST entraîner un examen de son impact.
+Any modification of result, requirement, applicable rule or validation condition likely to affect an acquired validation MUST lead to examination of its impact.
 
-Cet examen MUST être consigné brièvement dans `GATES`, directement ou par référence à une décision documentant cet impact. Les gates affectées MUST revenir à `TO TEST` après conservation de leurs résultats antérieurs. Si l'impact ne peut pas être déterminé, toutes les gates actives autres que les gates `N/A` dont la décision reste applicable MUST être réévaluées.
+This examination MUST be recorded briefly in `GATES`, directly or by reference to a decision documenting this impact. Affected gates MUST return to `TO TEST` after preservation of previous results. If impact cannot be determined, all active gates other than `N/A` gates whose decision remains applicable MUST be re-evaluated.
 
-Le maintien d'un `PASS` à la suite d'une modification examinée MUST être justifié. Une validation HUMAN affectée MUST être obtenue à nouveau auprès d'un humain ; une justification technique ne peut pas s'y substituer.
+Maintaining a `PASS` following examined modification MUST be justified. An affected HUMAN validation MUST be obtained again from a human; technical justification cannot substitute for it.
 
-L'applicabilité des décisions `N/A` MUST également être réexaminée. Si leurs conditions ne sont plus remplies, les gates concernées MUST revenir à `TO TEST`. Un nouveau passage à `N/A` exige une nouvelle décision humaine inscrite dans le ledger.
+Applicability of `N/A` decisions MUST also be re-examined. If their conditions are no longer met, concerned gates MUST return to `TO TEST`. A new passage to `N/A` requires a new human decision recorded in the ledger.
 
-Si ces opérations rendent une gate active `TO TEST` ou `FAIL` alors que le lot est `Ready-to-close`, le lot MUST revenir à `In-progress` avant de poursuivre le travail.
+If these operations render an active gate `TO TEST` or `FAIL` while batch is `Ready-to-close`, batch MUST return to `In-progress` before continuing work.
 
-### 17.11 Identification du résultat évalué
+### 17.11 Identification of Evaluated Result
 
-Chaque évaluation MUST identifier suffisamment le résultat examiné pour déterminer sur quoi porte le verdict et si celui-ci reste applicable au résultat présenté à la fermeture.
+Each evaluation MUST sufficiently identify examined result to determine what verdict concerns and if it remains applicable to result presented at closure.
 
-Cette identification MUST être conservée dans `GATES`, directement ou par référence. Le champ `Evaluated result` MAY désigner une version de document, une livraison nommée, une copie conservée ou une révision lorsque le projet utilise un système de gestion de versions. Plusieurs gates portant sur le même résultat MAY référencer une identification commune.
+This identification MUST be preserved in `GATES`, directly or by reference. Field `Evaluated result` MAY designate a document version, named delivery, preserved copy or revision when project uses a version control system. Several gates on same result MAY reference a common identification.
 
-Un chemin désignant un contenu susceptible de changer ne suffit pas à lui seul à distinguer des résultats successifs.
+A path designating content likely to change is not sufficient alone to distinguish successive results.
 
-Cette obligation n'impose ni Git, ni empreinte cryptographique, ni archivage complet à chaque essai. Le projet choisit un moyen proportionné permettant de distinguer les résultats effectivement évalués.
+This obligation imposes neither Git, nor cryptographic fingerprint, nor complete archiving at each attempt. Project chooses a proportional means allowing to distinguish effectively evaluated results.
 
 ## 18. `CONVERGENCE-xxx.md`
 
-### 18.1 Responsabilité
+### 18.1 Responsibility
 
-`CONVERGENCE` certifie la fermeture d'un lot.
+`CONVERGENCE` certifies closure of a batch.
 
-Il compare :
+It compares:
 
-- les exigences actives de la spec ;
-- le résultat réel ;
-- les évolutions d'intention visibles dans la spec ;
-- les éléments essentiels des findings ;
-- les résultats essentiels des gates.
+- active requirements of spec;
+- real result;
+- intention evolutions visible in spec;
+- essential elements of findings;
+- essential gate results.
 
-Il ne recopie ni la spec, ni les findings, ni les gates.
+It does not copy spec, findings or gates.
 
-Pour chaque exigence active, la convergence MUST permettre d'établir qu'elle est satisfaite ou qu'un écart précisément identifié a été accepté par une décision humaine référencée.
+For each active requirement, convergence MUST allow establishing it is satisfied or a precisely identified gap was accepted by a referenced human decision.
 
-Des identifiants regroupés avec une conclusion commune MAY suffire. Une matrice exhaustive et la duplication du texte des exigences ne sont pas exigées. Une exigence active MUST NOT être omise de cet examen.
+Grouped identifiers with common conclusion MAY suffice. Exhaustive matrix and duplication of requirement text are not required. An active requirement MUST NOT be omitted from this examination.
 
-La section `Result obtained` MUST identifier le résultat finalement accepté et permettre de le rapprocher des résultats évalués dans `GATES` selon la section 17.11.
+Section `Result obtained` MUST identify finally accepted result and allow reconciling with results evaluated in `GATES` according to section 17.11.
 
-### 18.2 Sections minimales
+### 18.2 Minimal Sections
 
 ```markdown
 # Convergence — LOT-001
@@ -1189,94 +1187,94 @@ Convergence: TOTAL
 ## Historical convergences
 ```
 
-### 18.3 Niveaux
+### 18.3 Levels
 
-Valeurs autorisées :
+Allowed values:
 
 ```text
 TOTAL
 PARTIAL
 ```
 
-`TOTAL` signifie que toutes les exigences actives sont satisfaites.
+`TOTAL` means all active requirements are satisfied.
 
-`PARTIAL` signifie qu'au moins un écart a été accepté par l'humain.
+`PARTIAL` means at least one gap was accepted by human.
 
-Une convergence partielle exige une entrée dans le ledger contenant :
+A partial convergence requires an entry in the ledger containing:
 
-- la décision ;
-- la raison ;
-- la date ;
-- l'identité de l'humain.
+- decision;
+- reason;
+- date;
+- identity of human.
 
-Une divergence non acceptée interdit la fermeture.
+An unaccepted divergence forbids closure.
 
-L'acceptation d'un écart et une convergence `PARTIAL` MUST NOT neutraliser une gate active `FAIL` ou `TO TEST`. Les conditions de fermeture de la section 17.9 restent applicables.
+Acceptance of a gap and `PARTIAL` convergence MUST NOT neutralize an active gate `FAIL` or `TO TEST`. Closure conditions of section 17.9 remain applicable.
 
-### 18.4 Décision de fermeture
+### 18.4 Closure Decision
 
-Une fermeture totale ordinaire ne nécessite pas d'entrée dans le ledger.
+A total ordinary closure does not require ledger entry.
 
-Les autres cas exigent une entrée dans le ledger.
+Other cases require a ledger entry.
 
-Cela inclut :
+This includes:
 
-- une convergence partielle ;
-- une gate déclarée `N/A` ;
-- un écart accepté pendant la fermeture ;
-- toute décision exceptionnelle de fermeture.
+- partial convergence;
+- gate declared `N/A`;
+- gap accepted during closure;
+- any exceptional closure decision.
 
-### 18.5 Stabilité
+### 18.5 Stability
 
-Après fermeture, la convergence courante est stable.
+After closure, current convergence is stable.
 
-Elle MUST NOT être modifiée tant que le lot n'est pas repris.
+It MUST NOT be modified until batch is resumed.
 
-Si le lot devient `Obsolete` ou `Abandoned` sans reprise, sa convergence MUST être conservée sans modification.
+If batch becomes `Obsolete` or `Abandoned` without resumption, its convergence MUST be preserved without modification.
 
-### 18.6 Reprise
+### 18.6 Resumption
 
-Lorsqu'un lot fermé, obsolète ou abandonné est repris avec modification :
+When a closed, obsolete or abandoned batch is resumed with modification:
 
-1. toute convergence existante MUST être lue ;
-2. la reprise MUST être décidée par un humain et inscrite dans le ledger, après vérification des préconditions de la section 19.3 ;
-3. si une fermeture antérieure existe, les sections de sa fermeture courante MUST être copiées sans perte dans une nouvelle entrée de `Historical convergences`, puis les sections courantes MUST être réinitialisées ;
-4. les résultats antérieurs des gates MUST être conservés dans `Test history` ;
-5. toutes les gates actives applicables MUST revenir à `TO TEST`, et les décisions `N/A` MUST être réexaminées selon la section 17.10 ;
-6. le lot revient à `In-progress` dans `STATUS` après ces préparations ;
-7. toutes les validations applicables MUST être obtenues à nouveau avant une nouvelle fermeture.
+1. any existing convergence MUST be read;
+2. resumption MUST be decided by human and recorded in ledger, after verification of prerequisites of section 19.3;
+3. if previous closure exists, sections of its current closure MUST be copied without loss into new entry of `Historical convergences`, then current sections MUST be reset;
+4. previous gate results MUST be preserved in `Test history`;
+5. all applicable active gates MUST return to `TO TEST`, and `N/A` decisions MUST be re-examined according to section 17.10;
+6. batch returns to `In-progress` in `STATUS` after these preparations;
+7. all applicable validations MUST be obtained again before new closure.
 
-Un lot devenu `Obsolete` avant toute fermeture MAY ne pas posséder de convergence. Dans ce cas, une convergence historique MUST NOT être inventée. Un éventuel brouillon de convergence MUST être identifié comme tel et conservé avant sa réinitialisation ; il ne constitue pas une fermeture antérieure.
+A batch becoming `Obsolete` before any closure MAY not possess convergence. In this case, a historical convergence MUST NOT be invented. A possible draft of convergence MUST be identified as such and preserved before reset; it does not constitute previous closure.
 
-Chaque entrée historique MUST conserver au minimum :
+Each historical entry MUST retain at minimum:
 
-- l'ancien niveau de convergence ;
-- l'ancienne date de fermeture ;
-- l'ancien responsable de fermeture ;
-- l'ancien résultat ;
-- les anciens écarts ;
-- l'ancienne décision de fermeture.
+- old convergence level;
+- old closure date;
+- old closure responsible;
+- old result;
+- old gaps;
+- old closure decision.
 
-Les entrées déjà présentes dans `Historical convergences` MUST rester inchangées.
+Entries already present in `Historical convergences` MUST remain unchanged.
 
-### 18.7 Réactivation sans modification
+### 18.7 Reactivation Without Modification
 
-Un lot `Abandoned` MAY redevenir valide sans nouvelle validation si :
+A batch `Abandoned` MAY become valid again without new validation if:
 
-- aucune modification n'est apportée au résultat ;
-- aucune règle active nouvelle ne l'invalide ;
-- un humain décide explicitement la réactivation ;
-- le ledger contient la motivation, l'identité et la date.
+- no modification is made to result;
+- no new active rule invalidates it;
+- human explicitly decides reactivation;
+- ledger contains motivation, identity and date.
 
-Dans ce cas :
+In this case:
 
-- la convergence n'est pas réinitialisée ;
-- le lot redevient `Closed` ;
-- les gates ne sont pas rejouées.
+- convergence is not reset;
+- batch becomes `Closed` again;
+- gates are not replayed.
 
-## 19. États d'un lot
+## 19. Batch States
 
-### 19.1 États autorisés
+### 19.1 Allowed States
 
 ```text
 Draft
@@ -1291,96 +1289,96 @@ Obsolete
 Abandoned
 ```
 
-### 19.2 Signification
+### 19.2 Meaning
 
-| État | Signification |
+| State | Meaning |
 |---|---|
-| `Draft` | Fichiers en préparation. Le lot n'est pas encore reconnu comme planifié. |
-| `Planned` | Spec et gates définies. Le lot peut être commencé. |
-| `In-progress` | Lot actuellement exécuté. |
-| `Blocked` | Exécution impossible tant que le blocage n'est pas traité. |
-| `Stand-by` | Lot parent suspendu pendant l'exécution d'un sous-lot. |
-| `Ready-to-close` | Travail terminé, gates actives `PASS` encore valables ou `N/A` autorisées. Fermeture humaine en attente. |
-| `Closed` | Lot fermé après convergence et décision humaine. |
-| `Cancelled` | Lot arrêté avant fermeture et non remplacé. |
-| `Obsolete` | Lot remplacé, fermé ou non. |
-| `Abandoned` | Résultat précédemment fermé, ensuite abandonné sans remplacement. |
+| `Draft` | Files in preparation. Batch not yet recognized as planned. |
+| `Planned` | Spec and gates defined. Batch may be started. |
+| `In-progress` | Batch currently executed. |
+| `Blocked` | Execution impossible until blockage is treated. |
+| `Stand-by` | Parent batch suspended during execution of sub-batch. |
+| `Ready-to-close` | Work finished, active gates `PASS` still valid or `N/A` allowed. Human closure pending. |
+| `Closed` | Batch closed after convergence and human decision. |
+| `Cancelled` | Batch stopped before closure and not replaced. |
+| `Obsolete` | Batch replaced, closed or not. |
+| `Abandoned` | Previously closed result, then abandoned without replacement. |
 
-### 19.3 Table normative des transitions
+### 19.3 Normative Transition Table
 
-Cette table définit les transitions autorisées. Toute transition absente de la table MUST NOT être effectuée. Les procédures détaillées référencées complètent ses préconditions et effets ; les scénarios de la section 27 les illustrent.
+This table defines allowed transitions. Any transition absent from table MUST NOT be performed. Detailed procedures referenced complete its prerequisites and effects; section 27 scenarios illustrate them.
 
-Toute transition MUST respecter la séquentialité de la section 20. L'entrée dans un état occupant le créneau actif exige que ce créneau soit libre ou déjà occupé par le même lot, sauf transfert coordonné du parent à son sous-lot.
+Any transition MUST respect sequencing of section 20. Entry into an active slot state requires that slot to be free or already occupied by same batch, except coordinated transfer from parent to sub-batch.
 
-`Ledger non requis` signifie que la transition seule n'exige pas de décision durable ; les autres décisions éventuellement nécessaires restent soumises au protocole.
+`Ledger not required` means transition alone does not require lasting decision; other possibly necessary decisions remain subject to protocol.
 
-| Départ | Arrivée | Préconditions | Décision humaine et ledger | Effets documentaires obligatoires |
+| Departure | Arrival | Prerequisites | Human Decision and Ledger | Mandatory Documentary Effects |
 |---|---|---|---|---|
-| `Draft` | `Planned` | Identifiant attribué, spec et gates définies ; section 21.2. | Ledger non requis. | Inscrire le lot dans `STATUS`. |
-| `Planned` | `In-progress` | Bootstrap effectué ; créneau disponible ou transfert parent/sous-lot conforme à la section 20.3. | Démarrage décidé par un humain ; ledger non requis. | Mettre à jour `STATUS` et, pour un sous-lot, suspendre son parent. |
-| `In-progress` | `Blocked` | Un blocage empêche l'exécution. | Ledger non requis pour constater le blocage. | Documenter le blocage, sa condition de levée et les informations de reprise ; mettre à jour `STATUS`. |
-| `Blocked` | `In-progress` | Condition de levée satisfaite ; décisions nécessaires obtenues. | Ledger non requis pour cette transition seule. | Actualiser les informations de reprise, examiner l'impact sur les validations et mettre à jour `STATUS`. |
-| `In-progress` | `Stand-by` | Démarrage d'un sous-lot identifié et autorisé par un humain. | Ledger non requis pour le transfert seul. | Conserver les informations de reprise du parent ; coordonner les deux états dans `STATUS` selon la section 20.3. |
-| `Stand-by` | `In-progress` | Sous-lot ayant motivé la suspension `Closed`, `Cancelled` ou `Obsolete` ; créneau libre. | Retour décidé par un humain ; ledger non requis pour cette transition seule. | Examiner le résultat du sous-lot et son impact sur les validations du parent ; actualiser les informations de reprise et `STATUS`. |
-| `In-progress` | `Ready-to-close` | Travail terminé ; toutes les gates actives `PASS` encore valables ou `N/A` autorisées. | Ledger non requis, hors décisions nécessaires aux gates. | Vérifier les résultats et décisions de gates ; mettre à jour `STATUS`. |
-| `Ready-to-close` | `In-progress` | Correction demandée, fermeture refusée ou validation devenue invalide. | Décisions de correction selon leur nature ; ledger non requis pour le retour seul. | Consigner le motif dans les artefacts concernés, traiter les validations affectées et mettre à jour `STATUS`. |
-| `Ready-to-close` | `Closed` | Procédure de fermeture achevée, aucune cause de refus. | Acceptation humaine ; ledger dans les cas de la section 18.4. | Finaliser `CONVERGENCE`, achever les mises à jour approuvées, puis mettre `STATUS` à jour. |
-| `Draft`, `Planned`, `In-progress`, `Blocked`, `Stand-by`, `Ready-to-close` | `Cancelled` | Arrêt avant fermeture, sans remplacement, selon la section 19.6. Pour un parent suspendu, sort du sous-lot explicitement résolu. | Décision humaine inscrite dans le ledger. | Conserver les fichiers et inscrire l'état final dans `STATUS`, même pour un brouillon absent jusque-là. |
-| `Draft`, `Planned`, `In-progress`, `Blocked`, `Stand-by`, `Ready-to-close`, `Closed` | `Obsolete` | Remplaçant identifié. Pour un parent suspendu, sort du sous-lot explicitement résolu. | Décision humaine inscrite dans le ledger. | Conserver les fichiers et toute convergence ; établir les références de remplacement et les lignes de `STATUS` selon la section 9. |
-| `Closed` | `Abandoned` | Résultat non retenu, sans remplacement. | Décision humaine motivée inscrite dans le ledger. | Conserver la convergence inchangée ; mettre à jour `STATUS`. |
-| `Closed`, `Obsolete`, `Abandoned` | `In-progress` | Reprise avec modification ; créneau disponible ou transfert parent/sous-lot autorisé. Pour `Obsolete`, sort du remplaçant explicitement résolu. | Décision humaine inscrite dans le ledger avant application. | Préparer la reprise selon la section 18.6, puis mettre à jour `STATUS`. |
-| `Abandoned` | `Closed` | Résultat inchangé et aucune règle active applicable ne l'invalide ; section 18.7. | Décision humaine motivée, datée et nominative dans le ledger. | Conserver la convergence et les gates ; mettre à jour `STATUS` sans nouvelle validation. |
+| `Draft` | `Planned` | Identifier assigned, spec and gates defined; section 21.2. | Ledger not required. | Record batch in `STATUS`. |
+| `Planned` | `In-progress` | Bootstrap performed; slot available or parent/sub-batch transfer compliant with section 20.3. | Startup decided by human; ledger not required. | Update `STATUS` and, for sub-batch, suspend its parent. |
+| `In-progress` | `Blocked` | A blockage prevents execution. | Ledger not required to note blockage. | Document blockage, lifting condition and resumption information; update `STATUS`. |
+| `Blocked` | `In-progress` | Lifting condition satisfied; necessary decisions obtained. | Ledger not required for this transition alone. | Update resumption information, examine impact on validations and update `STATUS`. |
+| `In-progress` | `Stand-by` | Startup of identified sub-batch authorized by human. | Ledger not required for transfer alone. | Preserve parent resumption information; coordinate both states in `STATUS` according to section 20.3. |
+| `Stand-by` | `In-progress` | Sub-batch motivating suspension `Closed`, `Cancelled` or `Obsolete`; slot free. | Return decided by human; ledger not required for this transition alone. | Examine sub-batch result and its impact on parent validations; update resumption information and `STATUS`. |
+| `In-progress` | `Ready-to-close` | Work finished; all active gates `PASS` still valid or `N/A` allowed. | Ledger not required, except decisions necessary for gates. | Verify gate results and decisions; update `STATUS`. |
+| `Ready-to-close` | `In-progress` | Correction requested, closure refused or validation became invalid. | Correction decisions according to their nature; ledger not required for return alone. | Record reason in concerned artifacts, treat affected validations and update `STATUS`. |
+| `Ready-to-close` | `Closed` | Closure procedure completed, no refusal cause. | Human acceptance; ledger in cases of section 18.4. | Finalize `CONVERGENCE`, complete approved updates, then update `STATUS`. |
+| `Draft`, `Planned`, `In-progress`, `Blocked`, `Stand-by`, `Ready-to-close` | `Cancelled` | Stop before closure, without replacement, according to section 19.6. For suspended parent, exit from explicitly resolved sub-batch. | Human decision recorded in ledger. | Preserve files and record final state in `STATUS`, even for absent draft until then. |
+| `Draft`, `Planned`, `In-progress`, `Blocked`, `Stand-by`, `Ready-to-close`, `Closed` | `Obsolete` | Replacer identified. For suspended parent, exit from explicitly resolved sub-batch. | Human decision recorded in ledger. | Preserve files and any convergence; establish replacement references and `STATUS` lines according to section 9. |
+| `Closed` | `Abandoned` | Result not retained, without replacement. | Motivated human decision recorded in ledger. | Preserve unchanged convergence; update `STATUS`. |
+| `Closed`, `Obsolete`, `Abandoned` | `In-progress` | Resumption with modification; slot available or parent/sub-batch transfer authorized. For `Obsolete`, exit from replacer explicitly resolved. | Human decision recorded in ledger before application. | Prepare resumption according to section 18.6, then update `STATUS`. |
+| `Abandoned` | `Closed` | Result unchanged and no active rule applicable invalidates it; section 18.7. | Motivated, dated and named human decision in ledger. | Preserve convergence and gates; update `STATUS` without new validation. |
 
-### 19.4 Application des transitions de travail
+### 19.4 Application of Work Transitions
 
-Une correction demandée pendant la fermeture MUST faire repasser le lot à `In-progress`. Si cette correction révèle un blocage, la transition `In-progress → Blocked` est ensuite appliquée.
+A requested correction during closure MUST make batch return to `In-progress`. If this correction reveals a blockage, transition `In-progress → Blocked` is then applied.
 
-Une opération interrompue entre plusieurs écritures MUST être traitée selon la section 22.8 ; elle n'autorise pas une transition supplémentaire.
+An interrupted operation between several writings MUST be treated according to section 22.8; it does not authorize additional transition.
 
-### 19.5 Conditions des transitions exceptionnelles
+### 19.5 Conditions of Exceptional Transitions
 
-Toute transition d'annulation, d'obsolescence, d'abandon, de reprise ou de réactivation exige une décision humaine inscrite dans le ledger.
+Any transition of cancellation, obsolescence, abandonment, resumption or reactivation requires a human decision recorded in the ledger.
 
-L'annulation ou le remplacement depuis `Ready-to-close` est direct lorsque les préconditions de la table sont satisfaites ; un retour préalable à `In-progress` n'est pas nécessaire.
+Cancellation or replacement from `Ready-to-close` is direct when table prerequisites are satisfied; prior return to `In-progress` is not necessary.
 
-La reprise d'un lot `Obsolete` MUST résoudre explicitement le sort de son remplaçant et préserver les archives immuables. Il MUST rester une seule incarnation active du lot logique.
+Resumption of an `Obsolete` batch MUST explicitly resolve fate of its replacer and preserve immutable archives. It MUST remain only one active incarnation of logical batch.
 
-### 19.6 Annulation, obsolescence et abandon
+### 19.6 Cancellation, Obsolescence and Abandonment
 
-`Cancelled` signifie :
+`Cancelled` means:
 
-- le lot n'a pas été fermé ;
-- il ne sera pas réalisé ;
-- il n'est pas remplacé.
+- batch was not closed;
+- it will not be realized;
+- it is not replaced.
 
-`Obsolete` signifie :
+`Obsolete` means:
 
-- le lot est remplacé ;
-- son remplaçant est indiqué ;
-- la décision est dans le ledger.
+- batch is replaced;
+- its replacer is indicated;
+- decision is in ledger.
 
-`Abandoned` signifie :
+`Abandoned` means:
 
-- le lot a été fermé ;
-- son résultat n'est plus retenu ;
-- aucun lot ne le remplace ;
-- la raison est dans le ledger.
+- batch was closed;
+- its result is no longer retained;
+- no batch replaces it;
+- reason is in ledger.
 
-Aucun fichier existant ne doit être détruit.
+No existing file must be destroyed.
 
-Un lot annulé ou obsolète avant fermeture MAY ne pas avoir de convergence.
+A batch cancelled or obsolete before closure MAY not have convergence.
 
-Une convergence existante MUST être conservée.
+An existing convergence MUST be preserved.
 
-## 20. Séquentialité
+## 20. Sequencing
 
-### 20.1 Règle générale
+### 20.1 General Rule
 
-Dans chaque projet Pro-Spec, les lots sont exécutés les uns après les autres.
+In each Pro-Spec project, batches are executed one after another.
 
-Un seul lot MAY occuper le créneau de travail actif de ce projet.
+Only one batch MAY occupy active work slot of this project.
 
-Les états occupant ce créneau sont :
+States occupying this slot are:
 
 ```text
 In-progress
@@ -1388,52 +1386,52 @@ Blocked
 Ready-to-close
 ```
 
-Il MUST donc exister au plus un lot de ce projet dans l'ensemble de ces trois états.
+It MUST therefore exist at most one batch of this project in set of these three states.
 
-Un parent `Stand-by` constitue la seule suspension normale associée à ce créneau.
+A parent `Stand-by` constitutes only normal suspension associated with this slot.
 
-### 20.2 Blocage
+### 20.2 Blockage
 
-Un lot `Blocked` bloque l'exécution de tous les autres lots du même projet.
+A `Blocked` batch blocks execution of all other batches of same project.
 
-Le processus reprend lorsque ce lot devient :
+Process resumes when this batch becomes:
 
-- `In-progress` ;
-- `Cancelled` ;
+- `In-progress`;
+- `Cancelled`;
 - `Obsolete`.
 
-### 20.3 Sous-lot
+### 20.3 Sub-batch
 
-Le démarrage d'un sous-lot place son parent en `Stand-by`.
+Startup of sub-batch places parent in `Stand-by`.
 
-Avant ce transfert, le parent MUST être `In-progress` et le sous-lot MUST satisfaire les préconditions de son démarrage ou de sa reprise. Le parent suspendu et le sous-lot concerné MUST être identifiables dans `STATUS`.
+Before this transfer, parent MUST be `In-progress` and sub-batch MUST satisfy prerequisites of its startup or resumption. Suspended parent and concerned sub-batch MUST be identifiable in `STATUS`.
 
-Le sous-lot devient l'unique lot `In-progress`.
+Sub-batch becomes unique batch `In-progress`.
 
-Le passage du parent à `Stand-by` MUST être écrit avant celui du sous-lot à `In-progress`. Une interruption entre ces écritures relève de la section 22.8.
+Passage from parent to `Stand-by` MUST be written before that of sub-batch to `In-progress`. An interruption between these writings falls under section 22.8.
 
-Après fermeture, annulation ou obsolescence du sous-lot, le retour du parent à `In-progress` est manuel.
+After closure, cancellation or obsolescence of sub-batch, return of parent to `In-progress` is manual.
 
-Ce retour MUST attendre que le créneau actif soit libre et MUST comprendre l'examen de l'effet du résultat du sous-lot sur le travail et les validations du parent.
+This return MUST wait until active slot is free and MUST include examination of effect of sub-batch result on work and validations of parent.
 
-### 20.4 Portée de la séquentialité
+### 20.4 Scope of Sequencing
 
-Le créneau actif, le blocage et les transitions des sections 19 et 20 sont propres à un projet. L'exécution simultanée de plusieurs lots d'un même projet reste hors périmètre de cette version.
+Active slot, blockage and transitions of sections 19 and 20 are specific to a project. Simultaneous execution of several batches of same project remains outside scope of this version.
 
-## 20 bis. Application et parallélisme entre projets
+## 20 bis. Application and Parallelism Between Projects
 
-### 20 bis.1 Définition
+### 20 bis.1 Definition
 
-Le terme anglais `Application` désigne un ensemble de projets Pro-Spec qui contribuent à une même application. Ces projets MAY correspondre à ses sous-fonctions ; ils n'ont pas besoin d'être des projets organisationnels ou des bases de code distincts. Un projet MAY aussi rester autonome, sans appartenir à une Application documentée.
+English term `Application` designates a set of Pro-Spec projects contributing to same application. These projects MAY correspond to its sub-functions; they do not need to be organizational projects or distinct code bases. A project MAY also remain autonomous, without belonging to a documented Application.
 
-Une Application MAY être décrite par deux fichiers Markdown placés au-dessus des racines des projets :
+An Application MAY be described by two Markdown files placed above project roots:
 
-- `APPLICATION.md` décrit la nature, la finalité et le périmètre de l'Application ;
-- `PROJECTS.md` nomme et décrit les projets qui la constituent, ainsi que le chemin de chacun.
+- `APPLICATION.md` describes nature, purpose and scope of Application;
+- `PROJECTS.md` names and describes projects constituting it, as well as path of each.
 
-Lorsque `PROJECTS.md` est utilisé, il MUST recenser tous les projets membres de l'Application. Chaque nom de projet MUST être distinct dans cette liste et chaque chemin MUST permettre d'identifier sans ambiguïté la racine du projet correspondant. Une description courte SHOULD préciser le périmètre de chacun.
+When `PROJECTS.md` is used, it MUST list all member projects of Application. Each project name MUST be distinct in this list and each path MUST allow identifying without ambiguity root of corresponding project. A short description SHOULD specify scope of each.
 
-Exemple d'organisation :
+Example organization:
 
 ```text
 my-application/
@@ -1449,7 +1447,7 @@ my-application/
     └── ...
 ```
 
-Dans cet exemple, `PROJECTS.md` pourrait contenir :
+In this example, `PROJECTS.md` could contain:
 
 ```markdown
 | Project | Path | Scope |
@@ -1458,23 +1456,23 @@ Dans cet exemple, `PROJECTS.md` pourrait contenir :
 | Client | client/ | User interface |
 ```
 
-`APPLICATION.md` et `PROJECTS.md` ne sont pas des artefacts de projet supplémentaires. Ils ne remplacent ni le `README.md` d'un projet, ni ses règles, décisions, validations ou états. Le bootstrap et les critères de conformité restent applicables à chaque projet séparément.
+`APPLICATION.md` and `PROJECTS.md` are not additional project artifacts. They do not replace `README.md` of a project, nor its rules, decisions, validations or states. Bootstrap and compliance criteria remain applicable to each project separately.
 
-### 20 bis.2 Exécution simultanée
+### 20 bis.2 Simultaneous Execution
 
-Le découpage d'une Application en plusieurs projets Pro-Spec permet d'exécuter simultanément des lots appartenant à des projets différents. Chacun possède ses propres lots, identifiants, `STATUS.md`, décisions et créneau actif. L'unicité des identifiants s'apprécie dans chaque projet ; une référence entre projets SHOULD donc préciser le nom du projet source et celui du projet cible.
+Splitting an Application into several Pro-Spec projects allows executing simultaneously batches belonging to different projects. Each possesses its own batches, identifiers, `STATUS.md`, decisions and active slot. Uniqueness of identifiers is assessed in each project; a reference between projects SHOULD therefore specify name of source project and that of target project.
 
-La présence d'un lot `In-progress`, `Blocked` ou `Ready-to-close` dans un projet n'occupe pas le créneau d'un autre projet. Un blocage dans un projet ne bloque pas automatiquement les lots des autres projets. Dans chacun d'eux, la règle d'un seul lot actif des sections 19 et 20 continue de s'appliquer.
+Presence of batch `In-progress`, `Blocked` or `Ready-to-close` in a project does not occupy slot of another project. A blockage in a project does not automatically block batches of other projects. In each of them, rule of single active batch of sections 19 and 20 continues to apply.
 
-Les dépendances, décisions et ressources partagées qui touchent plusieurs projets SHOULD être rendues explicites dans les artefacts des projets concernés. Les documents de l'Application MAY aider à les repérer, mais ne font pas autorité sur l'état d'un lot ou sur une décision propre à un projet.
+Dependencies, decisions and shared resources touching several projects SHOULD be made explicit in artifacts of concerned projects. Application documents MAY help locate them, but do not make authority on status of a batch or decision specific to a project.
 
-L'organisation SHOULD éviter que plusieurs projets modifient simultanément les mêmes fichiers de produit. Si ce partage est nécessaire, les organisateurs MUST définir et appliquer un mécanisme de coordination des écritures et de résolution des conflits avant de lancer ces travaux en parallèle. Ils peuvent, par exemple, utiliser Git, comparer les différences et fusionner les modifications, ou organiser les écritures dans le temps. Ce besoin résulte de leur découpage et de leurs ressources partagées ; le choix du mécanisme leur appartient. Pro-Spec n'impose ni Git, ni autre outil de coordination, ni exécution simultanée effective.
+Organization SHOULD avoid that several projects modify same product files simultaneously. If this sharing is necessary, organizers MUST define and apply a coordination mechanism for writings and conflict resolution before launching these works in parallel. They may, for example, use Git, compare differences and merge modifications, or organize writings in time. This need results from their split and shared resources; choice of mechanism belongs to them. Pro-Spec imposes neither Git nor effective simultaneous execution.
 
-## 21. Création d'un lot
+## 21. Creation of a Batch
 
-### 21.1 Brouillon physique
+### 21.1 Physical Draft
 
-La création physique MAY produire :
+Physical creation MAY produce:
 
 ```text
 SPEC-xxx.md
@@ -1482,404 +1480,338 @@ FINDINGS-xxx.md
 GATES-xxx.md
 ```
 
-`CONVERGENCE-xxx.md` n'est pas nécessaire à ce stade.
+`CONVERGENCE-xxx.md` is not necessary at this stage.
 
-### 21.2 Lot reconnu
+### 21.2 Recognized Batch
 
-Le lot devient `Planned` lorsque :
+Batch becomes `Planned` when:
 
-- son identifiant est attribué ;
-- sa spec est suffisamment définie ;
-- ses gates sont définies ;
-- il est inscrit dans `STATUS.md`.
+- its identifier is assigned;
+- its spec is sufficiently defined;
+- its gates are defined;
+- it is recorded in `STATUS.md`.
 
-Avant cela, il reste `Draft`.
+Before this, it remains `Draft`.
 
-### 21.3 Modification après démarrage
+### 21.3 Modification After Startup
 
-Après `In-progress` :
+After `In-progress`:
 
-- une correction sans changement de sens ne nécessite pas de décision ;
-- tout changement de sens de la spec ou des gates exige une décision du ledger ;
-- les informations remplacées restent conservées.
+- a correction without change of meaning does not require decision;
+- any change of meaning of spec or gates requires ledger decision;
+- replaced information remains preserved.
 
-## 22. Cycle de vie
+## 22. Lifecycle
 
 ### 22.1 Bootstrap
 
-Le contexte est reconstruit selon l'ordre défini dans `README.md`.
+Context is reconstructed according to order defined in `README.md`.
 
-Avant de poursuivre le travail, les incohérences susceptibles d'affecter l'intention, les validations ou l'état du lot MUST être résolues selon la section 22.8. Les informations de reprise définies à la section 13.4 MUST être consultées lorsqu'elles existent.
+Before continuing work, inconsistencies likely to affect intention, validations or batch status MUST be resolved according to section 22.8. Resumption information defined in section 13.4 MUST be consulted when they exist.
 
 ### 22.2 Intention
 
-`SPEC` définit le résultat attendu.
+`SPEC` defines expected result.
 
-`GATES` définit les conditions de fermeture.
+`GATES` defines closure conditions.
 
-### 22.3 Exécution
+### 22.3 Execution
 
-Le lot passe à `In-progress` par décision humaine.
+Batch passes to `In-progress` by human decision.
 
-Les connaissances nouvelles sont ajoutées à `FINDINGS`.
+New knowledge is added to `FINDINGS`.
 
-Les changements d'intention sont historisés dans `SPEC`.
+Intention changes are historized in `SPEC`.
 
-L'effet des modifications sur les validations acquises MUST être examiné selon la section 17.10. Les informations nécessaires à une interruption ou une transmission MUST être conservées selon la section 13.4.
+Effect of modifications on acquired validations MUST be examined according to section 17.10. Information necessary for interruption or transmission MUST be preserved according to section 13.4.
 
 ### 22.4 Validation
 
-Chaque gate active applicable est évaluée selon son type et sur un résultat identifié.
+Each active applicable gate is evaluated according to its type and on identified result.
 
-Un lot ne peut devenir ou rester `Ready-to-close` que si toutes ses gates actives sont :
+A batch cannot become or remain `Ready-to-close` unless all its active gates are:
 
-- `PASS` avec une validation encore applicable au résultat présenté ;
-- ou `N/A` avec une décision humaine enregistrée dont les conditions restent remplies.
+- `PASS` with validation still applicable to presented result;
+- or `N/A` with recorded human decision whose conditions remain met.
 
 ### 22.5 Convergence
 
-La convergence compare l'intention active au résultat réel.
+Convergence compares active intention to real result.
 
-Elle indique `TOTAL` ou `PARTIAL`.
+It indicates `TOTAL` or `PARTIAL`.
 
-Elle établit le traitement de chaque exigence active, identifie le résultat accepté et résume les gates ainsi que la destination des findings conformément à la section 18.1.
+It establishes treatment of each active requirement, identifies accepted result and summarizes gates as well as destination of findings according to section 18.1.
 
-### 22.6 Capitalisation
+### 22.6 Capitalization
 
-Avant fermeture :
+Before closure:
 
-- tous les findings sont examinés et possèdent un traitement terminal conforme à la section 16.5 ;
-- les décisions durables sont inscrites dans le ledger ;
-- les règles approuvées sont mises à jour ;
-- les nouveaux lots décidés sont créés ou planifiés ;
-- le travail résiduel est enregistré.
+- all findings are examined and possess terminal processing compliant with section 16.5;
+- lasting decisions are recorded in ledger;
+- approved rules are updated;
+- decided new batches are created or planned;
+- residual work is recorded.
 
-### 22.7 Fermeture
+### 22.7 Closure
 
-La fermeture est toujours décidée par un humain.
+Closure is always decided by human.
 
-Après acceptation :
+After acceptance:
 
-- `CONVERGENCE` est finalisé ;
-- les mises à jour transversales approuvées sont écrites ;
-- `STATUS` passe le lot à `Closed`.
+- `CONVERGENCE` is finalized;
+- approved cross updates are written;
+- `STATUS` passes batch to `Closed`.
 
-Toute modification effectuée pendant la préparation de la fermeture MUST être soumise aux mêmes règles de validité des gates que pendant l'exécution. L'acceptation humaine MUST porter sur le résultat et les écarts effectivement présentés dans la convergence finalisée.
+Any modification performed during closure preparation MUST be subject to same gate validity rules as during execution. Human acceptance MUST concern result and gaps effectively presented in finalized convergence.
 
-### 22.8 Opérations documentaires interrompues
+### 22.8 Interrupted Documentary Operations
 
-Une décision enregistrée ne prouve pas, à elle seule, que toutes ses conséquences documentaires ont été appliquées.
+A recorded decision does not prove, by itself, that all its documentary consequences were applied.
 
-Pour une opération comportant plusieurs écritures :
+For an operation comprising several writings:
 
-1. la décision humaine requise MUST être obtenue et, lorsque le protocole l'exige, inscrite dans le ledger avant son application ;
-2. les contenus et résultats antérieurs à conserver MUST être préservés avant leur remplacement ou leur réinitialisation ;
-3. les artefacts gouvernés, les références et les validations affectées MUST être mis à jour ;
-4. leur cohérence MUST être vérifiée ;
-5. le changement d'état constatant l'achèvement de l'opération MUST être écrit dans `STATUS` en dernier parmi les artefacts d'état et de contenu ; lorsqu'un journal est tenu, son entrée de résultat suit cette vérification.
+1. required human decision MUST be obtained and, when protocol requires, recorded in ledger before application;
+2. contents and previous results to preserve MUST be preserved before replacement or reset;
+3. governed artifacts, references and affected validations MUST be updated;
+4. their consistency MUST be verified;
+5. state change noting completion of operation MUST be written in `STATUS` last among status and content artifacts; when a journal is kept, its result entry follows this verification.
 
-Un état autorisant la reprise du travail, tel que `In-progress`, est enregistré après les préparations documentaires requises et avant les modifications du résultat. Les transferts parent/sous-lot suivent l'ordre particulier de la section 20.3.
+A state allowing resumption of work, such as `In-progress`, is recorded after required documentary preparations and before result modifications. Parent/sub-batch transfers follow particular order of section 20.3.
 
-Lorsqu'une opération a été interrompue, l'exécutant MUST comparer les écritures réalisées à la décision enregistrée et identifier celles qui restent à effectuer. Si la décision détermine sans ambiguïté la suite, l'opération MUST être achevée conformément à cette décision, sans en inventer une nouvelle ni redemander une acceptation déjà documentée.
+When an operation was interrupted, executor MUST compare writings realized to recorded decision and identify those remaining to be performed. If decision determines sequence without ambiguity, operation MUST be completed according to this decision, without inventing a new one or requesting acceptance already documented.
 
-Si une décision requise est absente, ambiguë ou incompatible avec les autres artefacts, une clarification humaine MUST être obtenue avant de poursuivre les opérations qui en dépendent. Une nouvelle décision durable MUST être inscrite dans le ledger lorsqu'elle est nécessaire. Lorsqu'aucune décision n'est requise, une écriture documentaire incomplète MAY être achevée à partir des faits conservés et des règles applicables, sans inventer d'information.
+If required decision is absent, ambiguous or incompatible with other artifacts, human clarification MUST be obtained before continuing operations dependent on it. A new lasting decision MUST be recorded in ledger when necessary. When no decision is required, an incomplete documentary writing MAY be completed from preserved facts and applicable rules, without inventing information.
 
-`STATUS` reste l'autorité sur l'état enregistré. Une incohérence avec une convergence ou une décision MUST NOT être résolue en effaçant une validation, une décision ou une fermeture antérieure. La réparation MUST préserver les traces existantes et respecter les transitions autorisées.
+`STATUS` remains authority on recorded state. An inconsistency with convergence or decision MUST NOT be resolved by erasing a validation, decision or previous closure. Repair MUST preserve existing traces and respect allowed transitions.
 
-Cette procédure exige une réconciliation manuelle des informations, sans imposer de mécanisme transactionnel ni d'outil. Lorsqu'un journal est tenu, les événements correspondants SHOULD y être consignés selon la section 14 bis ; le journal ne remplace pas la comparaison des artefacts.
+This procedure requires manual reconciliation of information, without imposing a transactional mechanism. When a journal is kept, corresponding events SHOULD be recorded there according to section 14 bis; journal does not replace comparison of artifacts.
 
-## 23. Procédure manuelle de fermeture
+## 23. Manual Closure Procedure
 
-La procédure normative est :
+Normative procedure is:
 
 ```text
-1. Lire les artefacts selon le bootstrap et résoudre les incohérences bloquantes.
-2. Identifier le résultat présenté et les gates actives ; vérifier les retraits et remplacements.
-3. Vérifier les verdicts des gates AUTO actives applicables.
-4. Vérifier les évaluations des gates LLM actives applicables.
-5. Vérifier les validations des gates HUMAN actives applicables.
-6. Vérifier que les validations portent sur le résultat présenté et restent valables ; refaire celles qui sont nécessaires.
-7. Refuser la fermeture si une gate active reste TO TEST ou FAIL.
-8. Vérifier les décisions et les conditions de non-applicabilité des gates actives N/A.
-9. Établir, pour chaque exigence active, sa satisfaction ou l'écart à faire accepter.
-10. Examiner les exigences obsolètes et leurs remplacements.
-11. Examiner chaque finding et préparer son traitement terminal ainsi que ses destinations.
-12. Préparer CONVERGENCE et qualifier la convergence TOTAL ou PARTIAL.
-13. Obtenir les décisions humaines requises et les inscrire dans le ledger.
-14. Mettre à jour RULES avec la portée et les conséquences des évolutions approuvées.
-15. Créer ou planifier les lots ultérieurs décidés par l'humain.
-16. Achever le traitement des findings ; réexaminer l'effet des modifications sur les validations et les écarts, puis revenir aux contrôles concernés si nécessaire.
-17. Vérifier l'absence de cause de refus et inscrire Ready-to-close si ce n'est pas déjà l'état courant.
-18. Présenter à l'humain le résultat identifié, la convergence et les décisions associées pour acceptation de la fermeture.
-19. Après acceptation, finaliser CONVERGENCE et achever les mises à jour approuvées ; vérifier leur cohérence.
-20. Passer le lot à Closed dans STATUS en dernier.
+1. Read artifacts according to bootstrap and resolve blocking inconsistencies.
+2. Identify presented result and active gates; verify removals and replacements.
+3. Verify verdicts of active applicable AUTO gates.
+4. Verify evaluations of active applicable LLM gates.
+5. Verify validations of active applicable HUMAN gates.
+6. Verify that validations concern presented result and remain valid; redo those which are necessary.
+7. Refuse closure if an active gate remains TO TEST or FAIL.
+8. Verify decisions and non-applicability conditions of active N/A gates.
+9. Establish, for each active requirement, its satisfaction or gap to be accepted.
+10. Examine obsolete requirements and their replacements.
+11. Examine each finding and prepare terminal processing as well as destinations.
+12. Prepare CONVERGENCE and qualify convergence TOTAL or PARTIAL.
+13. Obtain required human decisions and record them in ledger.
+14. Update RULES with scope and consequences of approved evolutions.
+15. Create or plan subsequent batches decided by human.
+16. Complete processing of findings; re-examine effect of modifications on validations and gaps, then return to concerned controls if necessary.
+17. Verify absence of refusal cause and record Ready-to-close if not already current state.
+18. Present to human identified result, convergence and associated decisions for closure acceptance.
+19. After acceptance, finalize CONVERGENCE and complete approved updates; verify their consistency.
+20. Pass batch to Closed in STATUS last.
 ```
 
-L'humain MAY accepter un écart pendant la fermeture.
+Human MAY accept a gap during closure.
 
-Cette décision MUST être inscrite dans le ledger.
+This decision MUST be recorded in ledger.
 
-Si l'écart exige une modification du résultat, un lot `Ready-to-close` MUST revenir à `In-progress` avant cette modification. Les gates affectées MUST être traitées selon la section 17.10.
+If gap requires modification of result, a `Ready-to-close` batch MUST return to `In-progress` before this modification. Affected gates MUST be treated according to section 17.10.
 
-L'humain conserve le dernier mot sur l'acceptation du résultat. Cette acceptation MUST NOT contourner les conditions normatives de fermeture.
+Human retains last word on acceptance of result. This acceptance MUST NOT bypass normative closure conditions.
 
-## 24. Refus de fermeture
+## 24. Rejection of Closure
 
-La fermeture MUST être refusée si :
+Closure MUST be refused if:
 
-- une gate active est `TO TEST` ou `FAIL` ;
-- une gate HUMAN active applicable n'a pas de validation humaine identifiée et datée ;
-- une gate active `N/A` ne possède pas sa décision ou les conditions de celle-ci ne sont plus remplies ;
-- un retrait ou remplacement de gate ne respecte pas les règles de mutation ;
-- une validation acquise n'est plus applicable au résultat présenté ;
-- le résultat présenté ou son rapport aux résultats évalués ne peut pas être identifié ;
-- une exigence active n'a pas été examinée ;
-- un écart n'est ni corrigé ni accepté ;
-- un finding reste `OPEN`, n'a pas été examiné ou ne possède pas un traitement terminal et des destinations conformes ;
-- une décision obligatoire manque ;
-- une incohérence documentaire affectant l'intention, les validations ou l'état du lot reste non résolue ;
-- la convergence ne peut pas être établie.
+- an active gate is `TO TEST` or `FAIL`;
+- an active applicable HUMAN gate has no identified and dated human validation;
+- an active gate `N/A` does not possess its decision or conditions thereof are no longer met;
+- a gate removal or replacement does not respect mutation rules;
+- an acquired validation is no longer applicable to presented result;
+- presented result or its relation to evaluated results cannot be identified;
+- an active requirement was not examined;
+- a gap is neither corrected nor accepted;
+- a finding remains `OPEN`, was not examined or does not possess terminal processing and destinations compliant;
+- a mandatory decision is missing;
+- a documentary inconsistency affecting intention, validations or batch status remains unresolved;
+- convergence cannot be established.
 
-Après refus, un lot `Ready-to-close` revient à `In-progress`. Un lot déjà `In-progress` y reste, ou devient `Blocked` si l'exécution est impossible ; un lot déjà `Blocked` le reste tant que la condition de levée n'est pas satisfaite. Ces opérations suivent la table de la section 19.3.
+After refusal, a `Ready-to-close` batch returns to `In-progress`. A batch already `In-progress` remains there, or becomes `Blocked` if execution is impossible; a batch already `Blocked` remains so until lifting condition is satisfied. These operations follow table of section 19.3.
 
-## 25. Rôle de l'humain
+## 25. Role of Human
 
-Les opérations suivantes sont réservées à l'humain :
+Following operations are reserved to human:
 
-- modifier significativement `PROJECT.md` ;
-- approuver une évolution de `RULES.md` ;
-- décider d'un changement de sens après le démarrage d'un lot ;
-- valider une gate HUMAN ;
-- déclarer une gate `N/A` ;
-- accepter un écart ;
-- accepter une convergence partielle ;
-- créer un lot depuis un finding ;
-- fermer un lot ;
-- annuler, remplacer, abandonner ou reprendre un lot.
+- significantly modify `PROJECT.md`;
+- approve evolution of `RULES.md`;
+- decide change of meaning after startup of a batch;
+- validate a HUMAN gate;
+- declare a gate `N/A`;
+- accept a gap;
+- accept partial convergence;
+- create a batch from a finding;
+- close a batch;
+- cancel, replace, abandon or resume a batch.
 
-Une automatisation MAY préparer ces opérations.
+Supporting checks MAY prepare these operations, but a human decision is required before they become effective.
 
-Elle MUST demander la décision humaine avant de les rendre effectives.
+## 27. Reference Scenarios
 
-## 26. Outil Pro-Spec optionnel
+These scenarios illustrate normative table of section 19.3 and associated procedures. Their abbreviated presentation does not exempt from validity, traceability and consistency controls required by protocol.
 
-### 26.1 Principe de conformité
-
-Un outil conforme MUST automatiser le protocole sans le modifier.
-
-L'outil reste facultatif.
-
-Son absence MUST NOT retirer une capacité définie par la méthode.
-
-L'utilitaire Pro-Spec officiel MUST être :
-
-- compilé ;
-- développé en C#/.NET ;
-- distribué avec ses sources ouvertes ;
-- utilisable sans runtime Python.
-
-Il MUST NOT :
-
-- introduire une source de vérité propriétaire ;
-- cacher une règle nécessaire ;
-- fermer un lot sans humain ;
-- satisfaire une gate HUMAN ;
-- contourner une gate ;
-- modifier une règle pour faire passer une gate ;
-- rendre le projet inutilisable sans l'outil.
-
-### 26.2 Fonctions envisageables
-
-Le périmètre fonctionnel de l'outil n'est pas arrêté par la présente spécification.
-
-Il sera défini après la réalisation et l'analyse du dossier test de Pro-Spec 3.
-
-L'outil visera en priorité :
-
-- les initialisations ;
-- les opérations composées de plusieurs modifications manuelles répétitives ou fastidieuses.
-
-La liste suivante est illustrative. Elle ne constitue pas encore la spécification fonctionnelle de l'outil.
-
-Un outil MAY :
-
-- initialiser les artefacts globaux ;
-- créer le squelette d'un lot ;
-- attribuer le prochain identifiant disponible ;
-- vérifier les références ;
-- exécuter des gates AUTO ;
-- préparer des évaluations LLM ;
-- afficher le bootstrap ;
-- préparer la convergence ;
-- guider la fermeture ;
-- mettre à jour les fichiers après validation humaine ;
-- alimenter `HISTORY.md` lorsqu'il est tenu ;
-- afficher et filtrer les informations disponibles dans `HISTORY.md` lorsqu'il existe.
-
-### 26.3 Transparence
-
-Avant un appel LLM, l'outil SHOULD afficher :
-
-- le modèle ;
-- les fichiers inclus ;
-- les instructions ;
-- les fichiers susceptibles d'être modifiés.
-
-## 27. Scénarios de référence
-
-Ces scénarios illustrent la table normative de la section 19.3 et les procédures associées. Leur présentation abrégée ne dispense pas des contrôles de validité, de traçabilité et de cohérence exigés par le protocole.
-
-### 27.1 Lot nominal
+### 27.1 Nominal Batch
 
 ```text
-1. Créer SPEC, FINDINGS et GATES.
-2. Compléter SPEC et GATES.
-3. Inscrire le lot Planned.
-4. Passer le lot In-progress.
-5. Exécuter le travail.
-6. Consigner les findings.
-7. Passer toutes les gates actives sur un résultat identifié.
-8. Passer le lot Ready-to-close.
-9. Préparer une convergence TOTAL.
-10. Obtenir l'acceptation humaine.
-11. Finaliser CONVERGENCE.
-12. Passer le lot Closed.
+1. Create SPEC, FINDINGS and GATES.
+2. Complete SPEC and GATES.
+3. Record batch Planned.
+4. Pass batch In-progress.
+5. Execute work.
+6. Record findings.
+7. Pass all active gates on identified result.
+8. Pass batch Ready-to-close.
+9. Prepare TOTAL convergence.
+10. Obtain human acceptance.
+11. Finalize CONVERGENCE.
+12. Pass batch Closed.
 ```
 
-Aucune entrée de fermeture dans le ledger n'est obligatoire.
+No closure entry in ledger is mandatory.
 
-### 27.2 Finding produisant une règle
+### 27.2 Finding Producing a Rule
 
 ```text
-1. Créer F-001-010.
-2. Confirmer le finding.
-3. Obtenir une décision humaine D-023 précisant la portée de la règle et les lots affectés.
-4. Marquer l'ancienne règle [OBSOLETE], si nécessaire.
-5. Créer la nouvelle règle.
-6. Référencer D-023 dans RULES.
-7. Marquer le finding PROMOTED TO LEDGER et PROMOTED TO RULE.
-8. Résumer cette destination dans CONVERGENCE.
-9. Appliquer aux lots concernés les suites décidées, notamment la revalidation des gates affectées.
+1. Create F-001-010.
+2. Confirm finding.
+3. Obtain human decision D-023 specifying rule scope and affected batches.
+4. Mark old rule [OBSOLETE], if necessary.
+5. Create new rule.
+6. Reference D-023 in RULES.
+7. Mark finding PROMOTED TO LEDGER and PROMOTED TO RULE.
+8. Summarize this destination in CONVERGENCE.
+9. Apply to concerned batches the decided follow-ups, notably revalidation of affected gates.
 ```
 
-### 27.3 Fermeture partielle
+### 27.3 Partial Closure
 
 ```text
-1. Toutes les gates actives sont PASS encore valables ou N/A autorisé.
-2. Un écart subsiste.
-3. L'humain accepte l'écart.
-4. Le ledger reçoit la décision, la raison, la date et l'identité.
-5. CONVERGENCE indique PARTIAL.
-6. Le travail résiduel est décrit.
-7. L'humain ferme le lot.
+1. All active gates are PASS still valid or N/A allowed.
+2. A gap remains.
+3. Human accepts gap.
+4. Ledger receives decision, reason, date and identity.
+5. CONVERGENCE indicates PARTIAL.
+6. Residual work is described.
+7. Human closes batch.
 ```
 
-### 27.4 Sous-lot
+### 27.4 Sub-batch
 
 ```text
-1. LOT-001 est In-progress.
-2. L'humain crée LOT-001-002.
-3. LOT-001 passe Stand-by.
-4. LOT-001-002 devient l'unique lot In-progress.
-5. LOT-001-002 est fermé, annulé ou rendu obsolète.
-6. Après examen du résultat du sous-lot et de son impact sur les validations du parent, l'humain replace LOT-001 en In-progress si le créneau est libre.
+1. LOT-001 is In-progress.
+2. Human creates LOT-001-002.
+3. LOT-001 passes Stand-by.
+4. LOT-001-002 becomes unique batch In-progress.
+5. LOT-001-002 is closed, cancelled or rendered obsolete.
+6. After examination of sub-batch result and its impact on parent validations, human replaces LOT-001 in In-progress if slot is free.
 ```
 
-### 27.5 Lot remplacé
+### 27.5 Replaced Batch
 
 ```text
-1. L'humain décide le remplacement.
-2. Le ledger reçoit la décision.
-3. Les fichiers existants et toute convergence sont conservés.
-4. Les références réciproques de remplacement sont ajoutées.
-5. Le remplacement actif utilise le chemin canonique approprié.
-6. La cohérence des artefacts et des références est vérifiée.
-7. STATUS inscrit l'ancien lot Obsolete et le nouvel état documentaire du remplacement.
+1. Human decides replacement.
+2. Ledger receives decision.
+3. Existing files and any convergence are preserved.
+4. Reciprocal replacement references are added.
+5. Active replacement uses appropriate canonical path.
+6. Consistency of artifacts and references is verified.
+7. STATUS records old batch Obsolete and new documentary state of replacement.
 ```
 
-### 27.6 Reprise d'un lot fermé
+### 27.6 Resumption of a Closed Batch
 
 ```text
-1. Lire l'ancienne convergence.
-2. Décider la reprise dans le ledger.
-3. Déplacer la convergence précédente dans Historical convergences.
-4. Réinitialiser la convergence courante.
-5. Conserver les résultats des gates dans Test history, remettre les gates actives applicables à TO TEST et réexaminer les décisions N/A.
-6. Passer le lot In-progress lorsque les préparations sont achevées et le créneau disponible.
-7. Réaliser les modifications.
-8. Refaire les validations.
-9. Produire une nouvelle convergence.
-10. Obtenir une nouvelle fermeture humaine.
+1. Read old convergence.
+2. Decide resumption in ledger.
+3. Move previous convergence into Historical convergences.
+4. Reset current convergence.
+5. Preserve gate results in Test history, return active applicable gates to TO TEST and re-examine N/A decisions.
+6. Pass batch In-progress when preparations are completed and slot available.
+7. Realize modifications.
+8. Redo validations.
+9. Produce new convergence.
+10. Obtain new human closure.
 ```
 
-### 27.7 Réactivation sans modification
+### 27.7 Reactivation Without Modification
 
 ```text
-1. LOT-001 est Abandoned.
-2. L'humain confirme qu'aucune modification n'est nécessaire.
-3. Les règles actives sont vérifiées.
-4. Le ledger reçoit la décision motivée, datée et signée nominalement.
-5. La convergence existante reste inchangée.
-6. LOT-001 redevient Closed.
+1. LOT-001 is Abandoned.
+2. Human confirms no modification is necessary.
+3. Active rules are verified.
+4. Ledger receives motivated, dated and nominally signed decision.
+5. Existing convergence remains unchanged.
+6. LOT-001 becomes Closed again.
 ```
 
-## 28. Critères de conformité d'un projet
+## 28. Compliance Criteria of a Project
 
-La conformité à Pro-Spec 3 exige le respect de toutes les obligations normatives applicables.
+Compliance to Pro-Spec 3 requires respect of all applicable normative obligations.
 
-La liste suivante constitue un contrôle synthétique et ne remplace pas ces obligations :
+Following list constitutes synthetic control and does not replace these obligations:
 
-- les neuf types d'artefacts requis sont définis ;
-- les cinq artefacts globaux requis existent ;
-- `HISTORY.md` est conseillé ; son absence dans un très petit projet ne constitue pas une non-conformité ;
-- chaque lot reconnu possède une spec, des findings et des gates ;
-- chaque lot fermé possède une convergence ;
-- le bootstrap est explicite ;
-- la version et la révision du protocole sont identifiées et sa référence normative est accessible depuis le point d'entrée ;
-- une transmission autonome contient les références et les informations nécessaires à la reprise ;
-- les identifiants sont uniques ;
-- les informations obsolètes sont conservées ;
-- les décisions durables sont dans le ledger ;
-- si `HISTORY.md` est tenu, les opérations significatives y sont consignées par ajout selon le niveau de détail choisi ;
-- les validations humaines sont identifiées et datées ;
-- les résultats évalués et acceptés sont identifiables et les validations restent applicables ;
-- seules les gates actives participent au verdict courant, avec des décisions `N/A` applicables lorsqu'elles sont utilisées ;
-- chaque exigence active est examinée et chaque finding possède un traitement terminal à la fermeture ;
-- la portée des évolutions de règles et leurs effets sur l'existant sont documentés ;
-- aucun lot n'est fermé automatiquement ;
-- les transitions autorisées et la séquentialité sont respectées dans chaque projet, y compris lorsqu'il appartient à une Application ;
-- les opérations documentaires interrompues sont réconciliées avant de poursuivre le travail qui en dépend ;
-- le projet reste utilisable sans outil Pro-Spec.
+- nine types of required artifacts are defined;
+- five required global artifacts exist;
+- `HISTORY.md` is recommended; its absence in a very small project does not constitute non-compliance;
+- each recognized batch possesses a spec, findings and gates;
+- each closed batch possesses a convergence;
+- bootstrap is explicit;
+- version and revision of protocol are identified and its normative reference is accessible from entry point;
+- an autonomous transmission contains references and information necessary for resumption;
+- identifiers are unique;
+- obsolete information is preserved;
+- lasting decisions are in ledger;
+- if `HISTORY.md` is kept, significant operations are recorded there by addition according to chosen detail level;
+- human validations are identified and dated;
+- evaluated and accepted results are identifiable and validations remain applicable;
+- only active gates participate in current verdict, with applicable `N/A` decisions when used;
+- each active requirement is examined and each finding possesses terminal processing at closure;
+- scope of rule evolutions and their effects on existing are documented;
+- no batch is closed automatically;
+- allowed transitions and sequencing are respected in each project, even when it belongs to an Application;
+- interrupted documentary operations are reconciled before continuing work dependent on them;
+- project remains usable through its Markdown artifacts alone.
 
-## 29. Hors périmètre de cette version
+## 29. Out of Scope of This Version
 
-Cette version ne définit pas :
+This version does not define:
 
-- l'exécution parallèle de lots au sein d'un même projet Pro-Spec ;
-- la gestion des droits et autorités humaines ;
-- l'authentification ;
-- la signature cryptographique ;
-- un système de gestion de versions ;
-- un fournisseur de LLM ;
-- une architecture logicielle de l'utilitaire ;
-- une interface graphique ;
-- un format propriétaire.
+- parallel execution of batches within same Pro-Spec project;
+- management of human rights and authorities;
+- authentication;
+- cryptographic signature;
+- a version control system;
+- an LLM provider;
+- software architecture of utility;
+- graphical interface;
+- a proprietary format.
 
-## 30. Résumé du protocole
+## 30. Protocol Summary
 
 ```text
-Lire avant d'agir.
-Définir l'intention et les gates.
-Exécuter un seul lot à la fois par projet Pro-Spec.
-Conserver les findings.
-Historiser les changements de sens.
-Valider selon la nature de chaque gate.
-Identifier le résultat évalué et réexaminer les validations après modification.
-Comparer l'intention au résultat.
-Faire décider l'humain.
-Capitaliser les décisions durables.
-Tenir si possible un historique proportionné aux moyens du projet.
-Conserver les informations nécessaires à la reprise.
-Réconcilier les écritures interrompues avant de poursuivre.
-Ne rien détruire silencieusement.
+Read before acting.
+Define intention and gates.
+Execute one batch at a time per Pro-Spec project.
+Preserve findings.
+Historize changes of meaning.
+Validate according to nature of each gate.
+Identify evaluated result and re-examine validations after modification.
+Compare intention to result.
+Make human decide.
+Capitalize lasting decisions.
+Keep a history proportional to project means if possible.
+Preserve information necessary for resumption.
+Reconcile interrupted writings before continuing.
+Destroy nothing silently.
 ```

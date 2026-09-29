@@ -22,7 +22,7 @@ Status: Verified by Olivier
 
 Recorded at: 2026-09-28T19:00:00+02:00
 
-Evidence: Olivier generated a French UI catalog. In the still-open main session, `Unchanged` was correctly rendered as `Inchangée`, but the output-language ComboBox had no selected item until a different language was selected and then changed back. Opening a new session restored the selection.
+Evidence: Olivier generated a French UI catalog. In the still-open main session, `Unchanged` was correctly localized, but the output-language ComboBox had no selected item until a different language was selected and then changed back. Opening a new session restored the selection.
 
 Impact: The neutral output-language option remains valid but appears unavailable within the existing session after a locale change.
 
@@ -58,11 +58,11 @@ Status: Verified by Olivier
 
 Recorded at: 2026-09-28T19:45:00+02:00
 
-Evidence: Olivier selected French `Inchangée` in the main session and ran Réécrire. The French captured text was returned in English.
+Evidence: Olivier selected the localized French `Unchanged` option in the main session and ran Rewrite. The French captured text was returned in English.
 
 Impact: The neutral output-language value selected correctly in the UI, but it supplied no language constraint to the model. An English-language action prompt could therefore cause the local model to translate a French input to English.
 
-Disposition: A selected `Unchanged` value explicitly directs the provider to preserve the input's language or languages and not translate. For a confidently detected supported language, TextAid declares `GENERATION LANGUAGE =` followed by that source language (for example, French) so an English action prompt cannot dominate a French source. Olivier confirmed the French Rewrite path with `Inchangée`.
+Disposition: A selected `Unchanged` value explicitly directs the provider to preserve the input's language or languages and not translate. For a confidently detected supported language, TextAid declares `GENERATION LANGUAGE =` followed by that source language (for example, French) so an English action prompt cannot dominate a French source. Olivier confirmed the French Rewrite path with the localized `Unchanged` option.
 
 ## F-010-006 — Initial local Humanize prompt retained targeted rhetorical patterns
 
@@ -70,7 +70,7 @@ Status: Accepted limitation for local models
 
 Recorded at: 2026-09-28T20:25:00+02:00
 
-Evidence: Olivier's qwen3.5:9b results removed punctuation excess and preserved a concise factual meeting note, but changed a negative contrast into “à la fois…” and retained unsupported hype and an adjective cluster.
+Evidence: Olivier's qwen3.5:9b results removed punctuation excess and preserved a concise factual meeting note, but changed a negative contrast into another balanced construction and retained unsupported hype and an adjective cluster.
 
 Impact: A broad instruction to remove formulaic patterns leaves a local model room to replace the shape while preserving its rhetorical function.
 
