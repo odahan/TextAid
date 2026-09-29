@@ -147,8 +147,19 @@
                             <CheckBox Content="{DynamicResource ActiveLabel}" IsChecked="{Binding NetworkEnabled}" Margin="0,0,0,12"/>
                             <TextBlock Text="{DynamicResource EndpointLabel}" FontWeight="SemiBold"/>
                             <TextBox Text="{Binding NetworkEndpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <TextBlock Text="{DynamicResource NetworkOllamaEndpointHelp}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundMutedBrush}" Margin="0,-6,0,12"/>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="{DynamicResource TestConnectionLabel}" Command="{Binding TestNetworkConnectionCommand}" MinWidth="132" Margin="0,0,8,0"/>
+                                <Button Content="{DynamicResource LoadNetworkModelsLabel}" Command="{Binding LoadNetworkModelsCommand}" MinWidth="166"/>
+                            </StackPanel>
+                            <ProgressBar Height="4" Margin="0,10,0,4" IsIndeterminate="True" Visibility="{Binding IsLoadingNetworkModels, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <TextBlock Text="{DynamicResource ConnectionStatusLabel}" FontWeight="SemiBold"/>
+                                <TextBlock Text=": "/>
+                                <TextBlock Text="{Binding NetworkConnectionState}"/>
+                            </StackPanel>
                             <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
-                            <TextBox Text="{Binding NetworkModel, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
+                            <ComboBox ItemsSource="{Binding NetworkModels}" SelectedItem="{Binding NetworkModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12" MinHeight="36" ToolTip="{DynamicResource NetworkModelsHelp}"/>
                             <TextBlock Text="{DynamicResource OptionalApiKeyLabel}" FontWeight="SemiBold"/>
                             <PasswordBox Margin="0,6,0,0" PasswordChanged="OnNetworkSecretChanged"/>
                         </StackPanel>
@@ -164,8 +175,14 @@
                             <TextBox Text="{Binding ExternalEndpoint, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,12"/>
                             <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
                             <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <Button Content="{DynamicResource TestConnectionLabel}" Command="{Binding TestExternalConnectionCommand}" MinWidth="132" Margin="0,0,8,0"/>
                                 <Button Content="{DynamicResource LoadExternalModelsLabel}" Command="{Binding LoadExternalModelsCommand}" MinWidth="152" Margin="0,0,8,0"/>
                                 <ProgressBar Width="90" Height="4" VerticalAlignment="Center" IsIndeterminate="True" Visibility="{Binding IsLoadingExternalModels, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                <TextBlock Text="{DynamicResource ConnectionStatusLabel}" FontWeight="SemiBold"/>
+                                <TextBlock Text=": "/>
+                                <TextBlock Text="{Binding ExternalConnectionState}"/>
                             </StackPanel>
                             <ComboBox ItemsSource="{Binding ExternalModels}" SelectedItem="{Binding ExternalModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectionChanged="OnExternalModelSelected" Margin="0,6,0,12" MinHeight="36" ToolTip="{DynamicResource ExternalModelsHelp}"/>
                             <TextBlock Text="{DynamicResource ApiKeyLabel}" FontWeight="SemiBold"/>

@@ -237,17 +237,27 @@ public static class UserConfiguration
     }
 
     /// <summary>Saves remote endpoints while placing supplied credentials in the per-user DPAPI vault.</summary>
-    public static void SaveRemoteConnectionSettings(string networkEndpoint, string networkModel, string? networkSecret, string externalEndpoint, string externalModel, string? externalSecret)
+    public static void SaveRemoteConnectionSettings(
+        string networkEndpoint,
+        string networkModel,
+        string? networkSecret,
+        string externalEndpoint,
+        string externalModel,
+        string? externalSecret,
+        bool saveNetworkConnection = true,
+        bool saveExternalConnection = true)
     {
-        ValidateOptionalEndpoint(networkEndpoint, ConnectionCategory.OnPremises);
-        ValidateOptionalEndpoint(externalEndpoint, ConnectionCategory.External);
+        if (saveNetworkConnection) ValidateOptionalEndpoint(networkEndpoint, ConnectionCategory.OnPremises);
+        if (saveExternalConnection) ValidateOptionalEndpoint(externalEndpoint, ConnectionCategory.External);
         string path = EnsureCreated();
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
         JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
         JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
         EnsureRemoteConnectionDefinitions(connections, profiles);
-        SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", networkEndpoint, networkModel, networkSecret, "network-api-key");
-        SaveRemoteConnection(connections, profiles, "openai-external", "external-default", externalEndpoint, externalModel, externalSecret, "external-api-key");
+        if (saveNetworkConnection)
+            SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", networkEndpoint, networkModel, networkSecret, "network-api-key");
+        if (saveExternalConnection)
+            SaveRemoteConnection(connections, profiles, "openai-external", "external-default", externalEndpoint, externalModel, externalSecret, "external-api-key");
         File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 

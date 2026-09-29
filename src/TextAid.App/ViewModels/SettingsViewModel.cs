@@ -37,7 +37,10 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private ThinkingMode selectedThinking = ThinkingMode.Off;
     [ObservableProperty] private string status = UiStrings.Get("LocalModelsHelp");
     [ObservableProperty] private bool isLoadingModels;
+    [ObservableProperty] private bool isLoadingNetworkModels;
     [ObservableProperty] private ConnectionTestState connectionState = ConnectionTestState.NotTested;
+    [ObservableProperty] private ConnectionTestState networkConnectionState = ConnectionTestState.NotTested;
+    [ObservableProperty] private ConnectionTestState externalConnectionState = ConnectionTestState.NotTested;
     [ObservableProperty] private string networkEndpoint = string.Empty;
     [ObservableProperty] private string networkModel = string.Empty;
     [ObservableProperty] private string networkSecret = string.Empty;
@@ -60,6 +63,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool startWithWindows;
 
     public ObservableCollection<string> Models { get; } = [];
+    public ObservableCollection<string> NetworkModels { get; } = [];
     public ObservableCollection<string> ExternalModels { get; } = [];
     public IReadOnlyList<LanguageOption> Languages => LanguageCatalog.Supported;
     public IReadOnlyList<ThinkingMode> ThinkingModes { get; } = Enum.GetValues<ThinkingMode>();
@@ -107,6 +111,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             ModelProfile? networkProfile = network is null ? null : configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId.Equals(network.Id, StringComparison.OrdinalIgnoreCase));
             NetworkEndpoint = network?.Endpoint ?? string.Empty;
             NetworkModel = networkProfile?.Model ?? string.Empty;
+            PopulateNetworkModels(NetworkModel, []);
             NetworkEnabled = network?.IsEnabled ?? false;
             ConnectionDefinition? external = configuration.Connections.FirstOrDefault(connection => connection.Category == ConnectionCategory.External);
             ModelProfile? externalProfile = external is null ? null : configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId.Equals(external.Id, StringComparison.OrdinalIgnoreCase));
@@ -144,6 +149,49 @@ public sealed partial class SettingsViewModel : ObservableObject
         finally { IsLoadingModels = false; }
     }
 
+    /// <summary>Loads models exposed by the configured On-premises Ollama server.</summary>
+    [RelayCommand]
+    private async Task LoadNetworkModelsAsync()
+    {
+        IsLoadingNetworkModels = true;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(NetworkEndpoint))
+                throw new InvalidOperationException("Enter the Ollama server address first.");
+
+            IReadOnlyList<string> models = await chatClientFactory.GetLocalModelNamesAsync(NetworkEndpoint.Trim(), CancellationToken.None);
+            PopulateNetworkModels(NetworkModel, models);
+            NetworkConnectionState = ConnectionTestState.Ready;
+            Status = models.Count == 0 ? UiStrings.Get("NoNetworkModelsMessage") : UiStrings.Get("ChooseNetworkModelMessage");
+        }
+        catch
+        {
+            NetworkModels.Clear();
+            NetworkConnectionState = ConnectionTestState.Failed;
+            Status = UiStrings.Get("NetworkModelsUnavailableMessage");
+        }
+        finally { IsLoadingNetworkModels = false; }
+    }
+
+    /// <summary>Tests the configured On-premises Ollama server without saving settings.</summary>
+    [RelayCommand]
+    private async Task TestNetworkConnectionAsync()
+    {
+        NetworkConnectionState = ConnectionTestState.Testing;
+        Status = UiStrings.Get("TestingNetworkOllamaMessage");
+        try
+        {
+            bool isRunning = await chatClientFactory.TestConnectionAsync(NetworkEndpoint.Trim(), CancellationToken.None);
+            NetworkConnectionState = isRunning ? ConnectionTestState.Ready : ConnectionTestState.Failed;
+            Status = isRunning ? UiStrings.Get("NetworkOllamaAvailableMessage") : UiStrings.Get("NetworkOllamaRejectedMessage");
+        }
+        catch
+        {
+            NetworkConnectionState = ConnectionTestState.Failed;
+            Status = UiStrings.Get("NetworkOllamaUnreachableMessage");
+        }
+    }
+
     /// <summary>Loads models exposed by the configured OpenAI-compatible endpoint.</summary>
     [RelayCommand]
     private async Task LoadExternalModelsAsync()
@@ -164,6 +212,26 @@ public sealed partial class SettingsViewModel : ObservableObject
         finally { IsLoadingExternalModels = false; }
     }
 
+    /// <summary>Tests the configured OpenAI-compatible endpoint with the entered or saved API key.</summary>
+    [RelayCommand]
+    private async Task TestExternalConnectionAsync()
+    {
+        ExternalConnectionState = ConnectionTestState.Testing;
+        Status = UiStrings.Get("TestingExternalConnectionMessage");
+        try
+        {
+            var connection = new ConnectionDefinition("openai-external", ConnectionCategory.External, "openai-compatible", ExternalEndpoint.Trim(), true, AuthenticationKind.ApiKey, "external-api-key");
+            _ = await externalChatClientFactory.GetModelNamesAsync(connection, ExternalSecret, CancellationToken.None);
+            ExternalConnectionState = ConnectionTestState.Ready;
+            Status = UiStrings.Get("ExternalConnectionAvailableMessage");
+        }
+        catch
+        {
+            ExternalConnectionState = ConnectionTestState.Failed;
+            Status = UiStrings.Get("ExternalConnectionUnavailableMessage");
+        }
+    }
+
     /// <summary>Keeps a persisted External model visible while merging newly discovered model names.</summary>
     private void PopulateExternalModels(string selectedModel, IEnumerable<string> discoveredModels)
     {
@@ -175,6 +243,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         ExternalModel = selectedModel;
         OnPropertyChanged(nameof(ExternalModel));
+    }
+
+    /// <summary>Keeps a persisted On-premises model visible while merging discovered Ollama model names.</summary>
+    private void PopulateNetworkModels(string selectedModel, IEnumerable<string> discoveredModels)
+    {
+        NetworkModels.Clear();
+        if (!string.IsNullOrWhiteSpace(selectedModel)) NetworkModels.Add(selectedModel);
+        foreach (string model in discoveredModels)
+        {
+            if (!NetworkModels.Contains(model, StringComparer.OrdinalIgnoreCase)) NetworkModels.Add(model);
+        }
+        NetworkModel = selectedModel;
+        OnPropertyChanged(nameof(NetworkModel));
     }
 
     /// <summary>Reloads persisted configuration only after the existing state can remain safe on a failure.</summary>
@@ -216,11 +297,23 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            if (!float.TryParse(TemperatureText, NumberStyles.Float, CultureInfo.InvariantCulture, out float temperature)) throw new ArgumentException("Temperature must be a number between 0 and 2.");
-            if (!int.TryParse(ContextSizeText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contextSize)) throw new ArgumentException("Context size must be a whole number.");
-            if (!int.TryParse(TimeoutSecondsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds)) throw new ArgumentException("Timeout must be a whole number of seconds.");
-            UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
-            UserConfiguration.SaveRemoteConnectionSettings(NetworkEndpoint, NetworkModel, NetworkSecret, ExternalEndpoint, ExternalModel, ExternalSecret);
+            // A disabled local connection must not block an independent On-premises configuration.
+            if (LocalEnabled)
+            {
+                if (!float.TryParse(TemperatureText, NumberStyles.Float, CultureInfo.InvariantCulture, out float temperature)) throw new ArgumentException("Temperature must be a number between 0 and 2.");
+                if (!int.TryParse(ContextSizeText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contextSize)) throw new ArgumentException("Context size must be a whole number.");
+                if (!int.TryParse(TimeoutSecondsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds)) throw new ArgumentException("Timeout must be a whole number of seconds.");
+                UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
+            }
+            UserConfiguration.SaveRemoteConnectionSettings(
+                NetworkEndpoint,
+                NetworkModel,
+                NetworkSecret,
+                ExternalEndpoint,
+                ExternalModel,
+                ExternalSecret,
+                saveNetworkConnection: NetworkEnabled,
+                saveExternalConnection: ExternalEnabled);
             UserConfiguration.SaveConnectionActivation(LocalEnabled, NetworkEnabled, ExternalEnabled);
             UserConfiguration.SaveDebugMode(DebugEnabled);
             UserConfiguration.SaveFullDebugMode(FullDebugEnabled);
@@ -246,9 +339,9 @@ public sealed partial class SettingsViewModel : ObservableObject
                 : UiStrings.Get("SettingsSavedMessage");
             Saved?.Invoke(this, EventArgs.Empty);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
-            Status = UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration);
+            Status = $"{UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration)} {exception.Message}";
         }
     }
 
