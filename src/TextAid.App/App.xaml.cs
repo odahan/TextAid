@@ -61,23 +61,20 @@ public partial class App : Application
         Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
     }
 
-    private async Task CheckInitialProviderAsync()
+    private Task CheckInitialProviderAsync()
     {
         try
         {
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-            ConnectionDefinition localConnection = configuration.Connections.Single(connection => connection.Category == ConnectionCategory.ThisDeviceOnly);
-            if (!localConnection.IsEnabled) return;
-            TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
-            var factory = new OllamaChatClientFactory();
-            bool running = await factory.TestConnectionAsync(settings.Endpoint, CancellationToken.None);
-            if (!running || (await factory.GetLocalModelNamesAsync(settings.Endpoint, CancellationToken.None)).Count == 0) ShowStartupNotice();
+            if (!configuration.HasEnabledConfiguredProvider()) ShowStartupNotice();
         }
         catch
         {
             debugLog.Write("startup-provider-check-failed");
             ShowStartupNotice();
         }
+
+        return Task.CompletedTask;
     }
 
     private void ShowStartupNotice()

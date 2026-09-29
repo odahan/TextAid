@@ -12,4 +12,12 @@ public sealed record ConfigurationSnapshot(
 {
     /// <summary>Returns the profile with the stable local default identifier.</summary>
     public ModelProfile LocalDefaultProfile => Profiles.Single(profile => profile.Id.Equals("local-default", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Determines whether at least one enabled provider has an endpoint and a selected model.</summary>
+    public bool HasEnabledConfiguredProvider() => Connections.Any(connection =>
+        connection.IsEnabled
+        && !string.IsNullOrWhiteSpace(connection.Endpoint)
+        && Profiles.Any(profile =>
+            profile.ConnectionId.Equals(connection.Id, StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(profile.Model)));
 }

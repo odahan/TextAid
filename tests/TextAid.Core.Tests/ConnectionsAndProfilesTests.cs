@@ -350,6 +350,34 @@ public sealed class ConnectionsAndProfilesTests
     }
 
     [Fact]
+    public void HasEnabledConfiguredProvider_RecognizesAnyEnabledProviderCategory()
+    {
+        var connections = new[]
+        {
+            new ConnectionDefinition("ollama-local", ConnectionCategory.ThisDeviceOnly, "ollama", "http://127.0.0.1:11434", true, AuthenticationKind.None, null),
+            new ConnectionDefinition("ollama-network", ConnectionCategory.OnPremises, "ollama", "http://network.test:11434", true, AuthenticationKind.None, null),
+            new ConnectionDefinition("openai-external", ConnectionCategory.External, "openai-compatible", "https://example.test/v1", true, AuthenticationKind.ApiKey, "external-key")
+        };
+        var profiles = new[]
+        {
+            new ModelProfile("local-default", "ollama-local", string.Empty, 0.2f, TimeSpan.FromSeconds(30), new Dictionary<string, object?>()),
+            new ModelProfile("network-default", "ollama-network", "network-model", 0.2f, TimeSpan.FromSeconds(30), new Dictionary<string, object?>()),
+            new ModelProfile("external-default", "openai-external", "external-model", 0.2f, TimeSpan.FromSeconds(30), new Dictionary<string, object?>())
+        };
+        var configuration = new ConfigurationSnapshot(1, connections, profiles, "en", "fr", "Ctrl+C+C", "Ctrl+C+T");
+
+        Assert.True(configuration.HasEnabledConfiguredProvider());
+    }
+
+    [Fact]
+    public void HasEnabledConfiguredProvider_RequiresAnEnabledConnectionEndpointAndModel()
+    {
+        ConfigurationSnapshot configuration = CreateConfiguration(string.Empty, string.Empty, AuthenticationKind.None, null, localEnabled: false);
+
+        Assert.False(configuration.HasEnabledConfiguredProvider());
+    }
+
+    [Fact]
     public void Resolve_MultipleEligibleRemoteChoices_DoesNotPromoteLocalActionAutomatically()
     {
         var connections = new[]
