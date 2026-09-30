@@ -49,6 +49,19 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
         return ++Generation;
     }
 
+    /// <summary>Invalidates a result or pending generation when its request changes.</summary>
+    public void InvalidateResult()
+    {
+        if (State == InvocationState.Transforming)
+        {
+            cancellation.Cancel();
+            Generation++;
+        }
+
+        OutputText = null;
+        if (State is InvocationState.Transforming or InvocationState.ResultReady) State = InvocationState.Ready;
+    }
+
     /// <summary>Publishes a result only when it belongs to the currently authoritative generation.</summary>
     public bool TryCompleteGeneration(int generation, string output)
     {
@@ -91,6 +104,8 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     public void SetInputText(string input)
     {
         ArgumentNullException.ThrowIfNull(input);
+        if (string.Equals(InputText, input, StringComparison.Ordinal)) return;
+        InvalidateResult();
         InputText = input;
         DetectedInputLanguage = TextLanguageDetector.Detect(input);
     }

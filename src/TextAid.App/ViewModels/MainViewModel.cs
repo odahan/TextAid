@@ -75,6 +75,7 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!SetProperty(ref selectedAction, value)) return;
+            Session.InvalidateResult();
             Session.ActionId = value?.Id;
             if (Session.OutputLanguage == "Unchanged")
             {
@@ -82,7 +83,7 @@ public sealed class MainViewModel : ObservableObject
                 OnPropertyChanged(nameof(SelectedOutputLanguage));
             }
             OnPropertyChanged(nameof(CanProcess));
-            ProcessCommand.NotifyCanExecuteChanged();
+            NotifyRequestChanged();
         }
     }
     public string InputText
@@ -93,9 +94,24 @@ public sealed class MainViewModel : ObservableObject
             if (!SetProperty(ref inputText, value)) return;
             Session.SetInputText(value);
             UpdateDetectedLanguage();
-            OnPropertyChanged(nameof(CanProcess));
-            ProcessCommand.NotifyCanExecuteChanged();
+            NotifyRequestChanged();
         }
+    }
+
+    private void NotifyRequestChanged()
+    {
+        OnPropertyChanged(nameof(OutputText));
+        OnPropertyChanged(nameof(IsTransforming));
+        OnPropertyChanged(nameof(CanUseResult));
+        OnPropertyChanged(nameof(CanReplaceResult));
+        OnPropertyChanged(nameof(CanProcess));
+        ReplaceCommand.NotifyCanExecuteChanged();
+        CopyCommand.NotifyCanExecuteChanged();
+        ProcessCommand.NotifyCanExecuteChanged();
+        InstructionsCommand.NotifyCanExecuteChanged();
+        NewCommand.NotifyCanExecuteChanged();
+        FreeCommand.NotifyCanExecuteChanged();
+        SelectPresetCommand.NotifyCanExecuteChanged();
     }
     public string? OutputText => Session.OutputText;
     /// <summary>Gets the detected input language name, or an empty value when detection is inconclusive.</summary>

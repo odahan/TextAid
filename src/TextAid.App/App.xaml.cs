@@ -1,4 +1,5 @@
 using System.IO;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -46,10 +47,24 @@ public partial class App : Application
             return;
         }
 
-        UserConfiguration.EnsureCreated();
+        ConfigurationSnapshot configuration;
+        try
+        {
+            UserConfiguration.EnsureCreated();
+            configuration = UserConfiguration.LoadConfiguration();
+            _ = UserConfiguration.LoadDebugMode();
+            _ = UserConfiguration.LoadFullDebugMode();
+            _ = UserConfiguration.LoadLocalizationPreferences();
+            _ = UserConfiguration.LoadActionPresetIds();
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or System.Text.Json.JsonException or IOException or ArgumentException)
+        {
+            ShowConfigurationRecovery();
+            Shutdown();
+            return;
+        }
         ConfigureDebugLog();
         actionsDirectory = UserConfiguration.EnsureActionsDirectory();
-        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
         ApplyCachedLocale(configuration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
         new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
         ConfigureKeyboardHook(configuration);
@@ -59,6 +74,25 @@ public partial class App : Application
         if (localeFallbackNotice is not null) tray.ShowInfo(localeFallbackNotice);
         debugLog.Write("application-started");
         Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
+    }
+
+    /// <summary>Offers the configuration file for manual repair when startup cannot load it.</summary>
+    private static void ShowConfigurationRecovery()
+    {
+        string path = Path.Combine(UserConfiguration.GetUserDataDirectory(), "config.json");
+        MessageBoxResult choice = MessageBox.Show(
+            $"TextAid cannot load its configuration.\n\n{path}\n\nOpen it in Notepad for repair?",
+            "TextAid configuration error",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Error);
+        if (choice != MessageBoxResult.Yes) return;
+        try
+        {
+            var startInfo = new ProcessStartInfo("notepad.exe") { UseShellExecute = true };
+            startInfo.ArgumentList.Add(path);
+            Process.Start(startInfo);
+        }
+        catch (Exception) { }
     }
 
     private Task CheckInitialProviderAsync()

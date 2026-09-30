@@ -117,6 +117,20 @@ public sealed class DeclarativeActionsTests
         Assert.Contains(loader.Load(), action => action.Id == "polish");
     }
 
+    [Theory]
+    [InlineData("..\\outside")]
+    [InlineData("../outside")]
+    [InlineData("bad:name")]
+    public void Save_RejectsActionIdsThatCouldEscapeTheActionDirectory(string id)
+    {
+        using var directory = new TemporaryDirectory();
+        var loader = new ActionLoader(actionsDirectory: directory.Path);
+        var action = new ActionDefinition(id, "Unsafe", true, "Process {{text}}", "local-default", null, "Unchanged", false);
+
+        Assert.Throws<InvalidOperationException>(() => loader.Save(action));
+        Assert.Empty(Directory.GetFiles(directory.Path, "*.tmp", SearchOption.AllDirectories));
+    }
+
     [Fact]
     public void Delete_RemovesAnOrdinaryActionAndRetainsAValidSet()
     {

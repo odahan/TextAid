@@ -332,6 +332,9 @@ public sealed partial class SettingsViewModel : ObservableObject
             {
                 try { StartWithWindows = startupRegistration.IsEnabled(); }
                 catch { }
+                NetworkSecret = string.Empty;
+                ExternalSecret = string.Empty;
+                Saved?.Invoke(this, EventArgs.Empty);
                 Status = UiStrings.Get("WindowsStartupUpdateFailureMessage");
                 return;
             }

@@ -2,6 +2,13 @@
 
 This record uses concise entries with date, actor, operation, affected artifacts, and outcome. Entries are organized in reverse chronological order by their recorded date; because no time is recorded, the existing relative order is retained within each day. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-30 — Code review corrections and version 1.2.4
+
+Actor: Olivier and Codex
+Operation: Olivier requested corrections for eight code review findings. Codex invalidated stale results when the input or action changes; required HTTPS for remote External endpoints; applied saved settings even when Windows startup registration fails; staged new DPAPI secrets so a failed configuration write preserves the previous credentials; resolved local settings by stable IDs; restricted action IDs to safe file names; validated connection providers, endpoints, categories, and profile links during configuration loading; and offered a configuration-file repair path when startup loading fails.
+Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/`, `src/TextAid.AI/`, and `tests/TextAid.Core.Tests/`.
+Outcome: Application version increased from 1.2.3 to 1.2.4. The complete test suite passed with 117 tests. Interactive Windows and live-provider checks were not run.
+
 ## 2026-09-29 — LOT-013 closed with total convergence
 
 Actor: Olivier and Codex

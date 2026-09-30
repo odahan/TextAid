@@ -47,7 +47,10 @@ public sealed class OpenAiCompatibleChatClientFactory
 
     private OpenAIClient CreateClient(ConnectionDefinition connection, string? suppliedApiKey)
     {
-        if (!Uri.TryCreate(connection.Endpoint, UriKind.Absolute, out Uri? endpoint)) throw new InvalidOperationException("The External endpoint is invalid.");
+        if (!Uri.TryCreate(connection.Endpoint, UriKind.Absolute, out Uri? endpoint) || endpoint.Scheme is not "http" and not "https")
+            throw new InvalidOperationException("The External endpoint is invalid.");
+        if (endpoint.Scheme != "https" && !UserConfiguration.IsLoopbackHost(endpoint.Host))
+            throw new InvalidOperationException("External endpoints outside this device require HTTPS.");
         string? apiKey = connection.Authentication switch
         {
             AuthenticationKind.None => null,

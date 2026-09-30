@@ -136,6 +136,8 @@ public sealed class ProfileResolver
             return new ValidationResult(false, true, $"{Display(connection.Category)} configuration is not configured.");
         if (!Uri.TryCreate(connection.Endpoint, UriKind.Absolute, out Uri? endpoint) || endpoint.Scheme is not "http" and not "https")
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration has an invalid endpoint.");
+        if (connection.Category == ConnectionCategory.External && !UserConfiguration.IsLoopbackHost(endpoint.Host) && endpoint.Scheme != "https")
+            return new ValidationResult(false, false, "External configuration requires HTTPS outside this device.");
         if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase) && connection.Category != ConnectionCategory.External)
             return new ValidationResult(false, false, "OpenAI-compatible configuration requires the External category.");
         if (connection.Category == ConnectionCategory.ThisDeviceOnly && !UserConfiguration.IsLoopbackHost(endpoint.Host))

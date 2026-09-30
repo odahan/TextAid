@@ -53,6 +53,7 @@ public sealed class ActionLoader
     public void Save(ActionDefinition action)
     {
         ArgumentNullException.ThrowIfNull(action);
+        ActionValidator.Validate(action, profileIds);
         Directory.CreateDirectory(actionsDirectory);
         string destination = Path.Combine(actionsDirectory, $"{action.Id}.json");
         string temporary = destination + ".tmp";

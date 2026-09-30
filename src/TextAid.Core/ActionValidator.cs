@@ -9,7 +9,8 @@ public static class ActionValidator
         ArgumentNullException.ThrowIfNull(action);
         ArgumentNullException.ThrowIfNull(profileIds);
         if (string.IsNullOrWhiteSpace(action.Id)) throw new InvalidOperationException("An action ID is required.");
-        if (action.Id.Any(char.IsWhiteSpace)) throw new InvalidOperationException($"Action '{action.Id}' has an invalid ID.");
+        if (!System.Text.RegularExpressions.Regex.IsMatch(action.Id, "^[A-Za-z0-9][A-Za-z0-9_-]*$", System.Text.RegularExpressions.RegexOptions.CultureInvariant))
+            throw new InvalidOperationException($"Action '{action.Id}' has an invalid ID.");
         if (!action.IsReserved && action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The Translate action ID is reserved.");
         if (action.IsReserved && !action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase))

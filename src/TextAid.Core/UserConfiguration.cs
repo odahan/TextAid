@@ -124,8 +124,10 @@ public static class UserConfiguration
         string path = EnsureCreated();
         using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
         JsonElement root = document.RootElement;
-        JsonElement connection = root.GetProperty("connections")[0];
-        JsonElement profile = root.GetProperty("profiles")[0];
+        JsonElement connection = root.GetProperty("connections").EnumerateArray().Single(item =>
+            string.Equals(item.GetProperty("id").GetString(), "ollama-local", StringComparison.OrdinalIgnoreCase));
+        JsonElement profile = root.GetProperty("profiles").EnumerateArray().Single(item =>
+            string.Equals(item.GetProperty("id").GetString(), "local-default", StringComparison.OrdinalIgnoreCase));
 
         string endpoint = connection.GetProperty("endpoint").GetString() ?? string.Empty;
         string model = profile.GetProperty("model").GetString() ?? string.Empty;
@@ -217,8 +219,22 @@ public static class UserConfiguration
         ArgumentNullException.ThrowIfNull(configuration);
         EnsureUnique(configuration.Connections.Select(connection => connection.Id), "connection");
         EnsureUnique(configuration.Profiles.Select(profile => profile.Id), "profile");
-        if (!configuration.Profiles.Any(profile => profile.Id.Equals("local-default", StringComparison.OrdinalIgnoreCase)))
+        ConnectionDefinition? localConnection = configuration.Connections.FirstOrDefault(connection => connection.Id.Equals("ollama-local", StringComparison.OrdinalIgnoreCase));
+        if (localConnection is null || localConnection.Category != ConnectionCategory.ThisDeviceOnly || !localConnection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The local connection is missing or invalid.");
+        ModelProfile? localProfile = configuration.Profiles.FirstOrDefault(profile => profile.Id.Equals("local-default", StringComparison.OrdinalIgnoreCase));
+        if (localProfile is null || !localProfile.ConnectionId.Equals(localConnection.Id, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The local default profile is missing.");
+        ValidateStandardConnection(configuration, "ollama-network", "network-default", ConnectionCategory.OnPremises, "ollama");
+        ValidateStandardConnection(configuration, "openai-external", "external-default", ConnectionCategory.External, "openai-compatible");
+        foreach (ConnectionDefinition connection in configuration.Connections)
+        {
+            if (!connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase) && !connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Connection '{connection.Id}' has an unsupported provider.");
+            if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase) && connection.Category != ConnectionCategory.External)
+                throw new InvalidOperationException($"Connection '{connection.Id}' has an invalid category.");
+            if (!string.IsNullOrWhiteSpace(connection.Endpoint)) ValidateOptionalEndpoint(connection.Endpoint, connection.Category);
+        }
         foreach (ModelProfile profile in configuration.Profiles)
         {
             if (!configuration.Connections.Any(connection => connection.Id.Equals(profile.ConnectionId, StringComparison.OrdinalIgnoreCase)))
@@ -251,12 +267,23 @@ public static class UserConfiguration
         JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
         JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
         EnsureRemoteConnectionDefinitions(connections, profiles);
+        if (!profiles.Any(profile => profile?["id"]?.GetValue<string>()?.Equals(request.LocalizationProfileId, StringComparison.OrdinalIgnoreCase) == true))
+            throw new InvalidOperationException("Choose an available profile for catalog generation.");
+
+        var pendingSecrets = new List<(string Reference, string Secret)>();
+        var previousSecrets = new List<string>();
 
         if (request.LocalEnabled) SaveLocalConnection(root, request.LocalSettings!);
         if (request.NetworkEnabled)
-            SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", request.NetworkEndpoint, request.NetworkModel, request.NetworkSecret, "network-api-key");
+        {
+            SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", request.NetworkEndpoint, request.NetworkModel, null, "network-api-key");
+            StageRemoteSecret(connections, "ollama-network", request.NetworkSecret, pendingSecrets, previousSecrets);
+        }
         if (request.ExternalEnabled)
-            SaveRemoteConnection(connections, profiles, "openai-external", "external-default", request.ExternalEndpoint, request.ExternalModel, request.ExternalSecret, "external-api-key");
+        {
+            SaveRemoteConnection(connections, profiles, "openai-external", "external-default", request.ExternalEndpoint, request.ExternalModel, null, "external-api-key");
+            StageRemoteSecret(connections, "openai-external", request.ExternalSecret, pendingSecrets, previousSecrets);
+        }
 
         SetConnectionActivation(connections, "ollama-local", request.LocalEnabled);
         SetConnectionActivation(connections, "ollama-network", request.NetworkEnabled);
@@ -266,11 +293,36 @@ public static class UserConfiguration
         root["userLanguage"] = request.UserLanguage;
         root["preferredTranslationLanguage"] = request.PreferredTranslationLanguage;
         root["shortcuts"] = new JsonObject { ["normalAction"] = request.NormalShortcut, ["quickTranslation"] = request.TranslationShortcut };
-        if (!profiles.Any(profile => profile?["id"]?.GetValue<string>()?.Equals(request.LocalizationProfileId, StringComparison.OrdinalIgnoreCase) == true))
-            throw new InvalidOperationException("Choose an available profile for catalog generation.");
         root["preferEnglishUi"] = request.PreferEnglishUi;
         root["localizationProfileId"] = request.LocalizationProfileId;
-        WriteConfigurationAtomically(path, root);
+        var vault = new DpapiSecretVault();
+        var stagedReferences = new List<string>();
+        try
+        {
+            foreach ((string reference, string secret) in pendingSecrets)
+            {
+                stagedReferences.Add(reference);
+                vault.SetSecret(reference, secret);
+            }
+            WriteConfigurationAtomically(path, root);
+        }
+        catch
+        {
+            foreach (string reference in stagedReferences)
+            {
+                try { vault.RemoveSecret(reference); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+            throw;
+        }
+        foreach (string reference in previousSecrets)
+        {
+            if (connections.Any(connection => connection?["secretReference"]?.GetValue<string>() == reference)) continue;
+            try { vault.RemoveSecret(reference); }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
     }
 
     /// <summary>Saves the local Ollama connection and generation options without storing user text.</summary>
@@ -287,8 +339,10 @@ public static class UserConfiguration
 
     private static void SaveLocalConnection(JsonObject root, TextTransformationSettings settings)
     {
-        JsonObject connection = root["connections"]?.AsArray().FirstOrDefault()?.AsObject() ?? throw new InvalidOperationException("The TextAid connection is missing.");
-        JsonObject profile = root["profiles"]?.AsArray().FirstOrDefault()?.AsObject() ?? throw new InvalidOperationException("The TextAid profile is missing.");
+        JsonObject connection = root["connections"]?.AsArray().FirstOrDefault(item => item?["id"]?.GetValue<string>()?.Equals("ollama-local", StringComparison.OrdinalIgnoreCase) == true)?.AsObject()
+            ?? throw new InvalidOperationException("The TextAid local connection is missing.");
+        JsonObject profile = root["profiles"]?.AsArray().FirstOrDefault(item => item?["id"]?.GetValue<string>()?.Equals("local-default", StringComparison.OrdinalIgnoreCase) == true)?.AsObject()
+            ?? throw new InvalidOperationException("The TextAid local profile is missing.");
         JsonObject options = profile["providerOptions"]?.AsObject() ?? new JsonObject();
 
         connection["endpoint"] = settings.Endpoint;
@@ -491,6 +545,18 @@ public static class UserConfiguration
         connection["secretReference"] = secretReference;
     }
 
+    private static void StageRemoteSecret(JsonArray connections, string connectionId, string? secret, List<(string Reference, string Secret)> pending, List<string> previous)
+    {
+        if (string.IsNullOrWhiteSpace(secret)) return;
+        JsonObject connection = connections.First(item => item?["id"]?.GetValue<string>()?.Equals(connectionId, StringComparison.OrdinalIgnoreCase) == true)!.AsObject();
+        string? oldReference = connection["secretReference"]?.GetValue<string>();
+        if (!string.IsNullOrWhiteSpace(oldReference)) previous.Add(oldReference);
+        string newReference = $"{connectionId}-{Guid.NewGuid():N}";
+        connection["authentication"] = "ApiKey";
+        connection["secretReference"] = newReference;
+        pending.Add((newReference, secret));
+    }
+
     private static void ValidateOptionalEndpoint(string endpoint, ConnectionCategory category)
     {
         if (string.IsNullOrWhiteSpace(endpoint)) return;
@@ -498,6 +564,8 @@ public static class UserConfiguration
             throw new ArgumentException($"Enter a valid HTTP endpoint for {category}.", nameof(endpoint));
         if (category == ConnectionCategory.ThisDeviceOnly && !IsLoopbackHost(parsed.Host))
             throw new ArgumentException("This device only allows localhost, 127.0.0.1, or ::1.", nameof(endpoint));
+        if (category == ConnectionCategory.External && !IsLoopbackHost(parsed.Host) && parsed.Scheme != "https")
+            throw new ArgumentException("External endpoints outside this device require HTTPS.", nameof(endpoint));
     }
 
     private static void ValidateUserPreferences(string userLanguage, string preferredTranslationLanguage, string normalShortcut, string translationShortcut)
@@ -506,6 +574,17 @@ public static class UserConfiguration
         ValidateLanguage(preferredTranslationLanguage, "preferred translation language");
         if (!IsSupportedShortcut(normalShortcut) || !IsSupportedShortcut(translationShortcut) || normalShortcut.Equals(translationShortcut, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The configured shortcuts must be valid and distinct.");
+    }
+
+    private static void ValidateStandardConnection(ConfigurationSnapshot configuration, string connectionId, string profileId, ConnectionCategory category, string provider)
+    {
+        ConnectionDefinition? connection = configuration.Connections.FirstOrDefault(item => item.Id.Equals(connectionId, StringComparison.OrdinalIgnoreCase));
+        ModelProfile? profile = configuration.Profiles.FirstOrDefault(item => item.Id.Equals(profileId, StringComparison.OrdinalIgnoreCase));
+        if (connection is null && profile is null) return;
+        if (connection is null || profile is null || connection.Category != category ||
+            !connection.Provider.Equals(provider, StringComparison.OrdinalIgnoreCase) ||
+            !profile.ConnectionId.Equals(connection.Id, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException($"The '{connectionId}' connection and '{profileId}' profile are inconsistent.");
     }
 
     private static void WriteConfigurationAtomically(string path, JsonObject root)
@@ -553,8 +632,12 @@ public static class UserConfiguration
         return think.ValueKind == JsonValueKind.String && Enum.TryParse(think.GetString(), true, out ThinkingMode mode) ? mode : ThinkingMode.Off;
     }
 
-    private static TEnum ReadEnum<TEnum>(JsonElement item, string name, TEnum fallback) where TEnum : struct, Enum =>
-        item.TryGetProperty(name, out JsonElement value) && Enum.TryParse(value.GetString(), true, out TEnum parsed) ? parsed : fallback;
+    private static TEnum ReadEnum<TEnum>(JsonElement item, string name, TEnum fallback) where TEnum : struct, Enum
+    {
+        if (!item.TryGetProperty(name, out JsonElement value)) return fallback;
+        if (value.ValueKind == JsonValueKind.String && Enum.TryParse(value.GetString(), true, out TEnum parsed) && Enum.IsDefined(parsed)) return parsed;
+        throw new InvalidOperationException($"The connection {name} is invalid.");
+    }
 
     private static void EnsureUnique(IEnumerable<string> ids, string type)
     {

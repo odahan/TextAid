@@ -106,6 +106,25 @@ public sealed class ConnectionsAndProfilesTests
         Assert.True(session.HasCurrentResult);
     }
 
+    [Fact]
+    public void InvocationSession_ChangingInputInvalidatesACompletedOrPendingResult()
+    {
+        using var session = new InvocationSession((nint)42, "first");
+        int firstGeneration = session.StartNewGeneration();
+        session.SetInputText("second");
+
+        Assert.True(session.Cancellation.IsCancellationRequested);
+        Assert.False(session.TryCompleteGeneration(firstGeneration, "stale"));
+        Assert.False(session.HasCurrentResult);
+        Assert.Equal(InvocationState.Ready, session.State);
+
+        int secondGeneration = session.StartNewGeneration();
+        Assert.True(session.TryCompleteGeneration(secondGeneration, "fresh"));
+        session.SetInputText("third");
+        Assert.Null(session.OutputText);
+        Assert.False(session.HasCurrentResult);
+    }
+
     [Theory]
     [InlineData("Please rewrite this text with your own words.", "en")]
     [InlineData("Veuillez corriger ce texte avec les accents français.", "fr")]
@@ -452,6 +471,23 @@ public sealed class ConnectionsAndProfilesTests
         };
 
         UserConfiguration.ValidateConfiguration(configuration);
+    }
+
+    [Fact]
+    public void ValidateConfiguration_RejectsUnsupportedProvidersAndInsecureExternalEndpoints()
+    {
+        ConfigurationSnapshot valid = CreateConfiguration("https://example.test/v1", "remote-model", AuthenticationKind.None, null);
+        ConfigurationSnapshot unknownProvider = valid with
+        {
+            Connections = [valid.Connections[0], valid.Connections[1] with { Provider = "unknown" }]
+        };
+        ConfigurationSnapshot insecureExternal = valid with
+        {
+            Connections = [valid.Connections[0], valid.Connections[1] with { Endpoint = "http://example.test/v1" }]
+        };
+
+        Assert.Throws<InvalidOperationException>(() => UserConfiguration.ValidateConfiguration(unknownProvider));
+        Assert.Throws<ArgumentException>(() => UserConfiguration.ValidateConfiguration(insecureExternal));
     }
 
     private static ConfigurationSnapshot CreateConfiguration(string externalEndpoint, string externalModel, AuthenticationKind externalAuthentication, string? externalSecretReference, bool externalEnabled = true, bool localEnabled = true)
