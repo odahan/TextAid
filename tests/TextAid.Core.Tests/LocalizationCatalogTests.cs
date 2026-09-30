@@ -1,4 +1,5 @@
 using TextAid.Core;
+using System.Text.Json;
 
 namespace TextAid.Core.Tests;
 
@@ -74,6 +75,81 @@ public sealed class LocalizationCatalogTests
             Assert.False(result.Succeeded);
             Assert.Equal(LocaleCatalogGenerationStatus.InvalidCatalog, result.Status);
             Assert.Equal(LocaleCatalogLoadStatus.Loaded, catalog.Load(cachePath).Status);
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
+    [Fact]
+    public async Task GenerateAsync_ReplacesStaleCacheWithCurrentFingerprint()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "TextAid.Tests", Guid.NewGuid().ToString("N"));
+        string cachePath = Path.Combine(directory, "fr.json");
+        try
+        {
+            var oldCatalog = new LocalizationCatalog(new Dictionary<string, string> { ["Greeting"] = "Hello {name}", ["Save"] = "Save changes" });
+            Assert.True(oldCatalog.TrySave(cachePath, "{\"Greeting\":\"Bonjour {name}\",\"Save\":\"Enregistrer\"}"));
+            Assert.Equal(LocaleCatalogLoadStatus.Stale, catalog.Load(cachePath).Status);
+
+            var generator = new LocaleCatalogGenerator(catalog);
+            LocaleCatalogGenerationResult result = await generator.GenerateAsync(
+                cachePath,
+                _ => Task.FromResult("{\"Greeting\":\"Bonjour {name}\",\"Save\":\"Enregistrer\"}"),
+                CancellationToken.None);
+
+            Assert.True(result.Succeeded);
+            Assert.Equal(LocaleCatalogLoadStatus.Loaded, catalog.Load(cachePath).Status);
+            Assert.Equal(catalog.SourceFingerprint, File.ReadAllText(cachePath + ".source-fingerprint"));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
+    }
+
+    [Fact]
+    public async Task GenerateInBatchesAsync_ReplacesStaleCacheOnlyAfterEveryBatchIsValid()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "TextAid.Tests", Guid.NewGuid().ToString("N"));
+        string cachePath = Path.Combine(directory, "fr.json");
+        try
+        {
+            var oldCatalog = new LocalizationCatalog(new Dictionary<string, string> { ["Greeting"] = "Old greeting", ["Save"] = "Save" });
+            Assert.True(oldCatalog.TrySave(cachePath, "{\"Greeting\":\"Ancien\",\"Save\":\"Enregistrer\"}"));
+            Assert.Equal(LocaleCatalogLoadStatus.Stale, catalog.Load(cachePath).Status);
+
+            var generator = new LocaleCatalogGenerator(catalog);
+            int calls = 0;
+            LocaleCatalogGenerationResult invalid = await generator.GenerateInBatchesAsync(
+                cachePath,
+                1,
+                (batch, _) =>
+                {
+                    calls++;
+                    return Task.FromResult(calls == 1
+                        ? JsonSerializer.Serialize(batch.ToDictionary(pair => pair.Key, pair => pair.Value.Replace("Hello", "Bonjour")))
+                        : "{}");
+                },
+                CancellationToken.None);
+
+            Assert.Equal(LocaleCatalogGenerationStatus.InvalidCatalog, invalid.Status);
+            Assert.Equal(LocaleCatalogLoadStatus.Stale, catalog.Load(cachePath).Status);
+
+            calls = 0;
+            LocaleCatalogGenerationResult created = await generator.GenerateInBatchesAsync(
+                cachePath,
+                1,
+                (batch, _) =>
+                {
+                    calls++;
+                    return Task.FromResult(JsonSerializer.Serialize(batch.ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value.Replace("Hello", "Bonjour").Replace("Save", "Enregistrer"))));
+                },
+                CancellationToken.None);
+
+            Assert.True(created.Succeeded);
+            Assert.Equal(2, calls);
+            LocaleCatalogLoadResult loaded = catalog.Load(cachePath);
+            Assert.Equal(LocaleCatalogLoadStatus.Loaded, loaded.Status);
+            Assert.Equal("Bonjour {name}", loaded.Values["Greeting"]);
+            Assert.Equal("Enregistrer", loaded.Values["Save"]);
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     }

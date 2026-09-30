@@ -492,11 +492,7 @@ public partial class App : Application
 
         settingsWindow = new SettingsWindow();
         settingsWindow.FullLogActivityChanged += active => sessionWindow?.SetFullLogActive(active);
-        settingsWindow.UiTranslationGenerated += (_, _) =>
-        {
-            ConfigurationSnapshot currentConfiguration = UserConfiguration.LoadConfiguration();
-            ApplyCachedLocale(currentConfiguration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
-        };
+        settingsWindow.UiTranslationGenerated += (_, args) => ApplyCachedLocale(args.Language, args.PreferEnglishUi);
         settingsWindow.SettingsSaved += (_, _) =>
         {
             ConfigureDebugLog();

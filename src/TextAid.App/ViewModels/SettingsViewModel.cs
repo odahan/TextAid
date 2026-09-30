@@ -21,6 +21,16 @@ public enum ConnectionTestState
     Failed
 }
 
+/// <summary>Identifies the locale selected when a complete UI translation was generated.</summary>
+public sealed class UiTranslationGeneratedEventArgs(string language, bool preferEnglishUi) : EventArgs
+{
+    /// <summary>Gets the language code used to generate the translation.</summary>
+    public string Language { get; } = language;
+
+    /// <summary>Gets whether the English interface was selected during generation.</summary>
+    public bool PreferEnglishUi { get; } = preferEnglishUi;
+}
+
 /// <summary>Edits local, On-premises, and External connection settings.</summary>
 public sealed partial class SettingsViewModel : ObservableObject
 {
@@ -71,7 +81,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     public ObservableCollection<ProfileSummary> ProfileSummaries { get; } = [];
     public event EventHandler? Saved;
     /// <summary>Raised after a complete, valid UI translation catalog is saved locally.</summary>
-    public event EventHandler? UiTranslationGenerated;
+    public event EventHandler<UiTranslationGeneratedEventArgs>? UiTranslationGenerated;
     public bool IsFullLogActive => DebugEnabled && FullDebugEnabled;
 
     partial void OnDebugEnabledChanged(bool value) => OnPropertyChanged(nameof(IsFullLogActive));
@@ -357,7 +367,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task GenerateUiTranslationAsync()
     {
-        if (UserLanguage.Equals("en", StringComparison.OrdinalIgnoreCase))
+        string language = UserLanguage;
+        if (language.Equals("en", StringComparison.OrdinalIgnoreCase))
         {
             Status = UiStrings.Get("EnglishSourceCatalogMessage");
             return;
@@ -383,19 +394,19 @@ public sealed partial class SettingsViewModel : ObservableObject
 
             int contextSize = profile.ProviderOptions.TryGetValue("num_ctx", out object? context) && int.TryParse(context?.ToString(), out int parsed) ? parsed : 8192;
             var settings = new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, contextSize, ThinkingMode.Off);
-            string source = JsonSerializer.Serialize(EnglishStringCatalog.Values);
             const string instruction = "Translate every JSON string value into the requested UI language. Preserve every JSON key and every placeholder such as {name} exactly. Return one JSON object only, with no Markdown or commentary.";
             var service = new MafTextTransformationService(
                 _ => aiClientFactory.Create(connection, profile),
                 connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
                 maxOutputTokens: 16_384);
-            string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", UserLanguage + ".json");
+            string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", language + ".json");
             var catalog = new LocalizationCatalog(EnglishStringCatalog.Values);
             var generator = new LocaleCatalogGenerator(catalog);
-            LocaleCatalogGenerationResult generation = await generator.GenerateAsync(
+            LocaleCatalogGenerationResult generation = await generator.GenerateInBatchesAsync(
                 cachePath,
-                async cancellationToken => ExtractJsonObject(await service.TransformAsync(
-                    new TextTransformationRequest($"Target BCP-47 language: {UserLanguage}\n\nSource catalog:\n{source}", instruction, settings),
+                Math.Clamp(contextSize / 256, 2, 24),
+                async (batch, cancellationToken) => ExtractJsonObject(await service.TransformAsync(
+                    new TextTransformationRequest($"Target BCP-47 language: {language}\n\nSource catalog:\n{JsonSerializer.Serialize(batch)}", instruction, settings),
                     cancellationToken)),
                 CancellationToken.None);
             if (!generation.Succeeded)
@@ -405,7 +416,7 @@ public sealed partial class SettingsViewModel : ObservableObject
                     : UiStrings.Get("LocaleProviderUnavailableMessage");
                 return;
             }
-            UiTranslationGenerated?.Invoke(this, EventArgs.Empty);
+            UiTranslationGenerated?.Invoke(this, new UiTranslationGeneratedEventArgs(language, PreferEnglishUi));
             Status = PreferEnglishUi
                 ? UiStrings.Get("LocaleCacheCreatedEnglishMessage")
                 : UiStrings.Get("LocaleCacheCreatedMessage");

@@ -2,6 +2,20 @@
 
 This record uses concise entries with date, actor, operation, affected artifacts, and outcome. Entries are organized in reverse chronological order by their recorded date; because no time is recorded, the existing relative order is retained within each day. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-09-30 — Batched UI translation generation and version 1.2.6
+
+Actor: Olivier and Codex
+Operation: Corrected UI translation generation to submit small, individually validated batches. The previous single request exceeded the effective output budget of a default local model, leaving the stale cache in place. The generated cache is replaced only after every batch succeeds.
+Affected artifacts: `src/TextAid.App/`, `src/TextAid.Core/`, and `tests/TextAid.Core.Tests/`.
+Outcome: Application version increased from 1.2.5 to 1.2.6. All 119 tests passed, and `publish.ps1` produced the Release executable.
+
+## 2026-09-30 — UI locale generation correction and version 1.2.5
+
+Actor: Olivier and Codex
+Operation: Corrected the post-generation locale reload to use the language selected for generation, even when the Settings changes have not yet been saved. Added a regression test confirming that generation replaces a stale cache and its source fingerprint.
+Affected artifacts: `src/TextAid.App/` and `tests/TextAid.Core.Tests/`.
+Outcome: Application version increased from 1.2.4 to 1.2.5. All 118 tests passed, and `publish.ps1` produced the Release executable.
+
 ## 2026-09-30 — Code review corrections and version 1.2.4
 
 Actor: Olivier and Codex

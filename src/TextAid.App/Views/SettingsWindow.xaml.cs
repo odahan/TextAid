@@ -15,7 +15,7 @@ public partial class SettingsWindow : Window
     /// <summary>Raised whenever the effective Full log selection changes in the Settings editor.</summary>
     public event Action<bool>? FullLogActivityChanged;
     /// <summary>Raised after a valid UI translation catalog has been generated.</summary>
-    public event EventHandler? UiTranslationGenerated;
+    public event EventHandler<UiTranslationGeneratedEventArgs>? UiTranslationGenerated;
 
     public SettingsWindow()
     {
@@ -23,7 +23,7 @@ public partial class SettingsWindow : Window
         var viewModel = new SettingsViewModel();
         DataContext = viewModel;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        viewModel.UiTranslationGenerated += (_, _) => UiTranslationGenerated?.Invoke(this, EventArgs.Empty);
+        viewModel.UiTranslationGenerated += (_, args) => UiTranslationGenerated?.Invoke(this, args);
         viewModel.Saved += (_, _) =>
         {
             SettingsSaved?.Invoke(this, EventArgs.Empty);
