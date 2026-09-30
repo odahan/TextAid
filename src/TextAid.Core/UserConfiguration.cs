@@ -10,6 +10,27 @@ public static class UserConfiguration
     /// <summary>Provides the prefilled endpoint for the standard OpenAI-compatible External connection.</summary>
     public const string DefaultExternalEndpoint = "https://api.openai.com/v1";
     private static ConfigurationSnapshot? activeConfiguration;
+
+    /// <summary>Represents the complete Settings dialog state committed in one configuration write.</summary>
+    public sealed record SettingsSaveRequest(
+        bool LocalEnabled,
+        TextTransformationSettings? LocalSettings,
+        bool NetworkEnabled,
+        string NetworkEndpoint,
+        string NetworkModel,
+        string? NetworkSecret,
+        bool ExternalEnabled,
+        string ExternalEndpoint,
+        string ExternalModel,
+        string? ExternalSecret,
+        bool DebugEnabled,
+        bool FullDebugEnabled,
+        string UserLanguage,
+        string PreferredTranslationLanguage,
+        string NormalShortcut,
+        string TranslationShortcut,
+        bool PreferEnglishUi,
+        string LocalizationProfileId);
     public static string EnsureCreated()
     {
         string directory = GetUserDataDirectory();
@@ -208,10 +229,48 @@ public static class UserConfiguration
 
         ValidateLanguage(configuration.UserLanguage, "user language");
         ValidateLanguage(configuration.PreferredTranslationLanguage, "preferred translation language");
-        if (configuration.UserLanguage.Equals(configuration.PreferredTranslationLanguage, StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("The user and preferred translation languages must be distinct.");
         if (!IsSupportedShortcut(configuration.NormalShortcut) || !IsSupportedShortcut(configuration.TranslationShortcut) || configuration.NormalShortcut.Equals(configuration.TranslationShortcut, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("The configured shortcuts must be valid and distinct.");
+    }
+
+    /// <summary>Validates and saves all Settings values together so a failed edit cannot partially replace connection settings.</summary>
+    public static void SaveSettings(SettingsSaveRequest request)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (request.LocalEnabled)
+        {
+            if (request.LocalSettings is null) throw new ArgumentException("Local settings are required when This device only is active.", nameof(request));
+            ValidateLocalSettings(request.LocalSettings);
+        }
+        if (request.NetworkEnabled) ValidateOptionalEndpoint(request.NetworkEndpoint, ConnectionCategory.OnPremises);
+        if (request.ExternalEnabled) ValidateOptionalEndpoint(request.ExternalEndpoint, ConnectionCategory.External);
+        ValidateUserPreferences(request.UserLanguage, request.PreferredTranslationLanguage, request.NormalShortcut, request.TranslationShortcut);
+
+        string path = EnsureCreated();
+        JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
+        JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
+        EnsureRemoteConnectionDefinitions(connections, profiles);
+
+        if (request.LocalEnabled) SaveLocalConnection(root, request.LocalSettings!);
+        if (request.NetworkEnabled)
+            SaveRemoteConnection(connections, profiles, "ollama-network", "network-default", request.NetworkEndpoint, request.NetworkModel, request.NetworkSecret, "network-api-key");
+        if (request.ExternalEnabled)
+            SaveRemoteConnection(connections, profiles, "openai-external", "external-default", request.ExternalEndpoint, request.ExternalModel, request.ExternalSecret, "external-api-key");
+
+        SetConnectionActivation(connections, "ollama-local", request.LocalEnabled);
+        SetConnectionActivation(connections, "ollama-network", request.NetworkEnabled);
+        SetConnectionActivation(connections, "openai-external", request.ExternalEnabled);
+        root["debugMode"] = request.DebugEnabled;
+        root["fullDebugMode"] = request.FullDebugEnabled;
+        root["userLanguage"] = request.UserLanguage;
+        root["preferredTranslationLanguage"] = request.PreferredTranslationLanguage;
+        root["shortcuts"] = new JsonObject { ["normalAction"] = request.NormalShortcut, ["quickTranslation"] = request.TranslationShortcut };
+        if (!profiles.Any(profile => profile?["id"]?.GetValue<string>()?.Equals(request.LocalizationProfileId, StringComparison.OrdinalIgnoreCase) == true))
+            throw new InvalidOperationException("Choose an available profile for catalog generation.");
+        root["preferEnglishUi"] = request.PreferEnglishUi;
+        root["localizationProfileId"] = request.LocalizationProfileId;
+        WriteConfigurationAtomically(path, root);
     }
 
     /// <summary>Saves the local Ollama connection and generation options without storing user text.</summary>
@@ -222,6 +281,12 @@ public static class UserConfiguration
 
         string path = EnsureCreated();
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
+        SaveLocalConnection(root, settings);
+        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+    private static void SaveLocalConnection(JsonObject root, TextTransformationSettings settings)
+    {
         JsonObject connection = root["connections"]?.AsArray().FirstOrDefault()?.AsObject() ?? throw new InvalidOperationException("The TextAid connection is missing.");
         JsonObject profile = root["profiles"]?.AsArray().FirstOrDefault()?.AsObject() ?? throw new InvalidOperationException("The TextAid profile is missing.");
         JsonObject options = profile["providerOptions"]?.AsObject() ?? new JsonObject();
@@ -233,7 +298,6 @@ public static class UserConfiguration
         options["num_ctx"] = settings.ContextSize;
         options["think"] = settings.Thinking == ThinkingMode.Off ? false : settings.Thinking.ToString().ToLowerInvariant();
         profile["providerOptions"] = options;
-        File.WriteAllText(path, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
     }
 
     /// <summary>Saves remote endpoints while placing supplied credentials in the per-user DPAPI vault.</summary>
@@ -278,11 +342,7 @@ public static class UserConfiguration
     /// <summary>Persists the distinct user-language and keyboard-sequence preferences.</summary>
     public static void SaveUserPreferences(string userLanguage, string preferredTranslationLanguage, string normalShortcut, string translationShortcut)
     {
-        var proposed = new ConfigurationSnapshot(1, [
-            new ConnectionDefinition("validation-local", ConnectionCategory.ThisDeviceOnly, "ollama", "http://127.0.0.1:11434", false, AuthenticationKind.None, null)],
-            [new ModelProfile("local-default", "validation-local", string.Empty, 0.2f, TimeSpan.FromSeconds(120), new Dictionary<string, object?>())],
-            userLanguage, preferredTranslationLanguage, normalShortcut, translationShortcut);
-        ValidateConfiguration(proposed);
+        ValidateUserPreferences(userLanguage, preferredTranslationLanguage, normalShortcut, translationShortcut);
 
         string path = EnsureCreated();
         JsonObject root = JsonNode.Parse(File.ReadAllText(path))?.AsObject() ?? throw new InvalidOperationException("The TextAid configuration is invalid.");
@@ -438,6 +498,28 @@ public static class UserConfiguration
             throw new ArgumentException($"Enter a valid HTTP endpoint for {category}.", nameof(endpoint));
         if (category == ConnectionCategory.ThisDeviceOnly && !IsLoopbackHost(parsed.Host))
             throw new ArgumentException("This device only allows localhost, 127.0.0.1, or ::1.", nameof(endpoint));
+    }
+
+    private static void ValidateUserPreferences(string userLanguage, string preferredTranslationLanguage, string normalShortcut, string translationShortcut)
+    {
+        ValidateLanguage(userLanguage, "user language");
+        ValidateLanguage(preferredTranslationLanguage, "preferred translation language");
+        if (!IsSupportedShortcut(normalShortcut) || !IsSupportedShortcut(translationShortcut) || normalShortcut.Equals(translationShortcut, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("The configured shortcuts must be valid and distinct.");
+    }
+
+    private static void WriteConfigurationAtomically(string path, JsonObject root)
+    {
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+        }
     }
 
     private static bool TryCreateDirectory(string directory)

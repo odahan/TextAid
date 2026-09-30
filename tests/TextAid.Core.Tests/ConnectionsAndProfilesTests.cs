@@ -442,6 +442,18 @@ public sealed class ConnectionsAndProfilesTests
         UserConfiguration.ValidateConfiguration(configuration);
     }
 
+    [Fact]
+    public void ValidateConfiguration_AllowsMatchingInterfaceAndTranslationLanguages()
+    {
+        ConfigurationSnapshot configuration = CreateConfiguration("https://example.test/v1", "remote-model", AuthenticationKind.None, null) with
+        {
+            UserLanguage = "fr",
+            PreferredTranslationLanguage = "fr"
+        };
+
+        UserConfiguration.ValidateConfiguration(configuration);
+    }
+
     private static ConfigurationSnapshot CreateConfiguration(string externalEndpoint, string externalModel, AuthenticationKind externalAuthentication, string? externalSecretReference, bool externalEnabled = true, bool localEnabled = true)
     {
         var connections = new[]

@@ -297,28 +297,33 @@ public sealed partial class SettingsViewModel : ObservableObject
     {
         try
         {
-            // A disabled local connection must not block an independent On-premises configuration.
+            TextTransformationSettings? localSettings = null;
             if (LocalEnabled)
             {
                 if (!float.TryParse(TemperatureText, NumberStyles.Float, CultureInfo.InvariantCulture, out float temperature)) throw new ArgumentException("Temperature must be a number between 0 and 2.");
                 if (!int.TryParse(ContextSizeText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int contextSize)) throw new ArgumentException("Context size must be a whole number.");
                 if (!int.TryParse(TimeoutSecondsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int timeoutSeconds)) throw new ArgumentException("Timeout must be a whole number of seconds.");
-                UserConfiguration.SaveTransformationSettings(new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking));
+                localSettings = new TextTransformationSettings(Endpoint.Trim(), SelectedModel ?? string.Empty, temperature, TimeSpan.FromSeconds(timeoutSeconds), contextSize, SelectedThinking);
             }
-            UserConfiguration.SaveRemoteConnectionSettings(
+            UserConfiguration.SaveSettings(new UserConfiguration.SettingsSaveRequest(
+                LocalEnabled,
+                localSettings,
+                NetworkEnabled,
                 NetworkEndpoint,
                 NetworkModel,
                 NetworkSecret,
+                ExternalEnabled,
                 ExternalEndpoint,
                 ExternalModel,
                 ExternalSecret,
-                saveNetworkConnection: NetworkEnabled,
-                saveExternalConnection: ExternalEnabled);
-            UserConfiguration.SaveConnectionActivation(LocalEnabled, NetworkEnabled, ExternalEnabled);
-            UserConfiguration.SaveDebugMode(DebugEnabled);
-            UserConfiguration.SaveFullDebugMode(FullDebugEnabled);
-            UserConfiguration.SaveUserPreferences(UserLanguage, PreferredTranslationLanguage, NormalShortcut, TranslationShortcut);
-            UserConfiguration.SaveLocalizationPreferences(PreferEnglishUi, SelectedLocalizationProfile);
+                DebugEnabled,
+                FullDebugEnabled,
+                UserLanguage,
+                PreferredTranslationLanguage,
+                NormalShortcut,
+                TranslationShortcut,
+                PreferEnglishUi,
+                SelectedLocalizationProfile));
             try
             {
                 startupRegistration.SetEnabled(StartWithWindows);

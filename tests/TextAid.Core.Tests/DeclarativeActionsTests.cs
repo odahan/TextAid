@@ -42,7 +42,7 @@ public sealed class DeclarativeActionsTests
         Assert.Contains(actions, action => action.Id == "translate" && action.IsReserved);
         Assert.Contains(actions, action => action.Id == "answer-this-mail" && action.AskForUserInstructions);
         Assert.Contains(actions, action => action.Id == "Synonymes" && action.TemperatureOverride == 0.2f);
-        ActionDefinition humanize = Assert.Single(actions.Where(action => action.Id == "humanize"));
+        ActionDefinition humanize = Assert.Single(actions, action => action.Id == "humanize");
         Assert.Equal(0.2f, humanize.TemperatureOverride);
         Assert.Equal("Unchanged", humanize.OutputLanguageDefault);
         Assert.Contains("MUST rewrite the affected sentence", humanize.PromptTemplate, StringComparison.Ordinal);

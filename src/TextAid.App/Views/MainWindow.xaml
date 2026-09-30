@@ -158,7 +158,7 @@
                     <Grid>
                         <FlowDocumentScrollViewer x:Name="MarkdownPreview" Visibility="Collapsed" IsTabStop="True" Focusable="True" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Rendered Markdown preview"/>
                         <ScrollViewer x:Name="PlainTextPreview" VerticalScrollBarVisibility="Auto">
-                            <TextBox Text="{Binding OutputText}" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" FontSize="14" IsReadOnly="true" AcceptsReturn="True"/>
+                            <TextBox Text="{Binding OutputText, Mode=OneWay}" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" FontSize="14" IsReadOnly="true" AcceptsReturn="True"/>
                         </ScrollViewer>
                     </Grid>
                 </Border>
