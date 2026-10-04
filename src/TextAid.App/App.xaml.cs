@@ -177,14 +177,18 @@ public partial class App : Application
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.ActivateForUserInput();
-            if (!failed && !string.IsNullOrWhiteSpace(session.InputText)) _ = DetectCapturedLanguageAsync(session, sessionWindow);
+            if (!failed && !string.IsNullOrWhiteSpace(session.InputText))
+            {
+                ActionDefinition translation = actions.Single(action => action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
+                _ = DetectCapturedLanguageAsync(session, sessionWindow, translation);
+            }
             if (shortcut == InvocationShortcut.Translate && !failed && !string.IsNullOrWhiteSpace(session.InputText)) StartTransformation(sessionWindow, session);
         }
         finally { capturing = false; }
     }
 
-    /// <summary>Starts the shared preliminary language request for both capture shortcuts.</summary>
-    private async Task DetectCapturedLanguageAsync(InvocationSession session, MainWindow window)
+    /// <summary>Starts shared language detection using the captured action snapshot without reloading action files.</summary>
+    private async Task DetectCapturedLanguageAsync(InvocationSession session, MainWindow window, ActionDefinition translation)
     {
         try
         {
@@ -193,8 +197,6 @@ public partial class App : Application
                 ProfileResolution resolution = await Task.Run(() =>
                 {
                     ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-                    ActionDefinition translation = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory)
-                        .Load().Single(action => action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
                     return new ProfileResolver(configuration, new DpapiSecretVault()).Resolve(translation.ProfileId);
                 }, token);
                 token.ThrowIfCancellationRequested();

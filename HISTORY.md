@@ -705,3 +705,11 @@ Actor: Olivier and Codex
 Operation: Olivier requested an explicit version increment for the AI input-language detection change. Increased the application version from 1.2.6 to 1.2.7 and republished using root publish.ps1. Verified the published ProductVersion is 1.2.7 and FileVersion is 1.2.7.0, then launched through start.ps1 and the normal Windows desktop shell.
 Affected artifacts: `src/TextAid.App/TextAid.App.csproj`, `STATUS.md`, `PORTABILITY-CHECKS.md`.
 Outcome: The canonical single-file executable is 185,957,556 bytes, SHA-256 `ADAB66DB464E94117E0B5A3BB8B49A739D972D1DFC6CCD5718E7487DDA844C67`. Release publication succeeded. This change only updates version metadata; the prior 143-test functional validation applies to the unchanged language-detection implementation. A separate-machine portability check remains deferred for this distinct binary.
+
+## 2026-10-04 — Correct intermittent Ctrl-C-T language-detection failures
+
+The user's alternating successful and failed French captures were traced to the live diagnostic log: both failures were IOException sharing violations (HRESULT 0x80070020) in BuiltInActionCatalog.EnsureCreated, before any AI request. Eager background classification reloaded the action files while quick translation loaded them on the UI thread; both paths rewrote the reserved translate.json.
+
+Capture now passes its already validated Translate action snapshot to preliminary detection. Background provider resolution uses the snapshot's profile ID and no longer loads or writes the action catalog. Classification, cancellation, routing, and UI dispatch keep their existing behavior. The corrective executable is version 1.2.8, distinct from the pushed V127 release. No language heuristics or speculative JSON-format changes were added. Live shortcut retesting remains necessary to confirm the user-visible correction.
+
+Validation: all 143 Release tests passed (36 AI, 84 Core, 23 Windows). Root publish.ps1 regenerated the sole EXE; ProductVersion 1.2.8 and FileVersion 1.2.8.0 were verified. SHA-256: 2934B478449D1D61BFAF3BE712E01C00FCD716266A5AC5AEEE5B58618A22A0C1; 185,953,460 bytes. The user authorized committing and pushing this correction with tag V128; V127 remains unchanged.
