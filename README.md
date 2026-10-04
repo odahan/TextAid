@@ -1,8 +1,8 @@
 # TextAid
 
-<p align="center">
-  <img src="assets/Logo-final.png" alt="TextAid logo" width="480">
-</p>
+[Français](README-FR.md)
+
+![TextAid logo](assets/Logo-final.png)
 
 **Local-first text transformer & translator for Windows.**
 
@@ -83,6 +83,6 @@ TextAid was built both for its own purpose and to put SAW to the test. Its devel
 
 ## License and attribution
 
-TextAid is source-available under the [Creative Commons Attribution-NonCommercial 4.0 International License](LICENSE). You may copy, share, and adapt it for non-commercial purposes only. Every distribution must retain the attribution **Olivier Dahan © 2026** and the contact `odahan [at] e-naxos [dot] com`, indicate changes, and include the license notice. Commercial use requires the author's prior written agreement.
+TextAid is source-available under the [Creative Commons Attribution-NonCommercial 4.0 International License](license.md). You may copy, share, and adapt it for non-commercial purposes only. Every distribution must retain the attribution **Olivier Dahan © 2026** and the contact `odahan [at] e-naxos [dot] com`, indicate changes, and include the license notice. Commercial use requires the author's prior written agreement.
 
 This is intentionally a non-commercial license and therefore is not an OSI-approved Open Source license.
