@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using TextAid.Core;
 using TextAid.App.Localization;
 
@@ -21,6 +22,7 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
         Session = session;
+        Session.LanguageDetectionChanged += (_, _) => UpdateDetectedLanguage();
         inputText = session.InputText;
         UpdateDetectedLanguage();
         Actions = new ObservableCollection<ActionDefinition>(actions);
@@ -93,6 +95,7 @@ public sealed class MainViewModel : ObservableObject
         {
             if (!SetProperty(ref inputText, value)) return;
             Session.SetInputText(value);
+            OnPropertyChanged(nameof(SelectedOutputLanguage));
             UpdateDetectedLanguage();
             NotifyRequestChanged();
         }
@@ -114,7 +117,7 @@ public sealed class MainViewModel : ObservableObject
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
     public string? OutputText => Session.OutputText;
-    /// <summary>Gets the detected input language name, or an empty value when detection is inconclusive.</summary>
+    /// <summary>Gets the AI-detected language name or the current detection status.</summary>
     public string DetectedLanguageName
     {
         get => detectedLanguageName;
@@ -263,6 +266,7 @@ public sealed class MainViewModel : ObservableObject
         Session.ActionId = selectedAction?.Id;
         Status = UiStrings.Get("EnterTextProcessMessage");
         OnPropertyChanged(nameof(InputText));
+        OnPropertyChanged(nameof(SelectedOutputLanguage));
         OnPropertyChanged(nameof(SelectedAction));
         OnPropertyChanged(nameof(OutputText));
         OnPropertyChanged(nameof(Status));
@@ -286,6 +290,7 @@ public sealed class MainViewModel : ObservableObject
         inputText = input;
         UpdateDetectedLanguage();
         OnPropertyChanged(nameof(InputText));
+        OnPropertyChanged(nameof(SelectedOutputLanguage));
         OnPropertyChanged(nameof(DetectedLanguageName));
         OnPropertyChanged(nameof(OutputText));
         OnPropertyChanged(nameof(CanUseResult));
@@ -338,10 +343,30 @@ public sealed class MainViewModel : ObservableObject
 
     private void UpdateDetectedLanguage()
     {
+        if (Session.IsDetectingInputLanguage)
+        {
+            DetectedLanguageName = UiStrings.Get("DetectingInputLanguageLabel");
+            return;
+        }
+        if (Session.InputLanguageDetectionFailed)
+        {
+            DetectedLanguageName = UiStrings.Get("InputLanguageDetectionFailedLabel");
+            return;
+        }
         string? languageCode = Session.DetectedInputLanguage;
-        DetectedLanguageName = LanguageCatalog.Supported
-            .FirstOrDefault(language => language.Code.Equals(languageCode, StringComparison.OrdinalIgnoreCase))
-            ?.EnglishName ?? string.Empty;
+        if (languageCode is null)
+        {
+            DetectedLanguageName = Session.IsInputLanguageDetectionComplete ? UiStrings.Get("InputLanguageUndeterminedLabel") : string.Empty;
+            return;
+        }
+        try
+        {
+            DetectedLanguageName = CultureInfo.GetCultureInfo(languageCode).EnglishName;
+        }
+        catch (CultureNotFoundException)
+        {
+            DetectedLanguageName = languageCode;
+        }
     }
 
     private static IReadOnlyList<LanguageOption> CreateOutputLanguages()

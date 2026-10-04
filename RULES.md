@@ -277,3 +277,12 @@ Scope: LOT-008 and every later lot, including post-V1 lots; no retroactive chang
 Rule: Before adding or changing any user-visible text, implementation MUST first reuse an existing English source-catalog key when its meaning matches. Views and code MUST reference that key rather than duplicate a literal string. When no suitable key exists, the English source catalog MUST be extended first; translated caches whose source fingerprint no longer matches MUST be treated as stale and fall back to English until explicitly regenerated or replaced by a compatible reviewed pack. New visible text MUST NOT be added directly to a view as an untracked literal. Catalog edits must preserve key stability and placeholder semantics.
 Replaces: None
 Replaced by: None
+
+## R-032 — AI input-language identification
+
+Status: ACTIVE
+Source: D-044; Olivier's 2026-10-04 language-detection correction
+Scope: Post-V1 corrective maintenance; no retroactive change to accepted lot evidence.
+Rule: Both Choose and Translate capture paths MUST start preliminary AI language identification without blocking the WPF UI thread. Provider setup, inference, and response parsing MUST execute off that thread; UI updates MUST return to it. The request MUST use the existing configured MAF/IChatClient provider path and profile-resolution policy. No vocabulary lists, accent scores, or local language guesses may remain. The result MUST be shared with processing and cached only for the unchanged current input. Input changes and window closure MUST cancel obsolete requests and reject late responses. Identified source language determines quick-translation direction under R-018; ambiguous or indeterminate input MUST require an explicit destination rather than default to user language. A provider failure MUST remain a failure with the existing controlled retry/downgrade policy. This preliminary classification is allowed before action selection or supplementary instructions; the actual transformation still follows R-021. Automatically calculated destinations MUST be reconsidered when input changes, while explicit destination choices are retained.
+Replaces: R-018's uncertain-source fallback; supplements R-021 with the explicitly authorized preliminary classification.
+Replaced by: None

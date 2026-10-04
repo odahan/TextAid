@@ -48,27 +48,23 @@ public sealed class ConnectionsAndProfilesTests
     }
 
     [Fact]
-    public void InvocationSession_FreeInput_DetectsTheLanguageOfTheCopiedText()
+    public void InvocationSession_FreeInput_WaitsForAiLanguageDetection()
     {
         using var session = new InvocationSession(0, string.Empty);
 
         session.StartFreeInput("Quelle est la formule du gaz parfait qui relie pression volume et température d'un gaz ?");
 
-        Assert.Equal("fr", session.DetectedInputLanguage);
-    }
-
-    [Fact]
-    public void TextLanguageDetector_RecognizesAShortFrenchQuestion()
-    {
-        Assert.Equal("fr", TextLanguageDetector.Detect("Quelle est la formule du gaz parfait ?"));
+        Assert.Null(session.DetectedInputLanguage);
+        Assert.False(session.IsInputLanguageDetectionComplete);
     }
 
 
     [Theory]
     [InlineData("en", "en", "fr", "fr")]
     [InlineData("fr-CA", "en", "fr", "en")]
+    [InlineData("fr-CA", "fr-FR", "en", "en")]
+    [InlineData("en-GB", "fr-FR", "en-US", "fr-FR")]
     [InlineData("de", "en", "fr", "en")]
-    [InlineData(null, "en", "fr", "en")]
     public void QuickTranslationRouting_UsesConfiguredDirection(string? detected, string userLanguage, string preferredLanguage, string expected)
     {
         Assert.Equal(expected, QuickTranslationRouting.SelectDestination(detected, userLanguage, preferredLanguage));
@@ -125,18 +121,10 @@ public sealed class ConnectionsAndProfilesTests
         Assert.False(session.HasCurrentResult);
     }
 
-    [Theory]
-    [InlineData("Please rewrite this text with your own words.", "en")]
-    [InlineData("Veuillez corriger ce texte avec les accents français.", "fr")]
-    [InlineData("Bitte korrigieren Sie diesen Text mit einer klaren Antwort.", "de")]
-    [InlineData("Por favor corrige este texto con una respuesta clara.", "es")]
-    [InlineData("Per favore correggi questo testo con una risposta chiara.", "it")]
-    [InlineData("bonjour", null)]
-    [InlineData("the", null)]
-    [InlineData("abc", null)]
-    public void TextLanguageDetector_IsConservative(string text, string? expected)
+    [Fact]
+    public void QuickTranslationRouting_RejectsAnUndeterminedSource()
     {
-        Assert.Equal(expected, TextLanguageDetector.Detect(text));
+        Assert.Throws<ArgumentNullException>(() => QuickTranslationRouting.SelectDestination(null, "fr", "en"));
     }
 
     [Fact]

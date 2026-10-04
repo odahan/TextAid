@@ -141,6 +141,23 @@ public sealed class MafTextTransformationServiceTests
 
     private static MafTextTransformationService CreateService(FakeChatClient client) => new(_ => client);
 
+    [Fact]
+    public async Task LanguageDetection_UsesOneShortMafRequestWithoutLocalReasoning()
+    {
+        var client = new FakeChatClient((messages, options, _) =>
+        {
+            Assert.Contains(messages, message => message.Text == "Il pleut, c'est la nuit, il marche sous la pluie.");
+            Assert.Equal(128, options?.MaxOutputTokens);
+            Assert.Equal(0f, options?.Temperature);
+            Assert.Equal(ReasoningEffort.None, options?.Reasoning?.Effort);
+            return Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "{\"language\":\"fr\"}")));
+        });
+        var service = new AiLanguageDetectionService(new MafTextTransformationService(_ => client, true, 128));
+
+        Assert.Equal("fr", await service.DetectAsync("Il pleut, c'est la nuit, il marche sous la pluie.", CreateRequest().Settings, CancellationToken.None));
+        Assert.Equal(1, client.RequestCount);
+    }
+
     private static TextTransformationRequest CreateRequest() => new(
         "Original text",
         "Rewrite clearly.",

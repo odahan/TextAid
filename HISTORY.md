@@ -684,3 +684,24 @@ Actor: Codex
 Operation: Decomposed the retained TextAid V1 source specification into planned Pro-Spec lots; initialized the global artifacts and copied the normative Pro-Spec 3 reference locally.
 Affected artifacts: `README.md`, `PROJECT.md`, `RULES.md`, `STATUS.md`, `LEDGER.md`, `HISTORY.md`, `Specs/`, `docs/PROSPEC-3-SPECIFICATION.md`.
 Outcome: Planning baseline created. No implementation, gate validation, lot start, or human closure is claimed.
+
+## 2026-10-04 — Asynchronous AI language identification corrective build
+
+Actor: Olivier and Codex
+Operation: Olivier authorized removing fixed language heuristics and using a preliminary LLM call for both capture shortcuts outside the UI thread. Codex removed TextLanguageDetector, added structured provider-backed classification through MAF, shared and cached pending detection per unchanged input, and rejected cancelled or stale results. Automatic translation now waits for detection, regional variants share a primary-language route, and indeterminate input requires an explicit destination. Automatic destinations are reset when the input changes; explicit choices are retained.
+Affected artifacts: D-044 in `LEDGER.md`, R-032 in `RULES.md`, `PROJECT.md`, both READMEs, AI classification, invocation lifecycle, capture/processing orchestration, localized detection status, routing, and associated tests.
+Outcome: Release compilation passed with zero warnings and errors. The test projects passed 36 AI, 84 Core, and 23 Windows tests (143 total), including fake-provider classification, cancellation/cache/stale-response checks, and a WPF dispatcher responsiveness test. Root `publish.ps1` produced the sole 185,957,556-byte version 1.2.6 executable, SHA-256 `10C9302C680CDE4D28CC895C872AD900130AC0B4AD46E2B23A8E5777FF7D8A93`. Olivier stopped the locked prior instance; the corrected application was relaunched and remained running. Live classification quality with the configured model and the separate-machine portability check remain unverified. Prior lot closure states and accepted evidence are preserved.
+
+## 2026-10-04 — Correct the development-host launch context
+
+Actor: Olivier and Codex
+Operation: Olivier reported a provider-configuration notice after Codex launched the published EXE, while his normal Settings still contained configured providers. A read-only handle-path probe confirmed that file access from Codex redirected the nominal Roaming/TextAid/config.json to the Codex package's LocalCache/Roaming/TextAid/config.json. A separate read-only diagnostic dispatched through the Windows desktop shell read the real user configuration: French user language and an active local provider with a configured model.
+Affected artifacts: `start.ps1`, `AGENTS.md`, both READMEs, `STATUS.md`.
+Outcome: The user's configuration is intact. The incorrect notice came from the inherited development-host data context rather than the application's provider-detection condition. Added the desktop-shell launch helper and documented its required use from Codex. The helper correctly detected the already running published TextAid instance and left it in place. No user settings or secrets were changed, and the published EXE remains SHA-256 `10C9302C680CDE4D28CC895C872AD900130AC0B4AD46E2B23A8E5777FF7D8A93`.
+
+## 2026-10-04 — Publish language-detection correction as version 1.2.7
+
+Actor: Olivier and Codex
+Operation: Olivier requested an explicit version increment for the AI input-language detection change. Increased the application version from 1.2.6 to 1.2.7 and republished using root publish.ps1. Verified the published ProductVersion is 1.2.7 and FileVersion is 1.2.7.0, then launched through start.ps1 and the normal Windows desktop shell.
+Affected artifacts: `src/TextAid.App/TextAid.App.csproj`, `STATUS.md`, `PORTABILITY-CHECKS.md`.
+Outcome: The canonical single-file executable is 185,957,556 bytes, SHA-256 `ADAB66DB464E94117E0B5A3BB8B49A739D972D1DFC6CCD5718E7487DDA844C67`. Release publication succeeded. This change only updates version metadata; the prior 143-test functional validation applies to the unchanged language-detection implementation. A separate-machine portability check remains deferred for this distinct binary.

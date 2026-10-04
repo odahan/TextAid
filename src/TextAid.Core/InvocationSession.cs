@@ -18,11 +18,32 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     public Guid Id { get; } = Guid.NewGuid();
     public nint SourceWindow { get; private set; } = sourceWindow;
     public string InputText { get; private set; } = inputText;
-    /// <summary>Gets the current locally detected input language when evidence is sufficient.</summary>
-    public string? DetectedInputLanguage { get; private set; } = TextLanguageDetector.Detect(inputText);
+    /// <summary>Gets the AI-detected language of the current input, if identification succeeded.</summary>
+    public string? DetectedInputLanguage { get; private set; }
+    /// <summary>Gets whether the current input is awaiting an AI language response.</summary>
+    public bool IsDetectingInputLanguage { get; private set; }
+    /// <summary>Gets whether detection completed, including an indeterminate response.</summary>
+    public bool IsInputLanguageDetectionComplete { get; private set; }
+    /// <summary>Gets whether the last detection request failed and can be retried.</summary>
+    public bool InputLanguageDetectionFailed { get; private set; }
+    /// <summary>Notifies the UI context that the current input's detection state changed.</summary>
+    public event EventHandler? LanguageDetectionChanged;
+    private CancellationTokenSource languageDetectionCancellation = new();
+    private Task<string?>? languageDetectionTask;
     public string? ActionId { get; set; }
+    private string outputLanguage = "Unchanged";
+    private bool outputLanguageWasAutomatic;
     /// <summary>Gets or sets the one-invocation requested output language.</summary>
-    public string OutputLanguage { get; set; } = "Unchanged";
+    public string OutputLanguage
+    {
+        get => outputLanguage;
+        set
+        {
+            outputLanguage = value;
+            outputLanguageWasAutomatic = false;
+        }
+    }
+
     /// <summary>Gets or sets whether this invocation requests Markdown-formatted output.</summary>
     public bool MarkdownOutputEnabled { get; set; }
     public string? SupplementaryInstructions { get; set; }
@@ -37,6 +58,13 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     public CancellationTokenSource Cancellation => cancellation;
     /// <summary>Gets the monotonically increasing generation number.</summary>
     public int Generation { get; private set; }
+
+    /// <summary>Chooses a translation direction that must be reconsidered if the input changes.</summary>
+    public void SelectAutomaticTranslationDestination(string detectedLanguage, string userLanguage, string preferredLanguage)
+    {
+        OutputLanguage = QuickTranslationRouting.SelectDestination(detectedLanguage, userLanguage, preferredLanguage);
+        outputLanguageWasAutomatic = true;
+    }
 
     /// <summary>Cancels any pending generation and makes a fresh result authoritative.</summary>
     public int StartNewGeneration()
@@ -100,15 +128,72 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     /// <summary>Returns the current input to standard action processing without changing its text.</summary>
     public void UseStandardActionMode() => IsFreeMode = false;
 
-    /// <summary>Updates the current session input and its corresponding local language detection.</summary>
+    /// <summary>Updates the input and cancels any language request associated with its previous value.</summary>
     public void SetInputText(string input)
     {
         ArgumentNullException.ThrowIfNull(input);
         if (string.Equals(InputText, input, StringComparison.Ordinal)) return;
         InvalidateResult();
         InputText = input;
-        DetectedInputLanguage = TextLanguageDetector.Detect(input);
+        if (outputLanguageWasAutomatic) OutputLanguage = "Unchanged";
+        languageDetectionCancellation.Cancel();
+        languageDetectionCancellation.Dispose();
+        languageDetectionCancellation = new CancellationTokenSource();
+        languageDetectionTask = null;
+        DetectedInputLanguage = null;
+        IsDetectingInputLanguage = false;
+        IsInputLanguageDetectionComplete = false;
+        InputLanguageDetectionFailed = false;
+        LanguageDetectionChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public void Dispose() => cancellation.Dispose();
+    /// <summary>Shares one asynchronous detection request per input and retries only failed requests.</summary>
+    public Task<string?> DetectInputLanguageAsync(Func<string, CancellationToken, Task<string?>> detect)
+    {
+        ArgumentNullException.ThrowIfNull(detect);
+        if (string.IsNullOrWhiteSpace(InputText)) return Task.FromResult<string?>(null);
+        if (languageDetectionTask is null || languageDetectionTask.IsFaulted || languageDetectionTask.IsCanceled)
+        {
+            languageDetectionTask = DetectCurrentInputAsync(detect, InputText, languageDetectionCancellation.Token);
+        }
+        return languageDetectionTask;
+    }
+
+    /// <summary>Publishes a response on the calling context only while its input remains current.</summary>
+    private async Task<string?> DetectCurrentInputAsync(Func<string, CancellationToken, Task<string?>> detect, string input, CancellationToken token)
+    {
+        IsDetectingInputLanguage = true;
+        InputLanguageDetectionFailed = false;
+        LanguageDetectionChanged?.Invoke(this, EventArgs.Empty);
+        try
+        {
+            string? language = await detect(input, token);
+            token.ThrowIfCancellationRequested();
+            DetectedInputLanguage = language;
+            IsInputLanguageDetectionComplete = true;
+            return language;
+        }
+        catch
+        {
+            if (!token.IsCancellationRequested) InputLanguageDetectionFailed = true;
+            throw;
+        }
+        finally
+        {
+            if (!token.IsCancellationRequested)
+            {
+                IsDetectingInputLanguage = false;
+                LanguageDetectionChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+    /// <summary>Cancels pending detection and transformation work when the invocation closes.</summary>
+    public void Dispose()
+    {
+        languageDetectionCancellation.Cancel();
+        languageDetectionCancellation.Dispose();
+        cancellation.Cancel();
+        cancellation.Dispose();
+    }
 }

@@ -163,6 +163,11 @@
     <sys:String x:Key="TransformingMessage">Transforming your text with the local model…</sys:String>
     <sys:String x:Key="WarmingUpLocalModelMessage">Preparing the local model. This can take a moment…</sys:String>
     <sys:String x:Key="TranslatingCapturedTextMessage">Translating the captured text…</sys:String>
+    <sys:String x:Key="DetectingInputLanguageMessage">Identifying the input language…</sys:String>
+    <sys:String x:Key="DetectingInputLanguageLabel">Detecting language…</sys:String>
+    <sys:String x:Key="InputLanguageDetectionFailedLabel">Language detection unavailable</sys:String>
+    <sys:String x:Key="InputLanguageUndeterminedLabel">Language undetermined</sys:String>
+    <sys:String x:Key="InputLanguageUndeterminedMessage">The input language could not be identified clearly. Select an output language to translate this text.</sys:String>
     <sys:String x:Key="ConfigurationDowngradeCancelledMessage">The configuration downgrade was cancelled.</sys:String>
     <sys:String x:Key="SelectedActionUnavailableMessage">The selected action is no longer available.</sys:String>
     <sys:String x:Key="TransformingLabel">Model is working</sys:String>

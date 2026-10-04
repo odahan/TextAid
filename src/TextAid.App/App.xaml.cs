@@ -170,7 +170,6 @@ public partial class App : Application
             if (shortcut == InvocationShortcut.Translate)
             {
                 session.ActionId = "translate";
-                session.OutputLanguage = QuickTranslationRouting.SelectDestination(TextLanguageDetector.Detect(session.InputText), configuration.UserLanguage, configuration.PreferredTranslationLanguage);
                 status = (string)FindResource("TranslatingCapturedTextMessage");
             }
             bool isFullLogActive = UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode();
@@ -178,9 +177,67 @@ public partial class App : Application
             sessionWindow.Closed += (_, _) => sessionWindow = null;
             sessionWindow.Show();
             sessionWindow.ActivateForUserInput();
+            if (!failed && !string.IsNullOrWhiteSpace(session.InputText)) _ = DetectCapturedLanguageAsync(session, sessionWindow);
             if (shortcut == InvocationShortcut.Translate && !failed && !string.IsNullOrWhiteSpace(session.InputText)) StartTransformation(sessionWindow, session);
         }
         finally { capturing = false; }
+    }
+
+    /// <summary>Starts the shared preliminary language request for both capture shortcuts.</summary>
+    private async Task DetectCapturedLanguageAsync(InvocationSession session, MainWindow window)
+    {
+        try
+        {
+            await session.DetectInputLanguageAsync(async (input, token) =>
+            {
+                ProfileResolution resolution = await Task.Run(() =>
+                {
+                    ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+                    ActionDefinition translation = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory)
+                        .Load().Single(action => action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
+                    return new ProfileResolver(configuration, new DpapiSecretVault()).Resolve(translation.ProfileId);
+                }, token);
+                token.ThrowIfCancellationRequested();
+                if (resolution.Kind == ProfileResolutionKind.UserConfirmationRequired && !ConfirmDowngrade(window, resolution.Status))
+                {
+                    throw new InvalidOperationException("The language detection configuration downgrade was cancelled.");
+                }
+                if (resolution.Connection is not null && session.State != InvocationState.Transforming)
+                {
+                    window.SetActiveConnection(resolution.Connection.Category);
+                }
+                return await DetectLanguageWithResolutionAsync(input, resolution, token);
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            debugLog.Write("language-detection-cancelled");
+        }
+        catch (Exception exception)
+        {
+            debugLog.WriteException("language-detection", exception);
+        }
+    }
+
+    /// <summary>Runs provider setup, inference, and response parsing entirely off the UI thread.</summary>
+    private async Task<string?> DetectLanguageWithResolutionAsync(string input, ProfileResolution resolution, CancellationToken token)
+    {
+        string? language = await Task.Run(async () =>
+        {
+            if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Connection is null || resolution.Profile is null)
+            {
+                throw new InvalidOperationException(resolution.Status);
+            }
+            var transformation = new MafTextTransformationService(
+                _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
+                resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
+                maxOutputTokens: 128);
+            var detection = new AiLanguageDetectionService(transformation);
+            return await detection.DetectAsync(input, CreateTransformationSettings(resolution.Profile, resolution.Connection), token);
+        }, token);
+        token.ThrowIfCancellationRequested();
+        debugLog.Write("language-detection-completed", ("identified", language is not null));
+        return language;
     }
 
     private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, int generation)
@@ -211,6 +268,23 @@ public partial class App : Application
             window.SetActiveConnection(resolution.Connection.Category);
             TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
 
+            window.ShowTransforming((string)FindResource("DetectingInputLanguageMessage"));
+            string? detectedInputLanguage = await session.DetectInputLanguageAsync(
+                (input, token) => DetectLanguageWithResolutionAsync(input, resolution, token)).WaitAsync(session.Cancellation.Token);
+            if (!window.IsLoaded || generation != session.Generation) return;
+            if (!session.IsFreeMode && action.IsReserved && session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
+            {
+                if (detectedInputLanguage is null)
+                {
+                    window.ShowFailure((string)FindResource("InputLanguageUndeterminedMessage"));
+                    return;
+                }
+                ConfigurationSnapshot routingConfiguration = UserConfiguration.LoadConfiguration();
+                session.SelectAutomaticTranslationDestination(
+                    detectedInputLanguage, routingConfiguration.UserLanguage, routingConfiguration.PreferredTranslationLanguage);
+                window.RefreshOutputLanguage();
+            }
+
             if (resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly
                 && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase)
                 && !await ollamaChatClientFactory.IsModelLoadedAsync(settings, session.Cancellation.Token))
@@ -236,11 +310,9 @@ public partial class App : Application
             }
             else
             {
-                string? detectedInputLanguage = TextLanguageDetector.Detect(inputText);
-                LanguageOption? inputLanguage = LanguageCatalog.Supported.FirstOrDefault(option => option.Code.Equals(detectedInputLanguage, StringComparison.OrdinalIgnoreCase));
-                instruction = inputLanguage is null
+                instruction = detectedInputLanguage is null
                     ? $"{instruction}\n\nWrite the result in the same language or languages as the input. Do not translate it."
-                    : $"{instruction}\n\nGENERATION LANGUAGE = {inputLanguage.EnglishName} ({inputLanguage.Code}). This is the language of the input. Write the entire result in this language; do not translate it into another language.";
+                    : $"{instruction}\n\nGENERATION LANGUAGE = {detectedInputLanguage}. This is the detected language tag of the input. Write the entire result in this language; do not translate it into another language.";
             }
             if (session.MarkdownOutputEnabled)
                 instruction = $"{instruction}\n\nFormat the entire result as GitHub-flavored Markdown. Use Markdown only; do not wrap it in a fenced code block unless the requested content itself is code.";
@@ -326,15 +398,6 @@ public partial class App : Application
             debugLog.Write("user-facing-failure", ("category", UserFacingFailure.Configuration));
             window.ShowFailure((string)FindResource("SelectedActionUnavailableMessage"));
             return;
-        }
-
-        if (!session.IsFreeMode && action.IsReserved && session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
-        {
-            session.OutputLanguage = QuickTranslationRouting.SelectDestination(
-                session.DetectedInputLanguage ?? TextLanguageDetector.Detect(session.InputText),
-                configuration.UserLanguage,
-                configuration.PreferredTranslationLanguage);
-            window.RefreshOutputLanguage();
         }
 
         if (!session.IsFreeMode && action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion)) return;

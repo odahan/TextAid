@@ -826,3 +826,22 @@ G-011-001 and G-011-002 are PASS for the identified candidate. The separate-mach
 
 Replaces: None
 Replaced by: None
+
+## D-044 — Replace fixed language heuristics with asynchronous AI identification
+
+Date: 2026-10-04
+Decided by: Olivier
+Source: Olivier's French-as-Italian defect report and explicit implementation instruction
+Related: R-004, R-018, R-021, R-027, R-032
+
+Decision:
+Remove local language identification based on fixed word lists and accents. Both Ctrl+C+C and Ctrl+C+T start an asynchronous preliminary LLM request outside the UI thread. Its language result is authoritative for the current input, displayed in the session, and reused by translation routing and source-language-preserving actions. Do not compare local heuristic scores with model confidence scores.
+
+Reason:
+The French passage beginning "Il pleut, c'est la nuit" was classified as Italian because repeated shared words dominated a sparse vocabulary. Reliable source identification is essential to TextAid's translation direction and other text actions; the extra AI call is preferable to this structural limitation.
+
+Consequences:
+Use the existing MAF/provider configuration path, with the reserved Translate profile for eager captured-input detection. Validate a minimal language-tag response without restricting source identification to languages offered as output choices. Share pending work, cancel obsolete requests, reject late results, and permit retry on provider failure. An indeterminate result requires an explicit translation destination. Existing accepted lot states and historical evidence are preserved.
+
+Replaces: The local detection implementation and R-018's indeterminate-source fallback for future corrective builds.
+Replaced by: None

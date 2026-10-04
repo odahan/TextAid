@@ -15,6 +15,7 @@ TextAid captures selected text from another Windows application, applies one con
 ## Features
 
 - Capture selected text with `Ctrl+C`, then `C` to choose an action, or `Ctrl+C`, then `T` for immediate translation.
+- Identify the captured language through an asynchronous AI request on both shortcuts, without blocking the interface. Reuse the response until the text changes; ambiguous input requires an explicit translation destination.
 - Rewrite, correct, translate, summarize, shorten, expand, simplify, change tone, humanize, or create declarative custom actions.
 - Preview raw or rendered Markdown results in a dark Windows interface.
 - Keep model traffic local by default, with clear configuration for on-premises or external providers.
@@ -45,6 +46,8 @@ To create the canonical single-file Release executable, run:
 ```
 
 The resulting executable is `src/TextAid.App/bin/Publish/TextAid.exe`.
+
+To launch the published app from a packaged development host such as Codex, use `./start.ps1`. It dispatches through the Windows desktop shell so TextAid uses the normal user configuration. You can also start the executable directly from File Explorer.
 
 ## Project method
 
