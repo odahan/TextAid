@@ -224,6 +224,7 @@ public partial class App : Application
     /// <summary>Runs provider setup, inference, and response parsing entirely off the UI thread.</summary>
     private async Task<string?> DetectLanguageWithResolutionAsync(string input, ProfileResolution resolution, CancellationToken token)
     {
+        debugLog.Write("language-detection-started", ("inputLength", input.Length));
         string? language = await Task.Run(async () =>
         {
             if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Connection is null || resolution.Profile is null)
@@ -233,7 +234,8 @@ public partial class App : Application
             var transformation = new MafTextTransformationService(
                 _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
                 resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
-                maxOutputTokens: 128);
+                maxOutputTokens: 128,
+                reportDiagnostics: diagnostics => LogInferenceDiagnostics("language-detection-timing", diagnostics));
             var detection = new AiLanguageDetectionService(transformation);
             return await detection.DetectAsync(input, CreateTransformationSettings(resolution.Profile, resolution.Connection), token);
         }, token);
@@ -328,7 +330,13 @@ public partial class App : Application
             var resolvedTransformationService = new MafTextTransformationService(
                 _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
                 resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
-                DefaultActionOutputTokenBudget);
+                DefaultActionOutputTokenBudget,
+                reportDiagnostics: diagnostics => LogInferenceDiagnostics("transformation-timing", diagnostics),
+                reportPreview: preview => window.Dispatcher.BeginInvoke(() =>
+                {
+                    if (window.IsLoaded && generation == session.Generation && session.State == InvocationState.Transforming)
+                        window.ShowPartialResult(preview);
+                }));
             string output = await resolvedTransformationService.TransformAsync(
                 new TextTransformationRequest(
                     inputText,
@@ -348,6 +356,7 @@ public partial class App : Application
         }
         catch (OperationCanceledException)
         {
+            debugLog.Write("transformation-timeout", ("timeoutSeconds", resolution.Profile?.Timeout.TotalSeconds));
             if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, (string)FindResource("TransformationTimeoutError"), generation);
         }
         catch (Exception exception)
@@ -364,6 +373,14 @@ public partial class App : Application
             if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure, generation);
         }
     }
+
+    /// <summary>Records numeric inference timings without user content or provider credentials.</summary>
+    private void LogInferenceDiagnostics(string eventName, InferenceDiagnostics diagnostics) => debugLog.Write(eventName,
+        ("elapsedMs", diagnostics.ElapsedMilliseconds), ("firstResponseMs", diagnostics.FirstResponseMilliseconds),
+        ("serverTotalMs", diagnostics.TotalMilliseconds), ("loadMs", diagnostics.LoadMilliseconds),
+        ("promptMs", diagnostics.PromptMilliseconds), ("generationMs", diagnostics.GenerationMilliseconds),
+        ("inputTokens", diagnostics.InputTokens), ("outputTokens", diagnostics.OutputTokens),
+        ("completed", diagnostics.Completed), ("cancelled", diagnostics.Cancelled));
 
     /// <summary>Maps safe OpenAI-compatible HTTP status categories without exposing response text or credentials.</summary>
     private string GetExternalProviderFailureMessage(Exception exception)

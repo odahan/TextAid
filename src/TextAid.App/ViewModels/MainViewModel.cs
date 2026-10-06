@@ -18,6 +18,7 @@ public sealed class MainViewModel : ObservableObject
     private ConnectionCategory? activeConnectionCategory;
     private IReadOnlyList<LanguageOption> outputLanguages = CreateOutputLanguages();
     private string detectedLanguageName = string.Empty;
+    private string? partialOutput;
 
     public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
@@ -116,7 +117,7 @@ public sealed class MainViewModel : ObservableObject
         FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
     }
-    public string? OutputText => Session.OutputText;
+    public string? OutputText => IsTransforming ? partialOutput : Session.OutputText;
     /// <summary>Gets the AI-detected language name or the current detection status.</summary>
     public string DetectedLanguageName
     {
@@ -219,8 +220,10 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Disables result actions and shows a safe-failure message.</summary>
     public void ShowFailure(string message)
     {
+        partialOutput = null;
         Session.State = InvocationState.Failed;
         Status = message;
+        OnPropertyChanged(nameof(OutputText));
         OnPropertyChanged(nameof(Status));
         OnPropertyChanged(nameof(IsTransforming));
         OnPropertyChanged(nameof(CanUseResult));
@@ -238,6 +241,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Publishes the completed local transformation to the preview.</summary>
     public void ShowResult(string output)
     {
+        partialOutput = null;
         Status = Session.SourceWindow == 0
             ? UiStrings.Get("ReviewResultCopyMessage")
             : UiStrings.Get("ReviewResultReplaceMessage");
@@ -304,6 +308,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Updates controls for a processing request started by the user.</summary>
     public void ShowTransforming(string message)
     {
+        partialOutput = null;
         Status = message;
         OnPropertyChanged(nameof(Status));
         OnPropertyChanged(nameof(OutputText));
@@ -316,6 +321,14 @@ public sealed class MainViewModel : ObservableObject
         ProcessCommand.NotifyCanExecuteChanged();
         FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Updates the incomplete preview without publishing a usable session result.</summary>
+    public void ShowPartialResult(string output)
+    {
+        if (!IsTransforming) return;
+        partialOutput = output;
+        OnPropertyChanged(nameof(OutputText));
     }
 
     /// <summary>Updates the visible Full log warning when the Settings toggles change.</summary>

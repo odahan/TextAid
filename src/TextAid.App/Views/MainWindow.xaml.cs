@@ -63,6 +63,14 @@ public partial class MainWindow : Window
     /// <summary>Refreshes the view when processing starts from the editable input.</summary>
     public void ShowTransforming(string message) => ((MainViewModel)DataContext).ShowTransforming(message);
 
+    /// <summary>Shows incomplete output as plain text while result actions remain disabled.</summary>
+    public void ShowPartialResult(string output)
+    {
+        MarkdownPreview.Visibility = Visibility.Collapsed;
+        PlainTextPreview.Visibility = Visibility.Visible;
+        ((MainViewModel)DataContext).ShowPartialResult(output);
+    }
+
     /// <summary>Clears this transaction for a safe new manual input.</summary>
     public void ResetForNewInput()
     {

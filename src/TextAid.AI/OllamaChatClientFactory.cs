@@ -5,13 +5,14 @@ using TextAid.Core;
 namespace TextAid.AI;
 
 /// <summary>Creates the application's only local-provider client boundary through OllamaSharp.</summary>
-public sealed class OllamaChatClientFactory
+public sealed class OllamaChatClientFactory(Func<HttpClient>? createHttpClient = null)
 {
     /// <summary>Creates an IChatClient for the configured local endpoint and model.</summary>
     public IChatClient Create(TextTransformationSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        return (IChatClient)new OllamaApiClient(settings.Endpoint, settings.Model);
+        HttpClient httpClient = CreateInferenceTransport(settings.Endpoint);
+        return new OwnedChatClient(new OllamaApiClient(httpClient, settings.Model), httpClient);
     }
 
     /// <summary>Retrieves model names installed at the configured local Ollama endpoint.</summary>
@@ -38,8 +39,11 @@ public sealed class OllamaChatClientFactory
     public async Task<bool> IsModelLoadedAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        using var client = new OllamaApiClient(settings.Endpoint, settings.Model);
-        IEnumerable<OllamaSharp.Models.RunningModel> models = await client.ListRunningModelsAsync(cancellationToken);
+        using var timeout = new CancellationTokenSource(settings.Timeout);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        using var httpClient = CreateInferenceTransport(settings.Endpoint);
+        using var client = new OllamaApiClient(httpClient, settings.Model);
+        IEnumerable<OllamaSharp.Models.RunningModel> models = await client.ListRunningModelsAsync(linked.Token);
         return models.Any(model => IsSameModel(model.Name ?? model.ModelName, settings.Model));
     }
 
@@ -47,7 +51,10 @@ public sealed class OllamaChatClientFactory
     public async Task WarmupAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        using var client = new OllamaApiClient(settings.Endpoint, settings.Model);
+        using var timeout = new CancellationTokenSource(settings.Timeout);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
+        using var httpClient = CreateInferenceTransport(settings.Endpoint);
+        using var client = new OllamaApiClient(httpClient, settings.Model);
         var request = new OllamaSharp.Models.GenerateRequest
         {
             Model = settings.Model,
@@ -56,7 +63,7 @@ public sealed class OllamaChatClientFactory
             Options = new OllamaSharp.Models.RequestOptions { NumCtx = settings.ContextSize }
         };
 
-        await foreach (var _ in client.GenerateAsync(request, cancellationToken))
+        await foreach (var _ in client.GenerateAsync(request, linked.Token))
         {
             // Enumerating the completion waits until Ollama has loaded the model.
         }
@@ -70,4 +77,24 @@ public sealed class OllamaChatClientFactory
 
     private static string AppendDefaultTag(string? model) =>
         string.IsNullOrWhiteSpace(model) || model.Contains(':', StringComparison.Ordinal) ? model ?? string.Empty : $"{model}:latest";
+
+    /// <summary>Lets the request cancellation token control inference deadlines instead of the HTTP default.</summary>
+    private HttpClient CreateInferenceTransport(string endpoint)
+    {
+        HttpClient client = createHttpClient?.Invoke() ?? new HttpClient();
+        client.BaseAddress = new Uri(endpoint);
+        client.Timeout = Timeout.InfiniteTimeSpan;
+        return client;
+    }
+
+    /// <summary>Disposes the supplied HTTP transport together with its provider client.</summary>
+    private sealed class OwnedChatClient(IChatClient innerClient, HttpClient httpClient) : DelegatingChatClient(innerClient)
+    {
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
+        {
+            try { base.Dispose(disposing); }
+            finally { if (disposing) httpClient.Dispose(); }
+        }
+    }
 }

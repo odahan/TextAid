@@ -713,3 +713,17 @@ The user's alternating successful and failed French captures were traced to the 
 Capture now passes its already validated Translate action snapshot to preliminary detection. Background provider resolution uses the snapshot's profile ID and no longer loads or writes the action catalog. Classification, cancellation, routing, and UI dispatch keep their existing behavior. The corrective executable is version 1.2.8, distinct from the pushed V127 release. No language heuristics or speculative JSON-format changes were added. Live shortcut retesting remains necessary to confirm the user-visible correction.
 
 Validation: all 143 Release tests passed (36 AI, 84 Core, 23 Windows). Root publish.ps1 regenerated the sole EXE; ProductVersion 1.2.8 and FileVersion 1.2.8.0 were verified. SHA-256: 2934B478449D1D61BFAF3BE712E01C00FCD716266A5AC5AEEE5B58618A22A0C1; 185,953,460 bytes. The user authorized committing and pushing this correction with tag V128; V127 remains unchanged.
+
+## 2026-10-06 — Correct Ollama deadlines and expose inference progress
+
+Olivier reported slow language detection followed by a translation timeout and authorized the corrections. The local client inherited HttpClient's implicit 100-second deadline in addition to the profile deadline. Inference now uses the profile cancellation deadline with an owned HTTP transport; model-status checks and warmup also honor the profile deadline. MAF consumes streamed responses for all providers, and the session shows throttled plain-text previews without enabling Copy or Replace until the complete result is authoritative. Failed previews are cleared and stale generation updates are ignored.
+
+Opt-in diagnostic metadata now includes elapsed time, first streamed response time, Ollama total/load/prompt/generation durations and token counts, completion/cancellation flags, and explicit transformation-timeout events. Missing server metrics on interrupted requests remain unknown. Detection still shares one request per input, keeps its short 128-token budget, and disables thinking.
+
+Validation: all 148 Release tests passed (39 AI, 84 Core, 25 Windows). New tests exercise the actual OllamaSharp HTTP serialization, removal of the transport deadline, profile cancellation, transport disposal, server timing extraction, warmup cancellation, and incomplete-preview safety. Olivier subsequently reported two concurrent MyLocalAgent tasks, which plausibly explains server contention if they share Ollama. Live inference validation is deferred until those tasks finish; no measured speedup or separate-machine portability PASS is claimed. Version advanced to 1.2.9.
+
+Root publish.ps1 produced the sole 185,973,940-byte executable. ProductVersion 1.2.9 and FileVersion 1.2.9.0 were verified; SHA-256 `9B22D34289A6D8941F41ED577D8506DDCF389FB5C74F9B514EACC9E9AED90A56`. User settings and secrets were not modified, and no additional live inference was started during the concurrent MyLocalAgent jobs.
+
+## 2026-10-06 — Increment the committed inference release to 1.2.10
+
+Olivier explicitly requested a version increment, commit, push and publication. Increased the application version from 1.2.9 to 1.2.10 for the release containing the Ollama deadline, streamed-preview and diagnostic corrections. Functional code is unchanged from the 148-test Release validation above. The release procedure republishes with root publish.ps1 after the commit and verifies executable version metadata and SHA-256. Live idle-server performance and separate-machine portability validation remain deferred.

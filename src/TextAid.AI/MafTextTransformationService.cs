@@ -13,13 +13,18 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
     private static readonly TimeSpan MinimumExternalTimeout = TimeSpan.FromMinutes(10);
     private readonly bool isOllamaClient = true;
     private readonly int? maxOutputTokens;
+    private readonly Action<InferenceDiagnostics>? reportDiagnostics;
+    private readonly Action<string>? reportPreview;
 
     /// <summary>Creates the service for a provider whose MAF options are not Ollama-specific.</summary>
-    public MafTextTransformationService(Func<TextTransformationSettings, IChatClient> createChatClient, bool isOllamaClient, int? maxOutputTokens = null)
+    public MafTextTransformationService(Func<TextTransformationSettings, IChatClient> createChatClient, bool isOllamaClient, int? maxOutputTokens = null,
+        Action<InferenceDiagnostics>? reportDiagnostics = null, Action<string>? reportPreview = null)
         : this(createChatClient)
     {
         this.isOllamaClient = isOllamaClient;
         this.maxOutputTokens = maxOutputTokens;
+        this.reportDiagnostics = reportDiagnostics;
+        this.reportPreview = reportPreview;
     }
     /// <inheritdoc />
     public async Task<string> TransformAsync(TextTransformationRequest request, CancellationToken cancellationToken)
@@ -37,7 +42,7 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
                 : request.Settings.Timeout;
         using var timeoutSource = new CancellationTokenSource(effectiveTimeout);
         using var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutSource.Token);
-        using IChatClient chatClient = createChatClient(request.Settings);
+        using var chatClient = new DiagnosticChatClient(createChatClient(request.Settings));
 
         var chatOptions = new ChatOptions { Instructions = request.Instruction };
         if (isOllamaClient)
@@ -64,13 +69,49 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
                 ChatOptions = chatOptions,
                 Name = "TextAidRewrite"
             });
-        AgentResponse response = isOllamaClient
-            ? await agent.RunAsync(request.InputText, cancellationToken: linkedSource.Token)
-            : await agent.RunStreamingAsync(request.InputText, cancellationToken: linkedSource.Token)
+        bool completed = false;
+        bool cancelled = false;
+        try
+        {
+            AgentResponse response = await ObservePreviewAsync(
+                agent.RunStreamingAsync(request.InputText, cancellationToken: linkedSource.Token), linkedSource.Token)
                 .ToAgentResponseAsync(linkedSource.Token);
-        string result = response.Text?.Trim() ?? string.Empty;
-        if (string.IsNullOrWhiteSpace(result)) throw new InvalidOperationException("The local model returned an empty result.");
-        return result;
+            string result = response.Text?.Trim() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(result)) throw new InvalidOperationException("The local model returned an empty result.");
+            completed = true;
+            return result;
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+            throw;
+        }
+        finally
+        {
+            reportDiagnostics?.Invoke(chatClient.Snapshot(completed, cancelled));
+        }
+    }
+
+    /// <summary>Reports cumulative visible text while preserving all provider updates for final aggregation.</summary>
+    private async IAsyncEnumerable<AgentResponseUpdate> ObservePreviewAsync(
+        IAsyncEnumerable<AgentResponseUpdate> updates,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken token)
+    {
+        var preview = new System.Text.StringBuilder();
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        await foreach (AgentResponseUpdate update in updates.WithCancellation(token).ConfigureAwait(false))
+        {
+            if (reportPreview is not null && !string.IsNullOrEmpty(update.Text))
+            {
+                preview.Append(update.Text);
+                if (watch.ElapsedMilliseconds >= 100 || preview.Length == update.Text.Length)
+                {
+                    reportPreview(preview.ToString());
+                    watch.Restart();
+                }
+            }
+            yield return update;
+        }
     }
 
     /// <summary>Maps the TextAid thinking choice to the provider-neutral MAF reasoning option.</summary>

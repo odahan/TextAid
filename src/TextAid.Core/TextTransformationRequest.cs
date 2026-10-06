@@ -9,7 +9,7 @@ public enum ThinkingMode
     High
 }
 
-/// <summary>Describes the single non-streaming text transformation requested by a session.</summary>
+/// <summary>Describes the single text transformation requested by a session.</summary>
 public sealed record TextTransformationRequest(
     string InputText,
     string Instruction,
