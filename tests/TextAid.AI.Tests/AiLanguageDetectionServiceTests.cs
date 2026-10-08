@@ -45,7 +45,9 @@ public sealed class AiLanguageDetectionServiceTests
 
     [Theory]
     [InlineData("French")]
-    [InlineData("```json\n{\"language\":\"fr\"}\n```")]
+    [InlineData("Here is the result: {\"language\":\"fr\"}")]
+    [InlineData("```json\n{\"language\":\"fr\"}\n```\nExtra text")]
+    [InlineData("```json\n{\"language\":\"fr\"}\n{\"language\":\"en\"}\n```")]
     [InlineData("{\"language\":\"French\"}")]
     [InlineData("{\"language\":42}")]
     [InlineData("{\"language\":\"fr\",\"confidence\":0.99}")]
@@ -57,7 +59,56 @@ public sealed class AiLanguageDetectionServiceTests
     public async Task DetectAsync_RejectsMalformedOutputInsteadOfGuessing(string response)
     {
         var provider = new FakeTransformationService((_, _) => Task.FromResult(response));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new AiLanguageDetectionService(provider).DetectAsync("text", Settings, CancellationToken.None));
+        await Assert.ThrowsAsync<LanguageDetectionResponseException>(() => new AiLanguageDetectionService(provider).DetectAsync("text", Settings, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("```json\n{\"language\": \"fr\"}\n```")]
+    [InlineData("```\r\n{\"language\": \"fr\"}\r\n```")]
+    [InlineData("  ```JSON\n{\"language\": \"fr\"}\n```  ")]
+    public async Task DetectAsync_AcceptsASingleJsonCodeFence(string response)
+    {
+        var provider = new FakeTransformationService((_, _) => Task.FromResult(response));
+        Assert.Equal("fr", await new AiLanguageDetectionService(provider).DetectAsync("Bonjour", Settings, CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(3000)]
+    [InlineData(3001)]
+    [InlineData(7500)]
+    [InlineData(100000)]
+    public async Task DetectAsync_BoundsLongInputAndSamplesAcrossThePassage(int length)
+    {
+        string input = "BEGIN" + new string('a', length / 2 - 10) + "MIDDLE" + new string('b', length - length / 2 - 4) + "END";
+        var provider = new FakeTransformationService((request, _) =>
+        {
+            Assert.True(request.InputText.Length <= 3000);
+            Assert.StartsWith("BEGIN", request.InputText);
+            Assert.Contains("MIDDLE", request.InputText);
+            Assert.EndsWith("END", request.InputText);
+            if (length <= 3000) Assert.Equal(input, request.InputText);
+            Assert.Equal(Settings.ContextSize, request.Settings.ContextSize);
+            return Task.FromResult("{\"language\":\"fr\"}");
+        });
+        Assert.Equal("fr", await new AiLanguageDetectionService(provider).DetectAsync(input, Settings, CancellationToken.None));
+        Assert.Equal(1, provider.RequestCount);
+    }
+
+    [Fact]
+    public async Task DetectAsync_PreservesSurrogatePairsWhenSampling()
+    {
+        string input = string.Concat(Enumerable.Repeat("😀", 5000));
+        var provider = new FakeTransformationService((request, _) =>
+        {
+            foreach (string excerpt in request.InputText.Split("\n\n"))
+            {
+                Assert.True(char.IsHighSurrogate(excerpt[0]));
+                Assert.True(char.IsLowSurrogate(excerpt[^1]));
+                Assert.Equal(0, excerpt.Length % 2);
+            }
+            return Task.FromResult("{\"language\":null}");
+        });
+        Assert.Null(await new AiLanguageDetectionService(provider).DetectAsync(input, Settings, CancellationToken.None));
     }
 
     [Fact]

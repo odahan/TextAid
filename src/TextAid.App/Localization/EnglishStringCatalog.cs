@@ -189,6 +189,7 @@ internal static class EnglishStringCatalog
         ["DetectingInputLanguageMessage"] = "Identifying the input language…",
         ["DetectingInputLanguageLabel"] = "Detecting language…",
         ["InputLanguageDetectionFailedLabel"] = "Language detection unavailable",
+        ["InputLanguageInvalidResponseMessage"] = "The provider responded, but its language detection response was invalid. Try again or choose another model in Settings.",
         ["InputLanguageUndeterminedLabel"] = "Language undetermined",
         ["InputLanguageUndeterminedMessage"] = "The input language could not be identified clearly. Select an output language to translate this text.",
         ["ConfigurationDowngradeCancelledMessage"] = "The configuration downgrade was cancelled.",

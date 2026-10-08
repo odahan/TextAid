@@ -354,6 +354,11 @@ public partial class App : Application
             // Closing the session is a normal cancellation path.
             debugLog.Write("transformation-cancelled");
         }
+        catch (LanguageDetectionResponseException exception)
+        {
+            debugLog.WriteException("language-detection", exception);
+            if (generation == session.Generation) window.ShowFailure((string)FindResource("InputLanguageInvalidResponseMessage"));
+        }
         catch (OperationCanceledException)
         {
             debugLog.Write("transformation-timeout", ("timeoutSeconds", resolution.Profile?.Timeout.TotalSeconds));
