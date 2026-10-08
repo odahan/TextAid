@@ -727,3 +727,9 @@ Root publish.ps1 produced the sole 185,973,940-byte executable. ProductVersion 1
 ## 2026-10-06 — Increment the committed inference release to 1.2.10
 
 Olivier explicitly requested a version increment, commit, push and publication. Increased the application version from 1.2.9 to 1.2.10 for the release containing the Ollama deadline, streamed-preview and diagnostic corrections. Functional code is unchanged from the 148-test Release validation above. The release procedure republishes with root publish.ps1 after the commit and verifies executable version metadata and SHA-256. Live idle-server performance and separate-machine portability validation remain deferred.
+
+## 2026-10-08 — Language detection correction and version 1.2.11
+
+Reproduced the reported detection failure with the supplied 7,547-character passage and local `gemma4:12b`: Ollama returned the correct French language tag inside a Markdown JSON code fence. Strict response parsing rejected the wrapper and surfaced misleading provider connection guidance. Commit `eaace67` accepts a single JSON code fence while retaining schema validation, provides a specific invalid-response message, and bounds detection input to 3,000 characters sampled from the beginning, middle, and end. Transformations still receive the complete input.
+
+Validation: all 158 Debug tests passed (49 AI, 84 Core, 25 Windows). The complete MAF/Ollama detection path returned `fr` for the supplied text, using 1,032 input tokens after sampling. Olivier requested the version increment, commit, push, and tag in the format `V` followed by the version without dots. The release version is 1.2.11 and the tag is `V1211`; root publish.ps1 generates the canonical executable. Separate-machine portability remains unverified.
