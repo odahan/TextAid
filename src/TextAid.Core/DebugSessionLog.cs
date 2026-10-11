@@ -3,7 +3,8 @@ namespace TextAid.Core;
 /// <summary>Writes opt-in diagnostic metadata without retaining user content or secrets.</summary>
 public sealed class DebugSessionLog : IDisposable
 {
-    private readonly StreamWriter? writer;
+    private StreamWriter? writer;
+    private readonly object writeLock = new();
     private readonly bool fullLogEnabled;
 
     private DebugSessionLog(StreamWriter? writer, string? path, bool fullLogEnabled)
@@ -33,22 +34,33 @@ public sealed class DebugSessionLog : IDisposable
     /// <summary>Appends a complete diagnostic text field only when Full log is explicitly enabled.</summary>
     public void WriteFullText(string eventName, string? content)
     {
-        if (writer is null || !fullLogEnabled || string.IsNullOrEmpty(content)) return;
-        writer.WriteLine($"{DateTimeOffset.UtcNow:O} event={eventName} text={RedactCredentials(EscapeText(content))}");
+        lock (writeLock)
+        {
+            if (writer is null || !fullLogEnabled || string.IsNullOrEmpty(content)) return;
+            writer.WriteLine($"{DateTimeOffset.UtcNow:O} event={eventName} text={RedactCredentials(EscapeText(content))}");
+        }
     }
 
     /// <summary>Appends a technical event name and safe numeric or categorical metadata.</summary>
     public void Write(string eventName, params (string Name, object? Value)[] metadata)
     {
-        if (writer is null) return;
-        ArgumentException.ThrowIfNullOrWhiteSpace(eventName);
+        lock (writeLock)
+        {
+            if (writer is null) return;
+            ArgumentException.ThrowIfNullOrWhiteSpace(eventName);
 
-        string details = string.Join(" ", metadata.Select(item => $"{item.Name}={FormatMetadata(item.Value)}"));
-        writer.WriteLine($"{DateTimeOffset.UtcNow:O} event={eventName}{(details.Length == 0 ? string.Empty : " " + details)}");
+            string details = string.Join(" ", metadata.Select(item => $"{item.Name}={FormatMetadata(item.Value)}"));
+            writer.WriteLine($"{DateTimeOffset.UtcNow:O} event={eventName}{(details.Length == 0 ? string.Empty : " " + details)}");
+        }
     }
 
     /// <summary>Records safe exception diagnostics while excluding untrusted exception messages and data.</summary>
     public void WriteException(string operation, Exception exception)
+    {
+        lock (writeLock) WriteExceptionCore(operation, exception);
+    }
+
+    private void WriteExceptionCore(string operation, Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
         if (writer is null) return;
@@ -67,7 +79,14 @@ public sealed class DebugSessionLog : IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose() => writer?.Dispose();
+    public void Dispose()
+    {
+        lock (writeLock)
+        {
+            writer?.Dispose();
+            writer = null;
+        }
+    }
 
     private static string FormatMetadata(object? value) => value switch
     {

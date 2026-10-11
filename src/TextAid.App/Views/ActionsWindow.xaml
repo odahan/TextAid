@@ -31,6 +31,11 @@
                     <CheckBox Content="{DynamicResource EnabledActionLabel}" IsChecked="{Binding IsEnabled}" IsEnabled="{Binding IsEditable}" Margin="0,10,0,0"/>
                     <TextBlock Text="{DynamicResource ModelProfileLabel}" Margin="0,10,0,0"/>
                     <ComboBox ItemsSource="{Binding DataContext.Profiles, RelativeSource={RelativeSource AncestorType=Window}}" SelectedItem="{Binding ProfileId}" IsEnabled="{Binding IsEditable}"/>
+                    <TextBlock Text="{DynamicResource ThinkingLabel}" Margin="0,10,0,0"/>
+                    <ComboBox ItemsSource="{Binding DataContext.ThinkingModes, RelativeSource={RelativeSource AncestorType=Window}}" SelectedItem="{Binding Thinking}"/>
+                    <TextBlock Text="{DynamicResource ContextSizeLabel}" Margin="0,10,0,0"/>
+                    <TextBox Text="{Binding ContextSizeOverrideText, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="{DynamicResource ActionContextHelp}" Margin="0,4,0,0" TextWrapping="Wrap"/>
                     <TextBlock Text="{DynamicResource OutputLanguageLabel}" Margin="0,10,0,0"/>
                     <ComboBox ItemsSource="{Binding DataContext.OutputLanguages, RelativeSource={RelativeSource AncestorType=Window}}" SelectedValuePath="Code" SelectedValue="{Binding OutputLanguageDefault}" IsEnabled="{Binding IsEditable}">
                         <ComboBox.ItemTemplate>

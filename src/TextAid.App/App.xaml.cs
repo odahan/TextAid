@@ -33,6 +33,7 @@ public partial class App : Application
     private string? actionsDirectory;
     private string? localeFallbackNotice;
     private bool isUiTranslationRequired;
+    private CancellationTokenSource? startupWarmupCancellation;
     private DebugSessionLog debugLog = DebugSessionLog.Start(false, false, Path.GetTempPath());
 
     protected override void OnStartup(StartupEventArgs e)
@@ -73,6 +74,7 @@ public partial class App : Application
         tray.Clicked += () => Dispatcher.BeginInvoke(ShowTrayMenu);
         if (localeFallbackNotice is not null) tray.ShowInfo(localeFallbackNotice);
         debugLog.Write("application-started");
+        ScheduleStartupWarmup();
         Dispatcher.BeginInvoke(new Action(() => _ = CheckInitialProviderAsync()));
     }
 
@@ -109,6 +111,65 @@ public partial class App : Application
         }
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>Restarts delayed preload for the enabled local profile after startup or a settings change.</summary>
+    private void ScheduleStartupWarmup()
+    {
+        startupWarmupCancellation?.Cancel();
+        startupWarmupCancellation?.Dispose();
+        var cancellation = new CancellationTokenSource();
+        CancellationToken token = cancellation.Token;
+        startupWarmupCancellation = cancellation;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var preload = new StartupModelWarmup(
+                    GetStartupWarmupSettings,
+                    (settings, token) => ollamaChatClientFactory.TestConnectionAsync(settings.Endpoint, token),
+                    async (settings, token) =>
+                    {
+                        OllamaModelState? state = await ollamaChatClientFactory.GetModelStateAsync(settings, token);
+                        if (state is null) await ollamaChatClientFactory.WarmupAsync(settings, token);
+                        if (debugLog.Path is not null) await LogModelStateAsync(settings, token);
+                    },
+                    eventName => debugLog.Write(eventName));
+                await preload.RunAsync(token);
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+            catch (Exception exception) { debugLog.WriteException("startup-model-warmup", exception); }
+        });
+    }
+
+    /// <summary>Returns only an explicitly enabled local Ollama profile with a selected model.</summary>
+    private static TextTransformationSettings? GetStartupWarmupSettings()
+    {
+        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        ConnectionDefinition? connection = configuration.Connections.FirstOrDefault(candidate =>
+            candidate.Category == ConnectionCategory.ThisDeviceOnly && candidate.IsEnabled
+            && candidate.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase));
+        ModelProfile? profile = configuration.Profiles.FirstOrDefault(candidate =>
+            candidate.ConnectionId.Equals(connection?.Id, StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(candidate.Model));
+        return connection is not null && profile is not null ? CreateTransformationSettings(profile, connection) : null;
+    }
+
+    /// <summary>Logs optional server state without making diagnostic failures interrupt inference.</summary>
+    private async Task<OllamaModelState?> LogModelStateAsync(TextTransformationSettings settings, CancellationToken token)
+    {
+        try
+        {
+            OllamaModelState? state = await ollamaChatClientFactory.GetModelStateAsync(settings with { Timeout = TimeSpan.FromSeconds(3) }, token);
+            debugLog.Write("local-model-state", ("loaded", state is not null), ("requestedContext", settings.ContextSize),
+                ("loadedContext", state?.ContextSize), ("sizeBytes", state?.SizeBytes), ("vramBytes", state?.VramBytes),
+                ("gpuMemoryPercent", state?.GpuMemoryPercent), ("expiresAtUnixSeconds", state?.ExpiresAt?.ToUnixTimeSeconds()));
+            return state;
+        }
+        catch (Exception exception) when (!token.IsCancellationRequested)
+        {
+            debugLog.WriteException("local-model-state", exception);
+            return null;
+        }
     }
 
     private void ShowStartupNotice()
@@ -208,7 +269,7 @@ public partial class App : Application
                 {
                     window.SetActiveConnection(resolution.Connection.Category);
                 }
-                return await DetectLanguageWithResolutionAsync(input, resolution, token);
+                return await DetectLanguageWithResolutionAsync(input, resolution, translation, token);
             });
         }
         catch (OperationCanceledException)
@@ -222,7 +283,7 @@ public partial class App : Application
     }
 
     /// <summary>Runs provider setup, inference, and response parsing entirely off the UI thread.</summary>
-    private async Task<string?> DetectLanguageWithResolutionAsync(string input, ProfileResolution resolution, CancellationToken token)
+    private async Task<string?> DetectLanguageWithResolutionAsync(string input, ProfileResolution resolution, ActionDefinition action, CancellationToken token)
     {
         debugLog.Write("language-detection-started", ("inputLength", input.Length));
         string? language = await Task.Run(async () =>
@@ -237,7 +298,7 @@ public partial class App : Application
                 maxOutputTokens: 128,
                 reportDiagnostics: diagnostics => LogInferenceDiagnostics("language-detection-timing", diagnostics));
             var detection = new AiLanguageDetectionService(transformation);
-            return await detection.DetectAsync(input, CreateTransformationSettings(resolution.Profile, resolution.Connection), token);
+            return await detection.DetectAsync(input, action.ApplyInferenceSettings(CreateTransformationSettings(resolution.Profile, resolution.Connection)), token);
         }, token);
         token.ThrowIfCancellationRequested();
         debugLog.Write("language-detection-completed", ("identified", language is not null));
@@ -270,11 +331,11 @@ public partial class App : Application
             }
 
             window.SetActiveConnection(resolution.Connection.Category);
-            TextTransformationSettings settings = CreateTransformationSettings(resolution.Profile, resolution.Connection);
+            TextTransformationSettings settings = action.ApplyInferenceSettings(CreateTransformationSettings(resolution.Profile, resolution.Connection));
 
             window.ShowTransforming((string)FindResource("DetectingInputLanguageMessage"));
             string? detectedInputLanguage = await session.DetectInputLanguageAsync(
-                (input, token) => DetectLanguageWithResolutionAsync(input, resolution, token)).WaitAsync(session.Cancellation.Token);
+                (input, token) => DetectLanguageWithResolutionAsync(input, resolution, action, token)).WaitAsync(session.Cancellation.Token);
             if (!window.IsLoaded || generation != session.Generation) return;
             if (!session.IsFreeMode && action.IsReserved && session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
             {
@@ -291,18 +352,19 @@ public partial class App : Application
 
             if (resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly
                 && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase)
-                && !await ollamaChatClientFactory.IsModelLoadedAsync(settings, session.Cancellation.Token))
+                && await LogModelStateAsync(settings, session.Cancellation.Token) is null)
             {
                 window.ShowTransforming((string)FindResource("WarmingUpLocalModelMessage"));
                 debugLog.Write("local-model-warmup-started", ("model", settings.Model));
                 await ollamaChatClientFactory.WarmupAsync(settings, session.Cancellation.Token);
                 debugLog.Write("local-model-warmup-completed", ("model", settings.Model));
+                if (debugLog.Path is not null) await LogModelStateAsync(settings, session.Cancellation.Token);
             }
 
             window.ShowTransforming(resolution.Status);
             debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
 
-            if (action.TemperatureOverride is not null) settings = settings with { Temperature = action.TemperatureOverride.Value };
+            debugLog.Write("action-inference-settings", ("contextSize", settings.ContextSize), ("thinkingLevel", (int)settings.Thinking));
             string instruction = session.IsFreeMode
                 ? "Respond directly to the user message."
                 : TemplateRenderer.Render(action.PromptTemplate, inputText, supplementaryInstructions);
@@ -348,6 +410,8 @@ public partial class App : Application
             debugLog.Write("transformation-completed", ("outputLength", output.Length));
             debugLog.WriteFullText("transformation-output", output);
             window.ShowResult(output);
+            if (debugLog.Path is not null && resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
+                await LogModelStateAsync(settings, session.Cancellation.Token);
         }
         catch (OperationCanceledException) when (session.Cancellation.IsCancellationRequested)
         {
@@ -583,6 +647,7 @@ public partial class App : Application
         settingsWindow.SettingsSaved += (_, _) =>
         {
             ConfigureDebugLog();
+            ScheduleStartupWarmup();
             ConfigureKeyboardHook(UserConfiguration.LoadConfiguration());
             ApplyCachedLocale(UserConfiguration.LoadConfiguration().UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
             if (localeFallbackNotice is not null) tray?.ShowInfo(localeFallbackNotice);
@@ -650,6 +715,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        startupWarmupCancellation?.Cancel();
+        startupWarmupCancellation?.Dispose();
         debugLog.Write("application-stopped");
         debugLog.Dispose();
         hook?.Dispose();

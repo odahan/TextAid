@@ -21,6 +21,14 @@ TextAid captures selected text from another Windows application, applies one con
 - Keep model traffic local by default, with clear configuration for on-premises or external providers.
 - Run as a self-contained Windows x64 executable; no .NET runtime is required for the published application.
 
+## Local model startup and action settings
+
+TextAid preloads the enabled, configured local Ollama model in the background 30 seconds after startup. If Ollama is not available, it retries availability after another 30 seconds, with each probe limited to five seconds. Preload stops after success and is cancelled when TextAid exits or settings are saved. A settings save schedules a new delayed attempt. An already loaded model is left in place. TextAid does not override the server's keep-alive policy; set `OLLAMA_KEEP_ALIVE=-1` in the Ollama server environment to retain models indefinitely.
+
+Every action, including Translate, defaults to Thinking Off. The Actions editor supports Off, Low, Medium, and High, plus an optional context override in tokens. An empty context inherits the model profile; use 16384 in the local profile for a shared 16K baseline. Existing action JSON files without these fields use Off and inherit context. The JSON fields are `thinking` (for example, `"Off"`) and `contextSizeOverride` (an integer of at least 512, or null). Translate retains these inference choices while its system prompt and routing remain protected. Switching context between actions or apps can cause Ollama to reload a runner.
+
+Safe Debug records preload events, requested and loaded context, model and GPU memory allocation, GPU memory share, and the retention expiry as Unix seconds, alongside inference timing metrics. GPU memory share describes allocation, not live GPU utilization. No diagnostic log is created with Debug off.
+
 ## Requirements
 
 - Windows x64

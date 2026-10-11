@@ -18,6 +18,8 @@ public static class ActionValidator
         if (string.IsNullOrWhiteSpace(action.PromptTemplate)) throw new InvalidOperationException($"Action '{action.Id}' requires a prompt template.");
         if (!profileIds.Contains(action.ProfileId)) throw new InvalidOperationException($"Action '{action.Id}' references an unknown profile.");
         if (action.TemperatureOverride is < 0 or > 2) throw new InvalidOperationException($"Action '{action.Id}' has an invalid temperature override.");
+        if (!Enum.IsDefined(action.Thinking)) throw new InvalidOperationException($"Action '{action.Id}' has an invalid thinking mode.");
+        if (action.ContextSizeOverride is < 512) throw new InvalidOperationException($"Action '{action.Id}' requires a context of at least 512 tokens.");
         if (string.IsNullOrWhiteSpace(action.OutputLanguageDefault)) throw new InvalidOperationException($"Action '{action.Id}' requires an output-language default.");
         if (!action.OutputLanguageDefault.Equals("Unchanged", StringComparison.OrdinalIgnoreCase) && !LanguageCatalog.IsSupported(action.OutputLanguageDefault))
             throw new InvalidOperationException($"Action '{action.Id}' has an invalid output-language default.");
@@ -40,6 +42,7 @@ public static class ActionValidator
         if (reservedTranslateCount != 1) throw new InvalidOperationException("Exactly one reserved Translate action is required.");
         ActionDefinition translate = actions.Single(action => action.IsReserved && action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
         ActionDefinition expected = BuiltInActionCatalog.Create().Single(action => action.Id == "translate");
-        if (translate != expected) throw new InvalidOperationException("The reserved Translate action cannot be modified.");
+        if (translate with { Thinking = expected.Thinking, ContextSizeOverride = expected.ContextSizeOverride } != expected)
+            throw new InvalidOperationException("Only the inference settings of the reserved Translate action may be modified.");
     }
 }

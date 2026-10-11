@@ -29,6 +29,7 @@ public sealed partial class ActionsViewModel : ObservableObject
 
     public ObservableCollection<EditableAction> Actions { get; }
     public IReadOnlyList<string> Profiles { get; }
+    public IReadOnlyList<ThinkingMode> ThinkingModes { get; } = Enum.GetValues<ThinkingMode>();
     public IReadOnlyList<LanguageOption> OutputLanguages => outputLanguages;
 
     /// <summary>Refreshes built-in action labels after the active UI locale changes.</summary>
@@ -127,6 +128,8 @@ public sealed partial class EditableAction : ObservableObject
     [ObservableProperty] private bool askForUserInstructions;
     [ObservableProperty] private string promptTemplate;
     [ObservableProperty] private string userInstructionsQuestion;
+    [ObservableProperty] private ThinkingMode thinking;
+    [ObservableProperty] private string contextSizeOverrideText = string.Empty;
     public bool IsReserved { get; }
     /// <summary>Indicates whether fields protected for the immediate Translate action may be changed.</summary>
     public bool IsEditable => !IsReserved;
@@ -142,6 +145,23 @@ public sealed partial class EditableAction : ObservableObject
 
     /// <summary>Raises a label update after the application locale changes.</summary>
     public void RefreshLocalizedLabel() => OnPropertyChanged(nameof(Label));
-    public static EditableAction From(ActionDefinition action) => new(action.Id, action.DisplayNameOverride ?? "", action.IsEnabled, action.ProfileId, action.TemperatureOverride, action.OutputLanguageDefault, action.AskForUserInstructions, action.PromptTemplate, action.IsReserved, action.UserInstructionsQuestion ?? "");
-    public ActionDefinition ToDefinition() => new(Id.Trim(), string.IsNullOrWhiteSpace(DisplayNameOverride) ? null : DisplayNameOverride.Trim(), IsEnabled, PromptTemplate, ProfileId, TemperatureOverride, OutputLanguageDefault, AskForUserInstructions, IsReserved, string.IsNullOrWhiteSpace(UserInstructionsQuestion) ? null : UserInstructionsQuestion.Trim());
+    public static EditableAction From(ActionDefinition action) => new(action.Id, action.DisplayNameOverride ?? "", action.IsEnabled, action.ProfileId, action.TemperatureOverride, action.OutputLanguageDefault, action.AskForUserInstructions, action.PromptTemplate, action.IsReserved, action.UserInstructionsQuestion ?? "")
+    {
+        Thinking = action.Thinking,
+        ContextSizeOverrideText = action.ContextSizeOverride?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty
+    };
+
+    /// <summary>Parses optional context input before saving the complete action.</summary>
+    public ActionDefinition ToDefinition()
+    {
+        int? context = null;
+        if (!string.IsNullOrWhiteSpace(ContextSizeOverrideText))
+        {
+            if (!int.TryParse(ContextSizeOverrideText, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int parsed) || parsed < 512)
+                throw new InvalidOperationException("Context size must be a whole number of at least 512 tokens.");
+            context = parsed;
+        }
+        return new(Id.Trim(), string.IsNullOrWhiteSpace(DisplayNameOverride) ? null : DisplayNameOverride.Trim(), IsEnabled, PromptTemplate, ProfileId, TemperatureOverride, OutputLanguageDefault, AskForUserInstructions, IsReserved,
+            string.IsNullOrWhiteSpace(UserInstructionsQuestion) ? null : UserInstructionsQuestion.Trim(), Thinking, context);
+    }
 }

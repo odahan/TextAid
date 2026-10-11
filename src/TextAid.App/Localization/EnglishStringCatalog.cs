@@ -136,6 +136,7 @@ internal static class EnglishStringCatalog
         ["ModelLabel"] = "Model",
         ["TemperatureLabel"] = "Temperature",
         ["ContextSizeLabel"] = "Context size (tokens)",
+        ["ActionContextHelp"] = "Leave empty to use the model profile context. Enter 16384 for a 16K context. Changing context between apps or actions may require Ollama to reload the model.",
         ["TimeoutLabel"] = "Timeout (seconds)",
         ["ThinkingLabel"] = "Thinking",
         ["EndpointLabel"] = "Endpoint",

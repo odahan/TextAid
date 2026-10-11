@@ -168,6 +168,45 @@ public sealed class DeclarativeActionsTests
         Assert.Equal("Action 'custom' has an invalid output-language default.", exception.Message);
     }
 
+    [Fact]
+    public void Actions_DefaultThinkingOffAndInheritTheProfileContext()
+    {
+        var profile = new TextTransformationSettings("http://localhost:11434", "model", 0.2f, TimeSpan.FromSeconds(120), 16384, ThinkingMode.High);
+        var action = new ActionDefinition("custom", null, true, "Process {{text}}", "local-default", null, "Unchanged", false);
+        TextTransformationSettings settings = action.ApplyInferenceSettings(profile);
+        Assert.Equal(ThinkingMode.Off, settings.Thinking);
+        Assert.Equal(16384, settings.ContextSize);
+        Assert.All(BuiltInActionCatalog.Create(), builtIn => Assert.Equal(ThinkingMode.Off, builtIn.Thinking));
+    }
+
+    [Fact]
+    public void Translate_PreservesInferenceOverridesAcrossLoadAndRestoresItsSystemPrompt()
+    {
+        using var directory = new TemporaryDirectory();
+        var loader = new ActionLoader(actionsDirectory: directory.Path);
+        ActionDefinition translate = Assert.Single(loader.Load(), action => action.Id == "translate");
+        loader.Save(translate with { Thinking = ThinkingMode.Low, ContextSizeOverride = 16384 });
+        ActionDefinition saved = Assert.Single(loader.Load(), action => action.Id == "translate");
+        Assert.Equal(ThinkingMode.Low, saved.Thinking);
+        Assert.Equal(16384, saved.ContextSizeOverride);
+        string path = Path.Combine(directory.Path, "translate.json");
+        File.WriteAllText(path, JsonSerializer.Serialize(saved with { PromptTemplate = "Unwanted change" }));
+        ActionDefinition restored = Assert.Single(loader.Load(), action => action.Id == "translate");
+        Assert.Equal(translate.PromptTemplate, restored.PromptTemplate);
+        Assert.Equal(ThinkingMode.Low, restored.Thinking);
+        Assert.Equal(16384, restored.ContextSizeOverride);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(511)]
+    [InlineData(-1)]
+    public void Actions_RejectInvalidContextOverrides(int context)
+    {
+        var action = new ActionDefinition("custom", null, true, "Process {{text}}", "local-default", null, "Unchanged", false, ContextSizeOverride: context);
+        Assert.Throws<InvalidOperationException>(() => ActionValidator.Validate(action, new HashSet<string>(["local-default"])));
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()

@@ -37,6 +37,10 @@ public sealed class OllamaChatClientFactory(Func<HttpClient>? createHttpClient =
 
     /// <summary>Determines whether the selected model is currently held in the Ollama server's memory.</summary>
     public async Task<bool> IsModelLoadedAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
+        => await GetModelStateAsync(settings, cancellationToken) is not null;
+
+    /// <summary>Reads running-model memory, context, and expiry metadata without generating content.</summary>
+    public async Task<OllamaModelState?> GetModelStateAsync(TextTransformationSettings settings, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(settings);
         using var timeout = new CancellationTokenSource(settings.Timeout);
@@ -44,7 +48,13 @@ public sealed class OllamaChatClientFactory(Func<HttpClient>? createHttpClient =
         using var httpClient = CreateInferenceTransport(settings.Endpoint);
         using var client = new OllamaApiClient(httpClient, settings.Model);
         IEnumerable<OllamaSharp.Models.RunningModel> models = await client.ListRunningModelsAsync(linked.Token);
-        return models.Any(model => IsSameModel(model.Name ?? model.ModelName, settings.Model));
+        foreach (OllamaSharp.Models.RunningModel model in models)
+        {
+            string? name = model.Name ?? model.ModelName;
+            if (!IsSameModel(name, settings.Model)) continue;
+            return new OllamaModelState(model.Size, model.SizeVram, model.ContextLength > 0 ? model.ContextLength : null, model.ExpiresAt);
+        }
+        return null;
     }
 
     /// <summary>Loads a selected model without generating visible user content.</summary>
@@ -59,7 +69,6 @@ public sealed class OllamaChatClientFactory(Func<HttpClient>? createHttpClient =
         {
             Model = settings.Model,
             Prompt = string.Empty,
-            KeepAlive = "5m",
             Options = new OllamaSharp.Models.RequestOptions { NumCtx = settings.ContextSize }
         };
 

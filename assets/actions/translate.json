@@ -7,5 +7,7 @@
   "temperatureOverride": null,
   "outputLanguageDefault": "Unchanged",
   "askForUserInstructions": false,
-  "isReserved": true
+  "isReserved": true,
+  "thinking": "Off",
+  "contextSizeOverride": null
 }

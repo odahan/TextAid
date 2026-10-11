@@ -1,5 +1,13 @@
 # TextAid
 
+## Préchargement local et réglages des actions
+
+TextAid précharge en arrière-plan le modèle Ollama local activé et configuré, 30 secondes après le démarrage. Si Ollama n'est pas disponible, il retente après 30 secondes supplémentaires ; chaque vérification de disponibilité est limitée à cinq secondes. Le préchargement s'arrête après réussite et s'annule à la fermeture ou lors d'une sauvegarde des réglages, qui programme une nouvelle tentative différée. Un modèle déjà chargé est conservé. TextAid laisse le serveur décider de la durée de conservation : `OLLAMA_KEEP_ALIVE=-1` permet de conserver les modèles indéfiniment.
+
+Toutes les actions, traduction comprise, utilisent Thinking Off par défaut. L'éditeur propose Off, Low, Medium et High, ainsi qu'un contexte facultatif en tokens. Un champ vide reprend le contexte du profil : fixer celui-ci à 16384 fournit une base commune de 16K. Les fichiers JSON existants sans ces champs utilisent Off et héritent du contexte. Les champs sont `thinking` (par exemple `"Off"`) et `contextSizeOverride` (entier d'au moins 512, ou null). La traduction conserve ces choix, tandis que son prompt et son routage restent protégés. Un changement de contexte entre actions ou applications peut entraîner un rechargement dans Ollama.
+
+Le mode Debug consigne les étapes du préchargement, les contextes demandé et chargé, la mémoire du modèle et la mémoire GPU, la part de mémoire sur GPU et l'échéance de conservation en secondes Unix, en plus des mesures de durée d'inférence. La part de mémoire GPU indique une allocation, pas l'utilisation instantanée du GPU. Aucun log n'est créé lorsque Debug est désactivé.
+
 [English](README.md)
 
 ![Logo TextAid](assets/Logo-final.png)

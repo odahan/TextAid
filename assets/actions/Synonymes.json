@@ -8,5 +8,7 @@
   "outputLanguageDefault": "Unchanged",
   "askForUserInstructions": false,
   "isReserved": false,
-  "userInstructionsQuestion": null
+  "userInstructionsQuestion": null,
+  "thinking": "Off",
+  "contextSizeOverride": null
 }

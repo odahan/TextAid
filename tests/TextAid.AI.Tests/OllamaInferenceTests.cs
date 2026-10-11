@@ -81,6 +81,63 @@ public sealed class OllamaInferenceTests
         Assert.True(handler.Disposed);
     }
 
+    [Fact]
+    public async Task Warmup_UsesTheProfileContextWithoutOverridingServerRetention()
+    {
+        var handler = new StubHandler(async (request, token) =>
+        {
+            using JsonDocument json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            Assert.False(json.RootElement.TryGetProperty("keep_alive", out var keepAlive) && keepAlive.ValueKind != JsonValueKind.Null);
+            Assert.Equal(string.Empty, json.RootElement.GetProperty("prompt").GetString());
+            Assert.Equal(16384, json.RootElement.GetProperty("options").GetProperty("num_ctx").GetInt32());
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"model\":\"test-model\",\"response\":\"\",\"done\":true}\n", Encoding.UTF8, "application/x-ndjson")
+            };
+        });
+        var factory = new OllamaChatClientFactory(() => new HttpClient(handler));
+        await factory.WarmupAsync(Request(TimeSpan.FromSeconds(5)).Settings with { ContextSize = 16384 }, CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ModelState_ReportsMemoryContextAndRetentionAndAcceptsTheDefaultTag()
+    {
+        var handler = new StubHandler((request, _) =>
+        {
+            Assert.Equal("/api/ps", request.RequestUri!.AbsolutePath);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {"models":[{"name":"test-model:latest","size":2000,"size_vram":1500,"context_length":16384,"expires_at":"2099-01-01T00:00:00Z"}]}
+                    """)
+            });
+        });
+        var factory = new OllamaChatClientFactory(() => new HttpClient(handler));
+        OllamaModelState? state = await factory.GetModelStateAsync(Request(TimeSpan.FromSeconds(5)).Settings, CancellationToken.None);
+        Assert.NotNull(state);
+        Assert.Equal(16384L, state.ContextSize);
+        Assert.Equal(75d, state.GpuMemoryPercent);
+        Assert.Equal(2099, state.ExpiresAt!.Value.Year);
+    }
+
+    [Fact]
+    public async Task Inference_SendsTheActionContextAndThinkingOverride()
+    {
+        var handler = new StubHandler(async (request, token) =>
+        {
+            using JsonDocument json = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(token));
+            Assert.Equal("low", json.RootElement.GetProperty("think").GetString());
+            Assert.Equal(16384, json.RootElement.GetProperty("options").GetProperty("num_ctx").GetInt32());
+            return StreamResponse();
+        });
+        var factory = new OllamaChatClientFactory(() => new HttpClient(handler));
+        var action = new ActionDefinition("custom", null, true, "Process {{text}}", "local-default", null, "Unchanged", false,
+            Thinking: ThinkingMode.Low, ContextSizeOverride: 16384);
+        var request = Request(TimeSpan.FromSeconds(5));
+        await new MafTextTransformationService(factory.Create).TransformAsync(
+            request with { Settings = action.ApplyInferenceSettings(request.Settings) }, CancellationToken.None);
+    }
+
     private static TextTransformationRequest Request(TimeSpan timeout) => new("Bonjour", "Translate into English.",
         new TextTransformationSettings("http://localhost:11434", "test-model", 0, timeout, 8192, ThinkingMode.Off));
 

@@ -126,6 +126,7 @@
     <sys:String x:Key="ModelLabel">Model</sys:String>
     <sys:String x:Key="TemperatureLabel">Temperature</sys:String>
     <sys:String x:Key="ContextSizeLabel">Context size (tokens)</sys:String>
+    <sys:String x:Key="ActionContextHelp">Leave empty to use the model profile context. Enter 16384 for a 16K context. Changing context between apps or actions may require Ollama to reload the model.</sys:String>
     <sys:String x:Key="TimeoutLabel">Timeout (seconds)</sys:String>
     <sys:String x:Key="ThinkingLabel">Thinking</sys:String>
     <sys:String x:Key="EndpointLabel">Endpoint</sys:String>

@@ -845,3 +845,22 @@ Use the existing MAF/provider configuration path, with the reserved Translate pr
 
 Replaces: The local detection implementation and R-018's indeterminate-source fallback for future corrective builds.
 Replaced by: None
+
+## D-045 — Delayed local preload and action inference settings
+
+Date: 2026-10-11
+Decided by: Olivier
+Source: Explicit startup-preload, retention, diagnostic, and per-action inference instructions
+Related: R-004, R-005, D-016, D-044
+
+Decision:
+Start asynchronous local model preload 30 seconds after application startup. Retry Ollama availability at 30-second intervals when unavailable. Respect the server keep-alive setting by removing the request's fixed five-minute value. Add safe running-model allocation, context, and expiry diagnostics. Every action defaults to Thinking Off and permits a thinking choice and an optional context override; this includes the reserved Translate action.
+
+Reason:
+Startup with Windows should absorb model loading before the first user invocation. The fixed retention override obscured server configuration. A common profile context, such as 16384, allows users to balance shared local inference resources while retaining task-specific control.
+
+Consequences:
+Translate's identity, prompt, profile, enabled state, and routing remain protected under D-016; only its thinking and context settings become editable and survive restoration. Existing action files without the new fields default to Off and profile context. No Ollama environment variables or user configuration are changed automatically. Cache quantization remains an optional server setting, not an application default. Historical lot and gate states remain unchanged.
+
+Replaces: D-016's blanket prohibition only for the two new inference fields.
+Replaced by: None

@@ -46,9 +46,20 @@ public static class BuiltInActionCatalog
         Directory.CreateDirectory(actionsDirectory);
         foreach (ActionDefinition action in Create())
         {
+            ActionDefinition persistedAction = action;
             string path = Path.Combine(actionsDirectory, $"{action.Id}.json");
+            if (action.IsReserved && File.Exists(path))
+            {
+                try
+                {
+                    ActionDefinition? saved = JsonSerializer.Deserialize<ActionDefinition>(File.ReadAllText(path), ActionJson.Options);
+                    if (saved is not null && Enum.IsDefined(saved.Thinking) && (saved.ContextSizeOverride is null or >= 512))
+                        persistedAction = action with { Thinking = saved.Thinking, ContextSizeOverride = saved.ContextSizeOverride };
+                }
+                catch (JsonException) { }
+            }
             if (action.IsReserved || !File.Exists(path))
-            File.WriteAllText(path, JsonSerializer.Serialize(action, ActionJson.Options));
+                File.WriteAllText(path, JsonSerializer.Serialize(persistedAction, ActionJson.Options));
         }
     }
 
