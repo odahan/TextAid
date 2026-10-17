@@ -2,6 +2,13 @@
 
 This record uses concise entries with date, actor, operation, affected artifacts, and outcome. Entries are organized in reverse chronological order by their recorded date; because no time is recorded, the existing relative order is retained within each day. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-10-17 — Replace focus correction for MAUI/WinUI compatibility
+
+Actor: Olivier and Codex
+Operation: Investigated the reported smalBazar Replace failure. Removed forced top-level focus after source activation, preserved normal/maximized state, checked keyboard-focus ownership and target validity immediately before paste, and added Safe Debug focus/input metadata. A native regression test detects the old focus override; additional tests cover target/focus changes and injection failure.
+Affected artifacts: `src/TextAid.Platform.Windows/ResultActions.cs`, `src/TextAid.App/`, `tests/TextAid.Platform.Windows.Tests/`, `STATUS.md`, and `docs/replace-winui-investigation.md`.
+Outcome: All 173 Release tests passed. Published version 1.2.13 via root `publish.ps1` and restarted it via root `start.ps1`. Olivier retested smalBazar and confirmed that replacement now works, then confirmed non-regression in the Codex input area. The reported issue is resolved; a fresh live WPF comparison and a second WinUI application check have not been recorded.
+
 ## 2026-09-30 — Batched UI translation generation and version 1.2.6
 
 Actor: Olivier and Codex

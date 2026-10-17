@@ -10,7 +10,7 @@ public interface IWindowsResultActions
     bool RestoreAndFocus(nint window);
     bool IsFocused(nint window);
     bool AreModifiersReleased();
-    bool SendPaste();
+    bool SendPaste(nint window);
 }
 
 /// <summary>Represents the outcome of a guarded replacement attempt.</summary>
@@ -37,7 +37,9 @@ public sealed class ResultActions(IWindowsResultActions windows)
         if (!windows.RestoreAndFocus(sourceWindow) || !WaitUntil(() => windows.IsFocused(sourceWindow), FocusTimeout))
             return ReplaceResult.FocusFailed;
         if (!WaitUntil(windows.AreModifiersReleased, ModifierTimeout)) return ReplaceResult.ModifiersStillPressed;
-        return windows.SendPaste() ? ReplaceResult.Replaced : ReplaceResult.PasteFailed;
+        if (!windows.IsWindow(sourceWindow)) return ReplaceResult.InvalidTarget;
+        if (!windows.IsFocused(sourceWindow)) return ReplaceResult.FocusFailed;
+        return windows.SendPaste(sourceWindow) ? ReplaceResult.Replaced : ReplaceResult.PasteFailed;
     }
 
     /// <summary>Records that Copy has no native focus or input side effects.</summary>
@@ -58,7 +60,7 @@ public sealed class ResultActions(IWindowsResultActions windows)
 }
 
 /// <summary>Uses Win32 to restore, validate, and paste into a captured source window.</summary>
-public sealed class Win32ResultActions : IWindowsResultActions
+public sealed class Win32ResultActions(Action<ReplacementDiagnostic>? reportDiagnostic = null) : IWindowsResultActions
 {
     private const int SwRestore = 9;
     private const ushort KeyControl = 0x11;
@@ -70,9 +72,11 @@ public sealed class Win32ResultActions : IWindowsResultActions
     public bool IsWindow(nint window) => NativeIsWindow(window);
 
     /// <inheritdoc />
+    /// <remarks>Preserves the child-window focus restored by the target application, including WinUI XAML islands.</remarks>
     public bool RestoreAndFocus(nint window)
     {
-        ShowWindow(window, SwRestore);
+        Report("replace-before-activation", window);
+        if (IsIconic(window)) ShowWindow(window, SwRestore);
         uint sourceThread = GetWindowThreadProcessId(window, out _);
         uint currentThread = GetCurrentThreadId();
         bool attached = sourceThread != 0 && sourceThread != currentThread && AttachThreadInput(currentThread, sourceThread, true);
@@ -80,7 +84,7 @@ public sealed class Win32ResultActions : IWindowsResultActions
         {
             BringWindowToTop(window);
             SetForegroundWindow(window);
-            SetFocus(window);
+            Report("replace-after-activation", window);
             return GetForegroundWindow() == window;
         }
         finally
@@ -90,14 +94,25 @@ public sealed class Win32ResultActions : IWindowsResultActions
     }
 
     /// <inheritdoc />
-    public bool IsFocused(nint window) => GetForegroundWindow() == window;
+    public bool IsFocused(nint window)
+    {
+        if (GetForegroundWindow() != window) return false;
+        nint focusedWindow = ReadFocusedWindow();
+        return focusedWindow != 0 && (focusedWindow == window || IsChild(window, focusedWindow));
+    }
 
     /// <inheritdoc />
     public bool AreModifiersReleased() => ModifierKeys.All(key => (GetAsyncKeyState(key) & 0x8000) == 0);
 
     /// <inheritdoc />
-    public bool SendPaste()
+    public bool SendPaste(nint window)
     {
+        if (!NativeIsWindow(window) || !IsFocused(window))
+        {
+            Report("replace-paste-blocked", window);
+            return false;
+        }
+
         INPUT[] input =
         [
             KeyboardInput(KeyControl, 0),
@@ -105,7 +120,27 @@ public sealed class Win32ResultActions : IWindowsResultActions
             KeyboardInput(KeyV, KeyEventKeyUp),
             KeyboardInput(KeyControl, KeyEventKeyUp)
         ];
-        return SendInput((uint)input.Length, input, Marshal.SizeOf<INPUT>()) == input.Length;
+        uint sent = SendInput((uint)input.Length, input, Marshal.SizeOf<INPUT>());
+        int error = sent == input.Length ? 0 : Marshal.GetLastPInvokeError();
+        Report("replace-input-sent", window, sent, error);
+        return sent == input.Length;
+    }
+
+    /// <summary>Reads focus from the foreground input queue, including XAML island child windows.</summary>
+    private static nint ReadFocusedWindow()
+    {
+        var info = new GUITHREADINFO { cbSize = (uint)Marshal.SizeOf<GUITHREADINFO>() };
+        return GetGUIThreadInfo(0, ref info) ? info.hwndFocus : 0;
+    }
+
+    /// <summary>Reports native metadata without reading window titles, clipboard data, or user text.</summary>
+    private void Report(string stage, nint window, uint inputsSent = 0, int nativeError = 0)
+    {
+        if (reportDiagnostic is null) return;
+        nint foreground = GetForegroundWindow();
+        nint focused = ReadFocusedWindow();
+        reportDiagnostic(new ReplacementDiagnostic(stage, window, foreground, focused,
+            focused != 0 && (focused == window || IsChild(window, focused)), inputsSent, nativeError));
     }
 
     private static INPUT KeyboardInput(ushort key, uint flags) => new()
@@ -126,6 +161,15 @@ public sealed class Win32ResultActions : IWindowsResultActions
     private struct MOUSEINPUT { public int dx, dy; public uint mouseData, dwFlags, time; public nint dwExtraInfo; }
     [StructLayout(LayoutKind.Sequential)]
     private struct KEYBDINPUT { public ushort wVk, wScan; public uint dwFlags, time; public nint dwExtraInfo; }
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT { public int left, top, right, bottom; }
+    [StructLayout(LayoutKind.Sequential)]
+    private struct GUITHREADINFO
+    {
+        public uint cbSize, flags;
+        public nint hwndActive, hwndFocus, hwndCapture, hwndMenuOwner, hwndMoveSize, hwndCaret;
+        public RECT rcCaret;
+    }
 
     [DllImport("user32.dll", EntryPoint = "IsWindow")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -140,7 +184,14 @@ public sealed class Win32ResultActions : IWindowsResultActions
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool BringWindowToTop(nint window);
     [DllImport("user32.dll")]
-    private static extern nint SetFocus(nint window);
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsIconic(nint window);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsChild(nint parent, nint child);
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetGUIThreadInfo(uint threadId, ref GUITHREADINFO info);
     [DllImport("user32.dll")]
     private static extern uint GetWindowThreadProcessId(nint window, out uint processId);
     [DllImport("user32.dll")]
@@ -155,3 +206,7 @@ public sealed class Win32ResultActions : IWindowsResultActions
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint count, INPUT[] input, int size);
 }
+
+/// <summary>Contains only native focus and input metadata for an opt-in replacement diagnostic.</summary>
+public sealed record ReplacementDiagnostic(string Stage, nint TargetWindow, nint ForegroundWindow,
+    nint FocusedWindow, bool FocusWithinTarget, uint InputsSent, int NativeError);

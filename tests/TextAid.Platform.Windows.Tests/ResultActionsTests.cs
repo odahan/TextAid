@@ -62,11 +62,48 @@ public sealed class ResultActionsTests
         Assert.Equal(0, native.PasteAttempts);
     }
 
+    [Fact]
+    public void FocusLostWhileWaitingForModifiersPreventsPaste()
+    {
+        var native = new FakeWindowsResultActions { LoseFocusOnModifierCheck = true };
+
+        ReplaceResult result = new ResultActions(native).TryReplace((nint)42);
+
+        Assert.Equal(ReplaceResult.FocusFailed, result);
+        Assert.Equal(0, native.PasteAttempts);
+    }
+
+    [Fact]
+    public void TargetClosedWhileWaitingForModifiersPreventsPaste()
+    {
+        var native = new FakeWindowsResultActions { CloseWindowOnModifierCheck = true };
+
+        ReplaceResult result = new ResultActions(native).TryReplace((nint)42);
+
+        Assert.Equal(ReplaceResult.InvalidTarget, result);
+        Assert.Equal(0, native.PasteAttempts);
+    }
+
+    [Fact]
+    public void InputInjectionFailureDoesNotReportAReplacement()
+    {
+        var native = new FakeWindowsResultActions { PasteSucceeds = false };
+
+        ReplaceResult result = new ResultActions(native).TryReplace((nint)42);
+
+        Assert.Equal(ReplaceResult.PasteFailed, result);
+        Assert.Equal((nint)42, native.PasteTarget);
+    }
+
     private sealed class FakeWindowsResultActions : IWindowsResultActions
     {
-        public bool WindowExists { get; init; } = true;
-        public bool Focused { get; init; } = true;
+        public bool WindowExists { get; set; } = true;
+        public bool Focused { get; set; } = true;
         public bool ModifiersReleased { get; init; } = true;
+        public bool LoseFocusOnModifierCheck { get; init; }
+        public bool CloseWindowOnModifierCheck { get; init; }
+        public bool PasteSucceeds { get; init; } = true;
+        public nint PasteTarget { get; private set; }
         public int RestoreAttempts { get; private set; }
         public int PasteAttempts { get; private set; }
 
@@ -78,11 +115,17 @@ public sealed class ResultActionsTests
         }
 
         public bool IsFocused(nint window) => Focused;
-        public bool AreModifiersReleased() => ModifiersReleased;
-        public bool SendPaste()
+        public bool AreModifiersReleased()
+        {
+            if (LoseFocusOnModifierCheck) Focused = false;
+            if (CloseWindowOnModifierCheck) WindowExists = false;
+            return ModifiersReleased;
+        }
+        public bool SendPaste(nint window)
         {
             PasteAttempts++;
-            return true;
+            PasteTarget = window;
+            return PasteSucceeds;
         }
     }
 }

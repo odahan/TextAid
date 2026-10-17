@@ -24,7 +24,7 @@ public partial class App : Application
     private ActionsWindow? actionsWindow;
     private TranslationReviewWindow? translationReviewWindow;
     private Mutex? instanceMutex;
-    private readonly ResultActions resultActions = new(new Win32ResultActions());
+    private ResultActions resultActions = null!;
     private readonly ITextTransformationService transformationService = new MafTextTransformationService(new OllamaChatClientFactory().Create);
     private readonly OllamaChatClientFactory ollamaChatClientFactory = new();
     private readonly AiClientFactory chatClientFactory = new();
@@ -65,6 +65,13 @@ public partial class App : Application
             return;
         }
         ConfigureDebugLog();
+        resultActions = new ResultActions(new Win32ResultActions(diagnostic => debugLog.Write(diagnostic.Stage,
+            ("targetWindow", (long)diagnostic.TargetWindow),
+            ("foregroundWindow", (long)diagnostic.ForegroundWindow),
+            ("focusedWindow", (long)diagnostic.FocusedWindow),
+            ("focusWithinTarget", diagnostic.FocusWithinTarget),
+            ("inputsSent", diagnostic.InputsSent),
+            ("nativeError", diagnostic.NativeError))));
         actionsDirectory = UserConfiguration.EnsureActionsDirectory();
         ApplyCachedLocale(configuration.UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
         new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
@@ -560,6 +567,7 @@ public partial class App : Application
         if (!TryCopyToClipboard(session.OutputText, window)) return;
 
         ReplaceResult outcome = resultActions.TryReplace(session.SourceWindow);
+        debugLog.Write("replace-completed", ("outcomeCode", (int)outcome));
         if (outcome == ReplaceResult.Replaced)
         {
             session.State = InvocationState.Replaced;

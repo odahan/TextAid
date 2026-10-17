@@ -37,3 +37,18 @@ Intermittent 1.2.7 Ctrl-C-T detection failures were diagnosed from the live log 
 ## Inference maintenance — 2026-10-06
 
 Version 1.2.9 removes Ollama's implicit 100-second HTTP deadline while retaining the configured inference deadline, bounds warmup and model-status checks, and streams visible output into a safe incomplete preview. Diagnostic metadata reports request and server durations, token counts, and interrupted requests. All 148 Release tests pass, including transport-level Ollama and preview-state regressions. Olivier reported concurrent MyLocalAgent jobs; performance validation is deferred until the shared server is idle. No user configuration or provider secrets were changed.
+
+## Resolved compatibility issue — Replace in smalBazar (MAUI/WinUI) — 2026-10-17
+
+Status: Resolved in published version 1.2.13. Olivier retested the affected application and confirmed that replacement now works on 2026-10-17.
+
+The Replace action does not work in smalBazar, a .NET MAUI application whose Windows UI is understood to use WinUI. Olivier reports that Replace works in the WPF applications and all other applications tested so far. He clarified that TextAid closes but the target text remains unchanged. The running process is `SmallBazar.exe`, installed as MSIX version 1.6.13.0. The exact target control and failure-time focus metadata remain unrecorded.
+
+Investigation found that Replace forced `SetFocus` onto the source's top-level HWND after activation, overriding child-window focus. A native Windows regression test fails with that call restored and passes without it. Candidate 1.2.13 removes the forced focus, restores minimized windows only, validates foreground keyboard-focus ownership, and rechecks the target before input injection. Opt-in Safe Debug now records numeric focus handles, input counts, native error codes, and the replacement outcome without user text. All 173 Release tests pass (55 AI, 89 Core, 29 Windows). Root `publish.ps1` produced FileVersion 1.2.13.0, SHA-256 `5BB0574543E013FFA80FBB261F9647E30409BD5F0400856EFBEB85AF2710EF07`; the idle resident instance was restarted via root `start.ps1`. See [the investigation record](docs/replace-winui-investigation.md).
+
+Validation and remaining compatibility coverage:
+
+- Olivier confirmed that Replace works in smalBazar after the 1.2.13 restart.
+- Olivier also confirmed on 2026-10-17 that Replace still works in the Codex input area with 1.2.13, providing a live non-regression check in a previously working application. This does not establish the target control's UI technology.
+- The native regression test confirms the forced top-level focus defect; all 173 Release tests pass.
+- A fresh live WPF comparison and a second WinUI application check have not been recorded. Application validation currently covers smalBazar and the Codex input area.
