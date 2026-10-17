@@ -23,3 +23,8 @@ This register tracks the recurring check in R-012. Record each final published E
 | Post-V1 maintenance (1.2.10) | Verified during release publication | DEFERRED | Version increment requested on 2026-10-06 for the committed inference corrections. The unchanged implementation passed 148 Release tests. Live idle-server performance and a separate-machine check remain unverified. |
 
 The older `59204A2B…D224D0D` candidate remains untested on a second machine; the successful check above applies only to the final EXE identified in its row. No separate .NET runtime inventory or broader application compatibility test is claimed.
+
+| LOT-014 candidate (1.3.0) | `DBA9E61A8D2E9F07BB5E2BD676720C0F36C8981205318C01BDC656112D794FB7` | DEFERRED | Published 2026-10-18 with the canonical root script and launched locally through start.ps1. No separate clean Windows x64 machine was available. Human account and visual validation remain pending. |
+
+| LOT-014 cosmetic candidate (1.3.1) | `622E13C1A0FC1C6384ABCC5681225DAF7109E41F5AF97EC82ACC16B0768ABD6A` | DEFERRED | Published 2026-10-18 with root publish.ps1. No separate clean Windows x64 machine check; app left stopped. |
+| LOT-014 cosmetic candidate (1.3.2) | `DA7AF13F2DB14C5B5C1D7EAE19A9BDA71D4FA18806C677C99A2B331A2616ED35` | DEFERRED | Published 2026-10-18; separate-machine check not performed. |

@@ -50,6 +50,12 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     /// <summary>Indicates that the current input originated from an isolated Free invocation.</summary>
     public bool IsFreeMode { get; private set; }
     public string? OutputText { get; set; }
+    /// <summary>Gets the effective language of the latest complete result.</summary>
+    public string? ResultLanguage { get; private set; }
+    /// <summary>Gets or sets the transient profile selected for the next explicit action.</summary>
+    public string? NextProfileId { get; set; }
+    /// <summary>Gets the exact profile pinned for the running action, if any.</summary>
+    public string? RunningProfileId { get; private set; }
     public InvocationState State { get; set; } = InvocationState.Captured;
     /// <summary>Indicates whether the current generation produced a result that may be copied or replaced.</summary>
     public bool HasCurrentResult => State == InvocationState.ResultReady && !string.IsNullOrEmpty(OutputText);
@@ -69,6 +75,8 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     /// <summary>Cancels any pending generation and makes a fresh result authoritative.</summary>
     public int StartNewGeneration()
     {
+        RunningProfileId = NextProfileId;
+        NextProfileId = null;
         cancellation.Cancel();
         cancellation.Dispose();
         cancellation = new CancellationTokenSource();
@@ -91,18 +99,51 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     }
 
     /// <summary>Publishes a result only when it belongs to the currently authoritative generation.</summary>
-    public bool TryCompleteGeneration(int generation, string output)
+    public bool TryCompleteGeneration(int generation, string output, string? language = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(output);
         if (generation != Generation || State != InvocationState.Transforming) return false;
         OutputText = output;
+        ResultLanguage = language;
         State = InvocationState.ResultReady;
         return true;
+    }
+
+    /// <summary>Transfers the authoritative result and its language without changing the source target.</summary>
+    public bool TransferResultToInput()
+    {
+        if (!HasCurrentResult) return false;
+        string text = OutputText!;
+        string? language = ResultLanguage;
+        // Force invalidation even when the result happens to equal the input.
+        InvalidateResult();
+        CancelInputLanguageDetection();
+        InputText = text;
+        if (outputLanguageWasAutomatic) OutputLanguage = "Unchanged";
+        DetectedInputLanguage = language;
+        IsInputLanguageDetectionComplete = language is not null;
+        languageDetectionTask = language is null ? null : Task.FromResult<string?>(language);
+        ResultLanguage = null;
+        LanguageDetectionChanged?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    /// <summary>Cancels pending classification while retaining an already completed input language.</summary>
+    public void CancelInputLanguageDetection()
+    {
+        if (IsInputLanguageDetectionComplete) return;
+        languageDetectionCancellation.Cancel();
+        languageDetectionCancellation.Dispose();
+        languageDetectionCancellation = new CancellationTokenSource();
+        languageDetectionTask = null;
+        IsDetectingInputLanguage = false;
+        InputLanguageDetectionFailed = false;
     }
 
     /// <summary>Resets the session for new manual input without retaining a replacement target.</summary>
     public void ResetForNewInput()
     {
+        NextProfileId = null;
         SourceWindow = 0;
         SetInputText(string.Empty);
         ActionId = null;
@@ -191,6 +232,7 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     /// <summary>Cancels pending detection and transformation work when the invocation closes.</summary>
     public void Dispose()
     {
+        NextProfileId = null;
         languageDetectionCancellation.Cancel();
         languageDetectionCancellation.Dispose();
         cancellation.Cancel();

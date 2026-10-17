@@ -30,7 +30,9 @@ public static class UserConfiguration
         string NormalShortcut,
         string TranslationShortcut,
         bool PreferEnglishUi,
-        string LocalizationProfileId);
+        string LocalizationProfileId,
+        bool OpenAiAccountEnabled = false,
+        string OpenAiAccountModel = "");
     public static string EnsureCreated()
     {
         string directory = GetUserDataDirectory();
@@ -62,7 +64,7 @@ public static class UserConfiguration
             };
             File.WriteAllText(path, JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true }));
         }
-        else UpgradeVersionOneConfiguration(path);
+        UpgradeVersionOneConfiguration(path);
         return path;
     }
 
@@ -229,7 +231,7 @@ public static class UserConfiguration
         ValidateStandardConnection(configuration, "openai-external", "external-default", ConnectionCategory.External, "openai-compatible");
         foreach (ConnectionDefinition connection in configuration.Connections)
         {
-            if (!connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase) && !connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase))
+            if (!connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase) && !connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase) && connection.Provider != "openai-account")
                 throw new InvalidOperationException($"Connection '{connection.Id}' has an unsupported provider.");
             if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase) && connection.Category != ConnectionCategory.External)
                 throw new InvalidOperationException($"Connection '{connection.Id}' has an invalid category.");
@@ -288,6 +290,8 @@ public static class UserConfiguration
         SetConnectionActivation(connections, "ollama-local", request.LocalEnabled);
         SetConnectionActivation(connections, "ollama-network", request.NetworkEnabled);
         SetConnectionActivation(connections, "openai-external", request.ExternalEnabled);
+        SetConnectionActivation(connections, "openai-account", request.OpenAiAccountEnabled);
+        profiles.OfType<JsonObject>().Single(profile => (string?)profile["id"] == "openai-account-default")["model"] = request.OpenAiAccountModel.Trim();
         root["debugMode"] = request.DebugEnabled;
         root["fullDebugMode"] = request.FullDebugEnabled;
         root["userLanguage"] = request.UserLanguage;
@@ -467,6 +471,8 @@ public static class UserConfiguration
         JsonArray connections = root["connections"]?.AsArray() ?? throw new InvalidOperationException("The TextAid connections are missing.");
         JsonArray profiles = root["profiles"]?.AsArray() ?? throw new InvalidOperationException("The TextAid profiles are missing.");
         bool changed = false;
+        changed |= AddConnectionIfMissing(connections, "openai-account", "External", "openai-account", DefaultExternalEndpoint, false, "OpenAiAccount", "openai-account-session");
+        changed |= AddProfileIfMissing(profiles, "openai-account-default", "openai-account");
         changed |= AddConnectionIfMissing(connections, "ollama-network", "OnPremises", "ollama", "", false, "None", null);
         changed |= AddConnectionIfMissing(connections, "openai-external", "External", "openai-compatible", "", false, "ApiKey", "external-api-key");
         foreach (JsonObject connection in connections.OfType<JsonObject>())

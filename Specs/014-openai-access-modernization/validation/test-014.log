@@ -1,0 +1,24 @@
+  Identification des projets à restaurer...
+  Tous les projets sont à jour pour la restauration.
+  TextAid.Core -> E:\TextAid\src\TextAid.Core\bin\Release\net10.0\TextAid.Core.dll
+  TextAid.AI -> E:\TextAid\src\TextAid.AI\bin\Release\net10.0\TextAid.AI.dll
+  TextAid.AI.Tests -> E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+Le processus vstest.console n’a pas réussi à se connecter au processus testhost après 90 secondes. Cette situation peut se produire à cause de la lenteur de la machine. Définissez la variable d’environnement VSTEST_CONNECTION_TIMEOUT de sorte à augmenter le délai d’expiration. The process with id 23160 was still running when this message was reported.
+
+Série de tests abandonnée.
+  TextAid.Core.Tests -> E:\TextAid\tests\TextAid.Core.Tests\bin\Release\net10.0\TextAid.Core.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.Core.Tests\bin\Release\net10.0\TextAid.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+Le processus vstest.console n’a pas réussi à se connecter au processus testhost après 90 secondes. Cette situation peut se produire à cause de la lenteur de la machine. Définissez la variable d’environnement VSTEST_CONNECTION_TIMEOUT de sorte à augmenter le délai d’expiration. The process with id 20156 was still running when this message was reported.
+
+Série de tests abandonnée.
+  TextAid.Platform.Windows -> E:\TextAid\src\TextAid.Platform.Windows\bin\Release\net10.0-windows\TextAid.Platform.Windows.dll
+  TextAid.App -> E:\TextAid\src\TextAid.App\bin\Release\net10.0-windows\win-x64\TextAid.dll
+  TextAid.Platform.Windows.Tests -> E:\TextAid\tests\TextAid.Platform.Windows.Tests\bin\Release\net10.0-windows\TextAid.Platform.Windows.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.Platform.Windows.Tests\bin\Release\net10.0-windows\TextAid.Platform.Windows.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+Le processus vstest.console n’a pas réussi à se connecter au processus testhost après 90 secondes. Cette situation peut se produire à cause de la lenteur de la machine. Définissez la variable d’environnement VSTEST_CONNECTION_TIMEOUT de sorte à augmenter le délai d’expiration. The process with id 11396 was still running when this message was reported.
+
+Série de tests abandonnée.

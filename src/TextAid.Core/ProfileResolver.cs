@@ -33,7 +33,7 @@ public sealed class ProfileResolver
     }
 
     /// <summary>Resolves a profile, automatically downgrading only missing or unconfigured categories.</summary>
-    public ProfileResolution Resolve(string requestedProfileId)
+    public ProfileResolution Resolve(string requestedProfileId, bool exact = false)
     {
         ModelProfile? requestedProfile = configuration.Profiles.FirstOrDefault(profile => profile.Id.Equals(requestedProfileId, StringComparison.OrdinalIgnoreCase));
         if (requestedProfile is null)
@@ -41,9 +41,46 @@ public sealed class ProfileResolver
 
         ConnectionDefinition? requestedConnection = configuration.Connections.FirstOrDefault(connection => connection.Id.Equals(requestedProfile.ConnectionId, StringComparison.OrdinalIgnoreCase));
         if (requestedConnection is null)
+        {
+            if (exact) return Failure($"The requested profile '{requestedProfileId}' has no configured connection.");
             return ResolveMissingCategory(ConnectionCategory.ThisDeviceOnly, $"The requested profile '{requestedProfileId}' has no configured connection.");
+        }
 
         ValidationResult validation = Validate(requestedProfile, requestedConnection);
+        if (exact)
+            return validation.IsValid
+                ? new(ProfileResolutionKind.Selected, requestedProfile, requestedConnection, $"Using {Display(requestedConnection.Category)} configuration.", requestedConnection.Category, requestedConnection.Category)
+                : Failure(validation.Message);
+        Candidate? configuredAccount = FindAccountCandidate();
+        bool onlyExternalConfigured = !configuration.Connections.Any(connection => connection.IsEnabled && connection.Category != ConnectionCategory.External &&
+            configuration.Profiles.Any(profile => profile.ConnectionId == connection.Id && Validate(profile, connection).IsValid));
+        if (configuredAccount is not null && onlyExternalConfigured && (validation.IsValid || validation.IsNotConfigured))
+        {
+            ValidationResult accountValidation = Validate(configuredAccount.Profile, configuredAccount.Connection);
+            if (!accountValidation.IsValid) return Failure(accountValidation.Message);
+        }
+        if (requestedConnection.Category == ConnectionCategory.External && requestedConnection.Provider != "openai-account")
+        {
+            Candidate? preferred = FindAccountCandidate();
+            if (preferred is not null)
+            {
+                ValidationResult accountValidation = Validate(preferred.Profile, preferred.Connection);
+                if (!accountValidation.IsValid) return OfferDowngrade(ConnectionCategory.External, accountValidation.Message);
+                requestedProfile = preferred.Profile;
+                requestedConnection = preferred.Connection;
+                validation = accountValidation;
+            }
+        }
+        if (requestedConnection.Provider == "openai-account" && validation.IsNotConfigured)
+        {
+            Candidate? peer = FindEligibleConnectionCandidates().FirstOrDefault(candidate => candidate.Connection.Category == ConnectionCategory.External);
+            if (peer is not null)
+            {
+                requestedProfile = peer.Profile;
+                requestedConnection = peer.Connection;
+                validation = Validate(requestedProfile, requestedConnection);
+            }
+        }
         IReadOnlyList<Candidate> eligibleConnections = FindEligibleConnectionCandidates();
         if (eligibleConnections.Count == 1 && (validation.IsValid || validation.IsNotConfigured))
         {
@@ -125,11 +162,31 @@ public sealed class ProfileResolver
             if (profile is not null) candidates.Add(new Candidate(profile, connection));
         }
 
+        if (candidates.Any(candidate => candidate.Connection.Provider == "openai-account"))
+            candidates.RemoveAll(candidate => candidate.Connection.Category == ConnectionCategory.External && candidate.Connection.Provider != "openai-account");
         return candidates;
     }
 
+    private Candidate? FindAccountCandidate()
+    {
+        ConnectionDefinition? connection = configuration.Connections.FirstOrDefault(connection => connection.Provider == "openai-account" && connection.IsEnabled);
+        ModelProfile? profile = connection is null ? null : configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId == connection.Id && !string.IsNullOrWhiteSpace(profile.Model));
+        return profile is null ? null : new(profile, connection!);
+    }
+
+    /// <summary>Lists structurally configured profiles without probing provider availability.</summary>
+    public IReadOnlyList<ModelProfile> GetSelectableProfiles() => configuration.Profiles.Where(profile =>
+    {
+        ConnectionDefinition? connection = configuration.Connections.FirstOrDefault(connection => connection.Id == profile.ConnectionId);
+        return connection is not null && Validate(profile, connection).IsValid;
+    }).ToArray();
+
     private ValidationResult Validate(ModelProfile profile, ConnectionDefinition connection)
     {
+        if (connection.Provider is not ("ollama" or "openai-compatible" or "openai-account"))
+            return new(false, false, "OpenAiUnsupportedOptions");
+        if (connection.Provider != "openai-account" && (connection.Authentication == AuthenticationKind.OpenAiAccount || connection.SecretReference?.StartsWith("openai-account-", StringComparison.OrdinalIgnoreCase) == true))
+            return new(false, false, "OpenAiReconnect");
         if (!connection.IsEnabled)
             return new ValidationResult(false, true, $"{Display(connection.Category)} configuration is inactive.");
         if (string.IsNullOrWhiteSpace(connection.Endpoint) || string.IsNullOrWhiteSpace(profile.Model))
@@ -144,6 +201,21 @@ public sealed class ProfileResolver
             return new ValidationResult(false, false, "This device only configuration must use a loopback endpoint.");
         if (profile.Temperature is < 0 or > 2 || profile.Timeout <= TimeSpan.Zero)
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration has invalid generation settings.");
+        if (connection.Provider == "openai-account")
+        {
+            if (connection.Category != ConnectionCategory.External || connection.Endpoint != UserConfiguration.DefaultExternalEndpoint || connection.Authentication != AuthenticationKind.OpenAiAccount)
+                return new(false, false, "OpenAiReconnect");
+            if (string.IsNullOrWhiteSpace(connection.SecretReference) || !secretVault.TryGetSecret(connection.SecretReference, out string session))
+                return new(false, false, "OpenAiReconnect");
+            try
+            {
+                using var json = System.Text.Json.JsonDocument.Parse(session);
+                if (!json.RootElement.TryGetProperty("access_token", out var access) || string.IsNullOrWhiteSpace(access.GetString()) ||
+                    !json.RootElement.TryGetProperty("scope", out var scope) || !(scope.GetString() ?? "").Split(' ').Contains("chatgpt.tokens.use.direct"))
+                    return new(false, false, "OpenAiPermissionMissing");
+            }
+            catch { return new(false, false, "OpenAiReconnect"); }
+        }
         if (connection.Authentication == AuthenticationKind.ApiKey && (string.IsNullOrWhiteSpace(connection.SecretReference) || !secretVault.TryGetSecret(connection.SecretReference, out _)))
             return new ValidationResult(false, false, $"{Display(connection.Category)} configuration requires a readable secret.");
         if (connection.Authentication == AuthenticationKind.BearerFromEnvironment)

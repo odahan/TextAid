@@ -47,6 +47,9 @@
                 <DataTrigger Binding="{Binding ActiveConnectionCategory}" Value="External">
                     <Setter Property="Fill" Value="{DynamicResource ErrorBrush}"/>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding IsOpenAiAccountActive}" Value="True">
+                    <Setter Property="Fill" Value="{DynamicResource OpenAiAccountBrush}"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
     </Window.Resources>
@@ -69,7 +72,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="{DynamicResource MainWindowHeading}" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource AppTitleBrush}"/>
-                <Border Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasActiveConnection, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding ActiveConnectionLabel}" Margin="10,0,0,0" Padding="5,2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="9">
+                <Border Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding HasActiveConnection, Converter={StaticResource BooleanToVisibilityConverter}}" ToolTip="{Binding ActiveConnectionLabel}" AutomationProperties.Name="{Binding ActiveConnectionLabel}" Margin="10,0,0,0" Padding="5,2" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="9">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse Style="{StaticResource ConnectionIndicatorDot}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                         <TextBlock Text="{Binding ActiveConnectionSymbol}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -80,6 +83,13 @@
                 <Button Content="☰" Click="OnShowApplicationMenu" ToolTip="{DynamicResource ApplicationMenuToolTip}" Width="42" Padding="0" HorizontalAlignment="Center" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
             </Grid>
             <StackPanel Grid.Row="2">
+                <ComboBox ItemsSource="{Binding ModelChoices}" SelectedItem="{Binding SelectedModelChoice}" IsEnabled="{Binding CanSelectModel}" Visibility="{Binding ShowModelSelector, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.Name="{DynamicResource NextActionModelLabel}" ToolTip="{DynamicResource NextActionModelLabel}" Margin="0,0,0,8">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <Border Background="Transparent" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="8" Margin="0,0,0,0">
                     <StackPanel Grid.Column="1">
                         <ItemsControl ItemsSource="{Binding Presets}">
@@ -134,7 +144,7 @@
             <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="40"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -154,6 +164,20 @@
                     </StackPanel>
                 </StackPanel>
                 <TextBox x:Name="InputEditor" Grid.Row="2" Grid.Column="0" Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                <Button Grid.Row="2" Grid.Column="1" Command="{Binding TransferResultCommand}" ToolTip="{DynamicResource TransferResultLabel}" AutomationProperties.Name="{DynamicResource TransferResultLabel}" Width="40" Height="48" VerticalAlignment="Center" Padding="0" BorderThickness="0" Background="Transparent">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Grid Background="Transparent">
+                                <Path x:Name="Triangle" Data="M 0,12 L 18,0 L 18,24 Z" Fill="{DynamicResource TransferBrush}" Width="18" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Triangle" Property="Fill" Value="{DynamicResource TransferHoverBrush}"/></Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Triangle" Property="Fill" Value="{DynamicResource TransferHoverBrush}"/><Setter TargetName="Triangle" Property="Stroke" Value="{DynamicResource FocusBrush}"/><Setter TargetName="Triangle" Property="StrokeThickness" Value="2"/></Trigger>
+                                <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Triangle" Property="Fill" Value="{DynamicResource DisabledBrush}"/></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
                 <Border Grid.Row="2" Grid.Column="2" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6" Padding="12">
                     <Grid>
                         <FlowDocumentScrollViewer x:Name="MarkdownPreview" Visibility="Collapsed" IsTabStop="True" Focusable="True" VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Rendered Markdown preview"/>

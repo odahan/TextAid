@@ -24,6 +24,16 @@ public sealed class AiClientFactory
         if (connection.Provider.Equals("openai-compatible", StringComparison.OrdinalIgnoreCase))
             return new OpenAiCompatibleChatClientFactory().Create(connection, profile);
 
+        if (connection.Provider == "openai-account")
+        {
+            if (profile.ProviderOptions.Count > 0) throw new OpenAiAccountException("OpenAiUnsupportedOptions");
+            if (connection.Category != ConnectionCategory.External || connection.Endpoint != UserConfiguration.DefaultExternalEndpoint || connection.Authentication != AuthenticationKind.OpenAiAccount || connection.SecretReference != "openai-account-session")
+                throw new OpenAiAccountException("OpenAiReconnect");
+            return new OpenAiAccountChatClient(
+                new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = Timeout.InfiniteTimeSpan },
+                OpenAiAccountSession.Create(connection.SecretReference), profile.Model);
+        }
+
         throw new NotSupportedException($"The '{connection.Provider}' provider is not supported.");
     }
 }

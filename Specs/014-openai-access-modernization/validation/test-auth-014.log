@@ -1,0 +1,16 @@
+Série de tests pour E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll
+System.AggregateException: One or more errors occurred. (Le processus vstest.console n’a pas réussi à se connecter au processus datacollector après 90 secondes. Cette situation peut se produire à cause de la lenteur de la machine. Définissez la variable d’environnement VSTEST_CONNECTION_TIMEOUT de sorte à augmenter le délai d’expiration.)
+ ---> Microsoft.VisualStudio.TestPlatform.ObjectModel.TestPlatformException: Le processus vstest.console n’a pas réussi à se connecter au processus datacollector après 90 secondes. Cette situation peut se produire à cause de la lenteur de la machine. Définissez la variable d’environnement VSTEST_CONNECTION_TIMEOUT de sorte à augmenter le délai d’expiration.
+   at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.DataCollection.ProxyDataCollectionManager.Initialize() in /_/src/vstest/src/Microsoft.TestPlatform.CrossPlatEngine/DataCollection/ProxyDataCollectionManager.cs:line 250
+   at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.ProxyExecutionManagerWithDataCollection.Initialize(Boolean skipDefaultAdapters) in /_/src/vstest/src/Microsoft.TestPlatform.CrossPlatEngine/Client/ProxyExecutionManagerWithDataCollection.cs:line 95
+   at Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Client.Parallel.ParallelProxyExecutionManager.<>c__DisplayClass29_0.<StartTestRunOnConcurrentManager>b__0() in /_/src/vstest/src/Microsoft.TestPlatform.CrossPlatEngine/Client/Parallel/ParallelProxyExecutionManager.cs:line 442
+   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location ---
+   at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+   --- End of inner exception stack trace ---
+
+Série de tests abandonnée.
+

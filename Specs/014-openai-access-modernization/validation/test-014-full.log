@@ -1,0 +1,310 @@
+  Identification des projets à restaurer...
+  Tous les projets sont à jour pour la restauration.
+  TextAid.Core -> E:\TextAid\src\TextAid.Core\bin\Release\net10.0\TextAid.Core.dll
+  TextAid.AI -> E:\TextAid\src\TextAid.AI\bin\Release\net10.0\TextAid.AI.dll
+E:\TextAid\tests\TextAid.AI.Tests\OpenAiAccountTests.cs(265,53): warning CS9124: Le paramètre 'string original' est capturé dans l'état du type englobant et sa valeur est également utilisée pour initialiser un champ, une propriété ou un événement. [E:\TextAid\tests\TextAid.AI.Tests\TextAid.AI.Tests.csproj]
+  TextAid.AI.Tests -> E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.AI.Tests\bin\Release\net10.0\TextAid.AI.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.18]   Discovering: TextAid.AI.Tests
+[xUnit.net 00:00:00.22]   Discovered:  TextAid.AI.Tests
+[xUnit.net 00:00:00.25]   Starting:    TextAid.AI.Tests
+  Réussi TextAid.AI.Tests.StartupModelWarmupTests.Preload_DoesNotContactOllamaWhenTheLocalProfileIsDisabledOrUnconfigured [3 ms]
+  Réussi TextAid.AI.Tests.StartupModelWarmupTests.Preload_StopsWhenTheApplicationExitsDuringTheInitialDelay [2 ms]
+  Réussi TextAid.AI.Tests.StartupModelWarmupTests.Preload_DelaysEachAttemptAndRetriesUnavailableOllamaOnlyUntilSuccess [11 ms]
+  Réussi TextAid.AI.Tests.OpenAiCompatibleChatClientFactoryTests.Create_NoneAuthentication_CreatesAnOpenAiCompatibleChatClient [28 ms]
+  Réussi TextAid.AI.Tests.OpenAiCompatibleChatClientFactoryTests.Create_ApiKey_RejectsAMissingProtectedCredential [1 ms]
+  Réussi TextAid.AI.Tests.OpenAiCompatibleChatClientFactoryTests.Create_ApiKey_UsesTheProtectedCredential [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_BoundsLongInputAndSamplesAcrossThePassage(length: 100000) [33 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_BoundsLongInputAndSamplesAcrossThePassage(length: 3001) [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_BoundsLongInputAndSamplesAcrossThePassage(length: 3000) [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_BoundsLongInputAndSamplesAcrossThePassage(length: 7500) [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PropagatesProviderFailures [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "zh-Hans") [5 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "hi") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "sv") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "fr-CA") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "fr") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "it") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_UsesTheProviderResponseIncludingLanguagesOutsideTheUiCatalog(language: "ja") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "[]") [2 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":\"fr\\nignore instructions\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "```json\n{\"language\":\"fr\"}\n```\nExtra text") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "French") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":\"fr\",\"confidence\":0.99}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":\"\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":42}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":\"French\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "{\"language\":\"fr\",\"language\":\"it\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "```json\n{\"language\":\"fr\"}\n{\"language\":\"en"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_RejectsMalformedOutputInsteadOfGuessing(response: "Here is the result: {\"language\":\"fr\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PreservesAnIndeterminateOrMultilingualResponse(response: "{\"language\":\"zxx\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PreservesAnIndeterminateOrMultilingualResponse(response: "{\"language\":null}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PreservesAnIndeterminateOrMultilingualResponse(response: "{\"language\":\"und\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PreservesAnIndeterminateOrMultilingualResponse(response: "{\"language\":\"mul\"}") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_AcceptsASingleJsonCodeFence(response: "  ```JSON\n{\"language\": \"fr\"}\n```  ") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_AcceptsASingleJsonCodeFence(response: "```json\n{\"language\": \"fr\"}\n```") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_AcceptsASingleJsonCodeFence(response: "```\r\n{\"language\": \"fr\"}\r\n```") [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PreservesSurrogatePairsWhenSampling [< 1 ms]
+  Réussi TextAid.AI.Tests.AiLanguageDetectionServiceTests.DetectAsync_PassesCancellationToTheProvider [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_RejectsPartialRefusedMalformedOrIncompleteWithoutRetry(stream: "data: malformed\n\n") [50 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_RejectsPartialRefusedMalformedOrIncompleteWithoutRetry(stream: "data: {\"type\":\"response.incomplete\"}\n\n") [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_RejectsPartialRefusedMalformedOrIncompleteWithoutRetry(stream: "data: {\"type\":\"response.output_text.delta\",\"d"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_RejectsPartialRefusedMalformedOrIncompleteWithoutRetry(stream: "data: [DONE]\n\n") [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_RejectsPartialRefusedMalformedOrIncompleteWithoutRetry(stream: "data: {\"type\":\"response.refusal.done\"}\n\n") [< 1 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_SendsOnePromptAndReturnsTheCompleteResponse [80 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_RejectsAnEmptyResponse [< 1 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_PropagatesCancellation [1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "nonce") [31 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_UsesTheConfiguredOutputBudgetForAnExternalProvider [1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "exp") [25 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_StopsWhenTheConfiguredTimeoutExpires [39 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.LanguageDetection_UsesOneShortMafRequestWithoutLocalReasoning [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "aud") [37 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "azp") [52 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "signature") [31 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Identity_RequiresSignedIssuerAudienceExpiryAndNonce(invalid: "iss") [27 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_GivesExternalProvidersMoreThanTheLegacyTwoMinuteTimeout [152 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_MapsTheThinkingChoiceToTheChatReasoningEffort [< 1 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_PropagatesProviderFailure [< 1 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.Inference_StreamsVisibleTextAndMetricsWithoutTheTransportDeadline [281 ms]
+  Réussi TextAid.AI.Tests.MafTextTransformationServiceTests.TransformAsync_ReservesHalfOfTheLocalContextForOutput [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Refresh_IsSerializedAndRotatedTokenIsPersistedBeforeReuse [54 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.SignIn_ValidatesAndPersistsOwnRegistration_AndFailedReplacementPreservesSession [76 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.Inference_StillHonorsTheProfileDeadlineAndReportsAnIncompleteRequest [108 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.SignIn_CancellationPreservesPreviouslyValidCredentials [3 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.ModelDiscovery_UsesOfferedSlugsAndDoesNotGenerate [3 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.MissingPlanPermission_PreventsAllInferenceHttpRequests [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=state&code=code&client_id=wro"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=wrong&code=code&client_id=oai"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=state&state=state&code=code&c"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=state&error=access_denied") [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=state&client_id=oaiapp_test") [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/wrong?state=state&code=code&client_id=oaiapp_test") [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Callback_RejectsUntrustedOrAmbiguousValues(path: "/auth/callback?state=state&code=code&client_id=oai"···) [< 1 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.ModelState_ReportsMemoryContextAndRetentionAndAcceptsTheDefaultTag [9 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.Warmup_HonorsTheProfileDeadline [116 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.Inference_SendsTheActionContextAndThinkingOverride [1 ms]
+  Réussi TextAid.AI.Tests.OllamaInferenceTests.Warmup_UsesTheProfileContextWithoutOverridingServerRetention [7 ms]
+[xUnit.net 00:00:02.74]     TextAid.AI.Tests.OpenAiAccountTests.Loopback_IsCancellableAndDisposedPortCannotAcceptReplay [FAIL]
+[xUnit.net 00:00:02.74]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:02.75]       Expected: typeof(System.Net.Http.HttpRequestException)
+[xUnit.net 00:00:02.75]       Actual:   typeof(System.Threading.Tasks.TaskCanceledException)
+[xUnit.net 00:00:02.75]       ---- System.Threading.Tasks.TaskCanceledException : The request was canceled due to the configured HttpClient.Timeout of 2 seconds elapsing.
+[xUnit.net 00:00:02.75]       -------- System.TimeoutException : A task was canceled.
+[xUnit.net 00:00:02.75]       ------------ System.Threading.Tasks.TaskCanceledException : A task was canceled.
+[xUnit.net 00:00:02.75]       Stack Trace:
+[xUnit.net 00:00:02.77]            at TextAid.AI.Tests.OpenAiAccountTests.Loopback_IsCancellableAndDisposedPortCannotAcceptReplay()
+[xUnit.net 00:00:02.77]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:02.77]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:02.77]            at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+[xUnit.net 00:00:02.77]            at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+[xUnit.net 00:00:02.77]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:02.77]         
+[xUnit.net 00:00:02.77]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:02.77]            at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+[xUnit.net 00:00:02.77]            at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+[xUnit.net 00:00:02.77]            at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+[xUnit.net 00:00:02.77]            at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|118_0(HttpRequestMessage request, CancellationToken cancellationToken)
+[xUnit.net 00:00:02.77]            at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+  Échoué TextAid.AI.Tests.OpenAiAccountTests.Loopback_IsCancellableAndDisposedPortCannotAcceptReplay [2 s]
+  Message d'erreur :
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(System.Net.Http.HttpRequestException)
+Actual:   typeof(System.Threading.Tasks.TaskCanceledException)
+---- System.Threading.Tasks.TaskCanceledException : The request was canceled due to the configured HttpClient.Timeout of 2 seconds elapsing.
+-------- System.TimeoutException : A task was canceled.
+------------ System.Threading.Tasks.TaskCanceledException : A task was canceled.
+  Arborescence des appels de procédure :
+     at TextAid.AI.Tests.OpenAiAccountTests.Loopback_IsCancellableAndDisposedPortCannotAcceptReplay()
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+----- Inner Stack Trace -----
+
+----- Inner Stack Trace -----
+   at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)
+   at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)
+   at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)
+   at System.Net.Http.SocketsHttpHandler.<SendAsync>g__CreateHandlerAndSendAsync|118_0(HttpRequestMessage request, CancellationToken cancellationToken)
+   at System.Net.Http.HttpClient.<SendAsync>g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Refresh_TerminalRevocationClearsTokens_TransientFailurePreservesThem(terminal: True) [1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Refresh_TerminalRevocationClearsTokens_TransientFailurePreservesThem(terminal: False) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Refresh_ReadBackFailure_RestoresPreviousProtectedRecord [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_MapsMafMessagesAndRequiresTerminalSuccess(missingContentType: False) [1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Responses_MapsMafMessagesAndRequiresTerminalSuccess(missingContentType: True) [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Factory_RejectsArbitraryAccountEndpoint [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.Pkce_UsesS256RfcVectorAndTextAidIdentity [< 1 ms]
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.UnsupportedOptions_FailBeforeNetworkOrRefresh [< 1 ms]
+[xUnit.net 00:00:02.77]   Finished:    TextAid.AI.Tests
+  Réussi TextAid.AI.Tests.OpenAiAccountTests.SignOut_ClearsLocalTokensDespiteRemoteFailure [1 ms]
+
+Échec de la série de tests.
+Nombre total de tests : 88
+     Réussi(s) : 87
+     Non réussi(s) : 1
+ Durée totale : 3,1144 Secondes
+  TextAid.Core.Tests -> E:\TextAid\tests\TextAid.Core.Tests\bin\Release\net10.0\TextAid.Core.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.Core.Tests\bin\Release\net10.0\TextAid.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.15]   Discovering: TextAid.Core.Tests
+[xUnit.net 00:00:00.19]   Discovered:  TextAid.Core.Tests
+[xUnit.net 00:00:00.21]   Starting:    TextAid.Core.Tests
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.ValidateTemplate_RejectsUnsupportedOrMalformedPlaceholders(template: "{{language}}") [2 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_UsesConfiguredDirection(detected: "en-GB", userLanguage: "fr-FR", preferredLanguage: "en-US", expected: "fr-FR") [2 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.FailedDetection_CanBeRetriedWithoutChangingInput [4 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.ValidateTemplate_RejectsUnsupportedOrMalformedPlaceholders(template: "{{text") [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.ValidateTemplate_RejectsUnsupportedOrMalformedPlaceholders(template: "text }}") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_UsesConfiguredDirection(detected: "fr-CA", userLanguage: "en", preferredLanguage: "fr", expected: "en") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_UsesConfiguredDirection(detected: "de", userLanguage: "en", preferredLanguage: "fr", expected: "en") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_UsesConfiguredDirection(detected: "fr-CA", userLanguage: "fr-FR", preferredLanguage: "en", expected: "en") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_UsesConfiguredDirection(detected: "en", userLanguage: "en", preferredLanguage: "fr", expected: "fr") [< 1 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.ClosingSession_CancelsThePendingDetection [2 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.ChangedInput_ResetsAnAutomaticDestinationButPreservesAnExplicitChoice [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.DefaultRouting_PrefersAccountOnlyWithinExternal(requested: "account-profile", expected: "account-profile") [9 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.DefaultRouting_PrefersAccountOnlyWithinExternal(requested: "local-default", expected: "local-default") [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.DefaultRouting_PrefersAccountOnlyWithinExternal(requested: "external-default", expected: "account-profile") [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.DefaultRouting_PrefersAccountOnlyWithinExternal(requested: "network-default", expected: "network-default") [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.Transfer_PreservesRawTextTargetAndLanguageAcrossExplicitGenerations(target: 123) [2 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.Transfer_PreservesRawTextTargetAndLanguageAcrossExplicitGenerations(target: 0) [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.BothCloudOnly_ResolvesSoleCategoryToAccount [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_MultipleEligibleRemoteChoices_DoesNotPromoteLocalActionAutomatically [10 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_RejectsStaleOutputUntilTheCurrentGenerationCompletes [3 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.InvalidConfiguredAccount_NeverSilentlyUsesKeyPeer [6 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Model) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Paste) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Cancellation) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Provider) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: SourceWindow) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Configuration) [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.Transfer_RejectsLateLanguageAndGenerationUpdatesEvenWhenTextIsUnchanged [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Clipboard) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.UserFacingErrors_ProvideRecoveryGuidance(failure: Localization) [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.ExactOverride_IsAuthoritative(requested: "external-default") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_ChangingInputInvalidatesACompletedOrPendingResult [< 1 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.Detection_IsSharedWithProcessingAndReusedAcrossActions [4 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.TryValidate_RejectsInvalidOrIncompatibleCatalogs(json: "not json") [22 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_FreeInput_WaitsForAiLanguageDetection [1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_ExternalConfigurationUsingEnvironmentAuthentication_OffersUserControlledDowngrade [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.TryValidate_RejectsInvalidOrIncompatibleCatalogs(json: "{\"Greeting\":\"Bonjour {name}\",\"Extra\":\"x\"}") [< 1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.ExactOverride_IsAuthoritative(requested: "network-default") [4 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.ExactOverride_IsAuthoritative(requested: "local-default") [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.QuickTranslationRouting_RejectsAnUndeterminedSource [1 ms]
+  Réussi TextAid.Core.Tests.ModernizationTests.InactiveAccount_IsIgnored [< 1 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.IndeterminateDetection_IsCachedWithoutChoosingATranslationDirection [< 1 ms]
+  Réussi TextAid.Core.Tests.InputLanguageDetectionTests.ChangedInput_CancelsDetectionAndRejectsAStaleResponseEvenWhenTextIsRestored [1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.TryValidate_RejectsInvalidOrIncompatibleCatalogs(json: "{\"Greeting\":\"Bonjour\",\"Save\":\"Enregistrer\""···) [4 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.DebugLog_Disabled_DoesNotCreateAFile [8 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_NewGeneration_CancelsThePreviousRequestAndClearsOutput [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_OpenAiCompatibleConnectionOutsideExternalCategory_IsInvalid [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LoopbackClassification_AllowsOnlyThisDeviceHosts(host: "example.test", expected: False) [1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LoopbackClassification_AllowsOnlyThisDeviceHosts(host: "localhost", expected: True) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LoopbackClassification_AllowsOnlyThisDeviceHosts(host: "192.168.1.20", expected: False) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LoopbackClassification_AllowsOnlyThisDeviceHosts(host: "127.0.0.1", expected: True) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LoopbackClassification_AllowsOnlyThisDeviceHosts(host: "::1", expected: True) [1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.TryDelete_RemovesOnlyTheGeneratedCacheAndItsMetadata [13 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.ValidateConfiguration_AcceptsDistinctLanguageAndShortcutPreferences [4 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.ValidateConfiguration_RejectsDuplicateIdsInvalidLanguagesAndConflictingShortcuts [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.ValidateConfiguration_AllowsMatchingInterfaceAndTranslationLanguages [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.LanguageOption_UsesItsReadableLabelWhenRenderedAsAnObject [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_InactiveExternal_TreatsItAsUnconfiguredAndDowngradesAutomatically [1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_FreeInput_ClearsSupplementaryInstructionsAndReplacementTarget [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.ValidateConfiguration_RejectsUnsupportedProvidersAndInsecureExternalEndpoints [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.HasEnabledConfiguredProvider_RequiresAnEnabledConnectionEndpointAndModel [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.Import_RejectionPreservesExistingCache(packContents: "{\"formatVersion\":1,\"language\":\"fr\",\"sourceF"···, expected: Incompatible) [13 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.DebugLog_Enabled_TruncatesAndNeverWritesSensitiveValues [18 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.Import_RejectionPreservesExistingCache(packContents: "{\"formatVersion\":1,\"language\":\"fr\",\"sourceF"···, expected: InvalidTranslations) [10 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.Import_RejectionPreservesExistingCache(packContents: "not json", expected: InvalidJson) [11 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.DebugLog_FullMode_WritesDiagnosticTextButRedactsCredentials [11 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.HasEnabledConfiguredProvider_RecognizesAnyEnabledProviderCategory [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_InvalidConfiguredExternal_OffersUserControlledDowngrade [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_UnconfiguredExternal_AutomaticallyDowngradesToLocalWithStatus [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.Resolve_OnlyActiveExternal_PromotesLocalActionAutomaticallyAndVisibly [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_StandardActionMode_RetainsFreeInputButClearsFreeMode [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Delete_RemovesAnOrdinaryActionAndRetainsAValidSet [75 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Actions_RejectInvalidContextOverrides(context: 511) [1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Actions_RejectInvalidContextOverrides(context: 0) [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Actions_RejectInvalidContextOverrides(context: -1) [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.DpapiSecretVault_StoresEncryptedBytesOutsideConfiguration [17 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.InvocationSession_MarkdownOutput_IsDisabledByDefaultAndCanBeEnabled [< 1 ms]
+  Réussi TextAid.Core.Tests.ConnectionsAndProfilesTests.OfferDowngradeAfterProviderFailure_RequiresUserConfirmation [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Load_ExposesValidUserActionWithoutRecompilation [16 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.Import_ValidPackReplacesSuggestedCacheButPreservesPersonalOverrides [28 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.TryValidate_AcceptsCompleteCatalogWithPreservedPlaceholders [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.GenerateAsync_InvalidCatalogDoesNotReplaceTheExistingValidatedCache [5 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Delete_RejectsTheReservedTranslateAction [12 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.LoadOrEnglish_RejectsACacheFromAnotherEnglishSource [3 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.SourceFingerprint_IsStableForTheSameEnglishSource [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.GenerateAsync_ProviderFailureLeavesNoCacheAndReportsEnglishSafeFallback [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.PersonalOverride_TakesPrecedenceAndCanBeRestored [5 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.Load_LockedCacheReturnsEnglishWithUnreadableStatus [7 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Translate_PreservesInferenceOverridesAcrossLoadAndRestoresItsSystemPrompt [25 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Render_ReplacesTextOnceAndLeavesInjectedBracesLiteral [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.BuiltInDisplayName_UsesTheUiResolverButNeverOverridesAUserName [< 1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.GenerateInBatchesAsync_ReplacesStaleCacheOnlyAfterEveryBatchIsValid [18 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Load_RestoresTheBuiltInReservedTranslateAction [17 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Validate_RejectsAnInvalidOutputLanguage [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Render_ReplacesAnswerOrUsesAnEmptyStringWhenNoAnswerWasProvided [< 1 ms]
+[xUnit.net 00:00:00.42]   Finished:    TextAid.Core.Tests
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Save_RejectsActionIdsThatCouldEscapeTheActionDirectory(id: "../outside") [1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Save_RejectsActionIdsThatCouldEscapeTheActionDirectory(id: "bad:name") [1 ms]
+  Réussi TextAid.Core.Tests.LocalizationCatalogTests.GenerateAsync_ReplacesStaleCacheWithCurrentFingerprint [15 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Save_RejectsActionIdsThatCouldEscapeTheActionDirectory(id: "..\\outside") [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Load_CreatesAndValidatesAllBuiltInActions [9 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Actions_DefaultThinkingOffAndInheritTheProfileContext [< 1 ms]
+  Réussi TextAid.Core.Tests.DeclarativeActionsTests.Save_CreatesAUserActionAfterRestoringTranslate [20 ms]
+
+Série de tests réussie.
+Nombre total de tests : 102
+     Réussi(s) : 102
+ Durée totale : 0,7721 Secondes
+  TextAid.Platform.Windows -> E:\TextAid\src\TextAid.Platform.Windows\bin\Release\net10.0-windows\TextAid.Platform.Windows.dll
+  TextAid.App -> E:\TextAid\src\TextAid.App\bin\Release\net10.0-windows\win-x64\TextAid.dll
+  TextAid.Platform.Windows.Tests -> E:\TextAid\tests\TextAid.Platform.Windows.Tests\bin\Release\net10.0-windows\TextAid.Platform.Windows.Tests.dll
+Série de tests pour E:\TextAid\tests\TextAid.Platform.Windows.Tests\bin\Release\net10.0-windows\TextAid.Platform.Windows.Tests.dll (.NETCoreApp,Version=v10.0)
+Au total, 1 fichiers de test ont correspondu au modèle spécifié.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:00.23]   Discovering: TextAid.Platform.Windows.Tests
+[xUnit.net 00:00:00.26]   Discovered:  TextAid.Platform.Windows.Tests
+[xUnit.net 00:00:00.27]   Starting:    TextAid.Platform.Windows.Tests
+  Réussi TextAid.Platform.Windows.Tests.WindowsStartupRegistrationTests.RegistrationFailureIsPropagatedForRecoverableUiFeedback [3 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.KeyRepeatCannotTrigger [3 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.TripleCTriggersOnce [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.ExpiredGestureDoesNotTrigger [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.ReleasedControlResetsGesture [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.CWithoutControlCannotArmGesture [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.OrdinaryCopyDoesNotTrigger [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.RightControlAlsoTriggers [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.DoubleCopyTriggersOnSecondPhysicalPress [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.DoubleCopyDetectorTests.InterveningKeyResetsGesture [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.WindowsStartupRegistrationTests.EnablingCreatesOnlyTextAidCurrentUserRegistration [125 ms]
+  Réussi TextAid.Platform.Windows.Tests.ShortcutSequenceDetectorTests.TranslationSequence_AllowsAMeasuredPauseBetweenCopyAndT [130 ms]
+  Réussi TextAid.Platform.Windows.Tests.ShortcutSequenceDetectorTests.DefaultTranslationSequence_RecognizesCtrlCThenT [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ShortcutSequenceDetectorTests.DifferentModifiers_DoNotTriggerAConfiguredSequence [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.TargetClosedWhileWaitingForModifiersPreventsPaste [132 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.InvalidCapturedTargetNeverRestoresFocusOrPastes [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.WindowsStartupRegistrationTests.DisablingRemovesOnlyTextAidRegistration [2 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.InputInjectionFailureDoesNotReportAReplacement [1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.ReleasedModifiersPermitPasteIntoCapturedTarget [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.StreamingPreviewTests.PartialOutput_CannotBeCopiedOrReplacedAndDisappearsAfterFailure [181 ms]
+  Réussi TextAid.Platform.Windows.Tests.StreamingPreviewTests.CompletedOutput_ReplacesThePreviewAndEnablesResultActions [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ModernizationViewModelTests.Selector_RefreshResetAndRunningSnapshot_DoNotEraseResultOrProvider [188 ms]
+  Réussi TextAid.Platform.Windows.Tests.InputLanguageViewModelTests.BackgroundDetection_KeepsTheUiResponsiveAndPublishesItsResultOnTheUiThread [189 ms]
+  Réussi TextAid.Platform.Windows.Tests.ModernizationViewModelTests.Transfer_PerformsNoResultActionOrProcessingAndPreservesTarget [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.PressedModifiersPreventPaste [313 ms]
+  Réussi TextAid.Platform.Windows.Tests.MarkdownPreviewRendererTests.MarkdownPreview_RendersSupportedConstructsAsAnInertFlowDocument [565 ms]
+  Réussi TextAid.Platform.Windows.Tests.MarkdownPreviewRendererTests.MarkdownPreview_FallsBackWhenRenderingFails [1 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.UnfocusedRestoredTargetNeverPastes [310 ms]
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.FocusLostWhileWaitingForModifiersPreventsPaste [< 1 ms]
+[xUnit.net 00:00:01.13]   Finished:    TextAid.Platform.Windows.Tests
+  Réussi TextAid.Platform.Windows.Tests.ResultActionsTests.CopyDoesNotRestoreFocusOrPaste [< 1 ms]
+  Réussi TextAid.Platform.Windows.Tests.NativeResultFocusTests.RestoringAnActiveWindowPreservesItsFocusedChild [59 ms]
+
+Série de tests réussie.
+Nombre total de tests : 31
+     Réussi(s) : 31
+ Durée totale : 1,7896 Secondes

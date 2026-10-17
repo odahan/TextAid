@@ -190,6 +190,34 @@
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>
+                <TabItem Header="{DynamicResource OpenAiSignInLabel}" Style="{StaticResource DarkTabItem}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+                        <StackPanel>
+                            <TextBlock Text="{DynamicResource OpenAiSignInLabel}" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="{DynamicResource OpenAiPrivacyHelp}" TextWrapping="Wrap" Margin="0,8,0,12"/>
+                            <CheckBox Content="{DynamicResource ActiveLabel}" IsChecked="{Binding OpenAiAccountEnabled}" Margin="0,0,0,12"/>
+                            <WrapPanel>
+                                <Button Content="{DynamicResource ContinueWithChatGptLabel}" Command="{Binding SignInOpenAiCommand}" Margin="0,0,8,8"/>
+                                <Button Content="{DynamicResource CancelLabel}" Command="{Binding CancelOpenAiSignInCommand}" Margin="0,0,8,8"/>
+                                <Button Content="{DynamicResource OpenAiSignOutLabel}" Command="{Binding SignOutOpenAiCommand}" Margin="0,0,8,8"/>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding OpenAiAccountStatus}" TextWrapping="Wrap" Margin="0,8,0,12"/>
+                            <TextBlock Text="{DynamicResource ModelLabel}" FontWeight="SemiBold"/>
+                            <ComboBox ItemsSource="{Binding OpenAiAccountModels}" SelectedValuePath="Slug" SelectedValue="{Binding OpenAiAccountModel}" Margin="0,6,0,12">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <WrapPanel>
+                                <Button Content="{DynamicResource LoadExternalModelsLabel}" Command="{Binding LoadOpenAiModelsCommand}" Margin="0,0,8,8"/>
+                                <Button Content="{DynamicResource TestConnectionLabel}" Command="{Binding TestOpenAiCommand}" Margin="0,0,8,8"/>
+                            </WrapPanel>
+                            <ProgressBar IsIndeterminate="True" Height="4" Visibility="{Binding IsOpenAiBusy, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
                 <TabItem Header="{DynamicResource ProfilesTabLabel}" Style="{StaticResource DarkTabItem}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
                         <StackPanel>

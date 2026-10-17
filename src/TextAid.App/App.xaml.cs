@@ -274,7 +274,7 @@ public partial class App : Application
                 }
                 if (resolution.Connection is not null && session.State != InvocationState.Transforming)
                 {
-                    window.SetActiveConnection(resolution.Connection.Category);
+                    window.SetActiveConnection(resolution.Connection, resolution.Profile!);
                 }
                 return await DetectLanguageWithResolutionAsync(input, resolution, translation, token);
             });
@@ -302,8 +302,9 @@ public partial class App : Application
             var transformation = new MafTextTransformationService(
                 _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
                 resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
-                maxOutputTokens: 128,
-                reportDiagnostics: diagnostics => LogInferenceDiagnostics("language-detection-timing", diagnostics));
+                maxOutputTokens: resolution.Connection.Provider == "openai-account" ? null : 128,
+                reportDiagnostics: diagnostics => LogInferenceDiagnostics("language-detection-timing", diagnostics),
+                honorConfiguredTimeout: resolution.Connection.Provider == "openai-account");
             var detection = new AiLanguageDetectionService(transformation);
             return await detection.DetectAsync(input, action.ApplyInferenceSettings(CreateTransformationSettings(resolution.Profile, resolution.Connection)), token);
         }, token);
@@ -314,10 +315,24 @@ public partial class App : Application
 
     private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, int generation)
     {
-        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-        var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
-        ProfileResolution resolution = resolver.Resolve(action.ProfileId);
-        await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, generation);
+        try
+        {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
+            ProfileResolution resolution = resolver.Resolve(session.RunningProfileId ?? action.ProfileId, exact: session.RunningProfileId is not null);
+            resolution = resolution with { Status = LocalizeResolutionStatus(resolution.Status) };
+            await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, generation);
+        }
+        catch (Exception exception)
+        {
+            debugLog.WriteException("configuration", exception);
+            if (window.IsLoaded && generation == session.Generation)
+                window.ShowFailure(session.RunningProfileId is null ? await GetRecoveryMessageAsync(UserFacingFailure.Configuration) : UserFacingErrorMapper.GetMessage(UserFacingFailure.Configuration));
+        }
+        finally
+        {
+            if (generation == session.Generation) window.ResetModelChoice();
+        }
     }
 
     private async Task TransformWithResolutionAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution resolution, int generation)
@@ -327,7 +342,9 @@ public partial class App : Application
             if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Profile is null || resolution.Connection is null)
             {
                 debugLog.Write("configuration-rejected", ("requestedCategory", resolution.RequestedCategory));
-                window.ShowFailure(await GetRecoveryMessageAsync(UserFacingFailure.Configuration, resolution.Status));
+                window.ShowFailure(session.RunningProfileId is null
+                    ? await GetRecoveryMessageAsync(UserFacingFailure.Configuration, resolution.Status)
+                    : resolution.Status);
                 return;
             }
 
@@ -337,7 +354,9 @@ public partial class App : Application
                 return;
             }
 
-            window.SetActiveConnection(resolution.Connection.Category);
+            window.SetActiveConnection(resolution.Connection, resolution.Profile);
+            if (resolution.Connection.Provider == "openai-account" && (action.ContextSizeOverride is not null || action.Thinking != ThinkingMode.Off))
+                throw new OpenAiAccountException("OpenAiUnsupportedOptions");
             TextTransformationSettings settings = action.ApplyInferenceSettings(CreateTransformationSettings(resolution.Profile, resolution.Connection));
 
             window.ShowTransforming((string)FindResource("DetectingInputLanguageMessage"));
@@ -399,20 +418,21 @@ public partial class App : Application
             var resolvedTransformationService = new MafTextTransformationService(
                 _ => chatClientFactory.Create(resolution.Connection, resolution.Profile),
                 resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
-                DefaultActionOutputTokenBudget,
+                resolution.Connection.Provider == "openai-account" ? null : DefaultActionOutputTokenBudget,
                 reportDiagnostics: diagnostics => LogInferenceDiagnostics("transformation-timing", diagnostics),
                 reportPreview: preview => window.Dispatcher.BeginInvoke(() =>
                 {
                     if (window.IsLoaded && generation == session.Generation && session.State == InvocationState.Transforming)
                         window.ShowPartialResult(preview);
-                }));
+                }), honorConfiguredTimeout: resolution.Connection.Provider == "openai-account");
             string output = await resolvedTransformationService.TransformAsync(
                 new TextTransformationRequest(
                     inputText,
                     instruction,
                     settings),
                 session.Cancellation.Token);
-            if (!window.IsLoaded || !session.TryCompleteGeneration(generation, output)) return;
+            string? resultLanguage = outputLanguageCode.Equals("Unchanged", StringComparison.OrdinalIgnoreCase) ? detectedInputLanguage : outputLanguageCode;
+            if (!window.IsLoaded || !session.TryCompleteGeneration(generation, output, resultLanguage)) return;
             session.SupplementaryInstructions = null;
             debugLog.Write("transformation-completed", ("outputLength", output.Length));
             debugLog.WriteFullText("transformation-output", output);
@@ -424,6 +444,12 @@ public partial class App : Application
         {
             // Closing the session is a normal cancellation path.
             debugLog.Write("transformation-cancelled");
+        }
+        catch (OpenAiAccountException exception)
+        {
+            if (generation == session.Generation)
+                await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution,
+                    UiStrings.TryGet(exception.Message) ?? UiStrings.Get("OpenAiRequestFailed"), generation);
         }
         catch (LanguageDetectionResponseException exception)
         {
@@ -445,7 +471,7 @@ public partial class App : Application
                 : UserFacingFailure.Provider;
             string failure = resolution.Connection?.Category == ConnectionCategory.External && failureKind != UserFacingFailure.Model
                 ? GetExternalProviderFailureMessage(exception)
-                : await GetRecoveryMessageAsync(failureKind);
+                : session.RunningProfileId is not null ? UserFacingErrorMapper.GetMessage(failureKind) : await GetRecoveryMessageAsync(failureKind);
             if (generation == session.Generation) await OfferProviderFailureDowngradeAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, failure, generation);
         }
     }
@@ -490,12 +516,19 @@ public partial class App : Application
         ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
         if (action is null)
         {
+            window.ResetModelChoice();
             debugLog.Write("user-facing-failure", ("category", UserFacingFailure.Configuration));
             window.ShowFailure((string)FindResource("SelectedActionUnavailableMessage"));
             return;
         }
 
-        if (!session.IsFreeMode && action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion)) return;
+        if (!session.IsFreeMode && action.AskForUserInstructions && string.IsNullOrWhiteSpace(session.SupplementaryInstructions) && !TryCollectInstructions(window, session, action.UserInstructionsQuestion))
+        {
+            session.InvalidateResult();
+            window.ShowFailure((string)FindResource("ConfigurationDowngradeCancelledMessage"));
+            window.ResetModelChoice();
+            return;
+        }
         string inputSnapshot = session.InputText;
         string? instructionsSnapshot = session.SupplementaryInstructions;
         int generation = session.StartNewGeneration();
@@ -512,6 +545,11 @@ public partial class App : Application
 
     private async Task OfferProviderFailureDowngradeAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution usedResolution, string providerFailure, int generation)
     {
+        if (session.RunningProfileId is not null)
+        {
+            window.ShowFailure(providerFailure);
+            return;
+        }
         if (usedResolution.Connection is null)
         {
             window.ShowFailure(providerFailure);
@@ -530,6 +568,14 @@ public partial class App : Application
 
     private static bool ConfirmDowngrade(Window owner, string message) =>
         MessageBox.Show(owner, message, (string)Current.FindResource("ProductName"), MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+
+    /// <summary>Resolves account-specific status keys without moving localization into Core.</summary>
+    private static string LocalizeResolutionStatus(string status)
+    {
+        foreach (string key in new[] { "OpenAiReconnect", "OpenAiPermissionMissing", "OpenAiUnsupportedOptions" })
+            status = status.Replace(key, UiStrings.Get(key), StringComparison.Ordinal);
+        return status;
+    }
 
     /// <summary>Opens the optional per-invocation instructions editor without changing action data.</summary>
     private void EditInstructions(MainWindow window, InvocationSession session) => TryCollectInstructions(window, session);
@@ -660,6 +706,7 @@ public partial class App : Application
             ApplyCachedLocale(UserConfiguration.LoadConfiguration().UserLanguage, UserConfiguration.LoadLocalizationPreferences().PreferEnglishUi);
             if (localeFallbackNotice is not null) tray?.ShowInfo(localeFallbackNotice);
             sessionWindow?.SetFullLogActive(UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode());
+            sessionWindow?.RefreshModelChoices();
         };
         settingsWindow.Closed += (_, _) =>
         {

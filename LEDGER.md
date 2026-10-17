@@ -864,3 +864,26 @@ Translate's identity, prompt, profile, enabled state, and routing remain protect
 
 Replaces: D-016's blanket prohibition only for the two new inference fields.
 Replaced by: None
+
+## D-046 — Plan OpenAI sign-in modernization and explicit sequential processing
+
+Date: 2026-10-18T00:00:00+02:00
+Decided by: Olivier
+Source: Olivier's request to write specification 014, named “Modernisation accès OpenAI”, including result transfer and a one-action model selector.
+Related: LOT-014; R-001, R-004, R-005, R-022, R-024, R-027, R-028, R-029, R-032; D-011, D-029, D-036, D-042, D-044.
+
+Decision:
+Plan a fourth, OpenAI-specific sign-in connection alongside the three existing types. It occupies the same External privacy/routing rank as compatible API-key access and takes preference when both are configured and eligible during default resolution. Add a filled, hover-colored left-pointing triangle to transfer completed raw output into the input for another explicit operation, and a model selector visible only with multiple active configured choices. Default is neutral; a specific connection/model overrides all automatic provider choices for one action and resets at its end.
+
+Reason:
+Olivier wants account-based OpenAI access without an API key, successive transformations of working text, and deliberate per-action control of the model. SmallBazar provides a documented sign-in prototype and implementation reference.
+
+Consequences:
+Create SPEC-014, FINDINGS-014 and GATES-014 and register LOT-014 as Planned. This decision authorizes specification preparation, not implementation startup, a HUMAN gate verdict or closure. LOT-014 requirements define the detailed prospective behavior and acceptance checks.
+
+For LOT-014 and its resulting versions only, supplement the historical R-005/R-029 three-connection wording with a fourth connection sharing the External category. Supplement R-027/D-029 with the within-External preference, including the both-cloud-only tie; preserve other category boundaries and error recovery. Supplement R-022/R-024's action-profile routing with the transient explicit override, including reserved Translate, without editing its protected saved definition. Extend R-001's one-transformation scope only to allow a user to transfer the latest result and explicitly initiate another independent transformation in the same session. This is not an autonomous chain, history or chat. R-004's MAF boundary, R-028 secret protection and R-017 source replacement safety remain mandatory. Olivier further clarified that automatic cloud selection always prefers OpenAI sign-in on cost grounds when both methods are configured; most users will configure only one. Transfer carries the result's known language into the input without another detection call. This supplements R-032 for unchanged transferred text; unknown language or subsequent text editing still uses its asynchronous detection/invalidation path.
+
+Scope/impact review: no V1 or other closed lot is reopened, and no accepted result or historical gate changes. The preserved source/V1 exclusions remain historical. The new rule interpretations take effect with LOT-014 implementation; current executable behavior is unchanged by this documentary operation. No application-owned account, credential import, silent billing fallback or extra deployment category is authorized.
+
+Replaces: Only the future applicability of the specific three-connection, default-profile-only and one-operation-per-session clauses identified above; original texts and closed results are preserved.
+Replaced by: None

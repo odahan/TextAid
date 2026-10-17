@@ -71,6 +71,95 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private bool isGeneratingLocale;
     [ObservableProperty] private bool isLoadingExternalModels;
     [ObservableProperty] private bool startWithWindows;
+    [ObservableProperty] private bool openAiAccountEnabled;
+    [ObservableProperty] private string openAiAccountModel = string.Empty;
+    [ObservableProperty] private string openAiAccountStatus = UiStrings.Get("OpenAiDisconnected");
+    [ObservableProperty] private bool isOpenAiBusy;
+    private readonly OpenAiAccountSession accountSession = OpenAiAccountSession.Create();
+    private CancellationTokenSource? accountCancellation;
+    public ObservableCollection<OpenAiAccountModel> OpenAiAccountModels { get; } = [];
+
+    /// <summary>Cancels account work when Settings closes or the user cancels sign-in.</summary>
+    [RelayCommand]
+    public void CancelOpenAiSignIn() => accountCancellation?.Cancel();
+
+    /// <summary>Starts TextAid's own cancellable system-browser registration.</summary>
+    [RelayCommand]
+    private async Task SignInOpenAiAsync()
+    {
+        if (IsOpenAiBusy) return;
+        IsOpenAiBusy = true;
+        accountCancellation = new CancellationTokenSource();
+        try
+        {
+            await accountSession.SignInAsync(new Progress<string>(key => OpenAiAccountStatus = UiStrings.Get(key)), accountCancellation.Token);
+            OpenAiAccountStatus = UiStrings.Get(accountSession.StatusKey);
+        }
+        catch (OperationCanceledException) { OpenAiAccountStatus = UiStrings.Get("OpenAiSignInCancelled"); }
+        catch (OpenAiAccountException error) { OpenAiAccountStatus = UiStrings.TryGet(error.Message) ?? UiStrings.Get("OpenAiRequestFailed"); }
+        catch { OpenAiAccountStatus = UiStrings.Get("OpenAiRequestFailed"); }
+        finally { IsOpenAiBusy = false; accountCancellation.Dispose(); accountCancellation = null; }
+    }
+
+    /// <summary>Loads offered models without a test generation.</summary>
+    [RelayCommand]
+    private async Task LoadOpenAiModelsAsync()
+    {
+        if (IsOpenAiBusy) return;
+        IsOpenAiBusy = true;
+        accountCancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        try
+        {
+            IReadOnlyList<OpenAiAccountModel> models = await accountSession.GetModelsAsync(accountCancellation.Token);
+            string selected = OpenAiAccountModel;
+            OpenAiAccountModels.Clear();
+            foreach (var model in models) OpenAiAccountModels.Add(model);
+            if (!string.IsNullOrWhiteSpace(selected) && !models.Any(model => model.Slug == selected))
+                OpenAiAccountModels.Add(new(selected, selected));
+            OpenAiAccountModel = selected;
+            OpenAiAccountStatus = UiStrings.Get(models.Count == 0 ? "OpenAiNoModels" : "OpenAiChooseModel");
+        }
+        catch { OpenAiAccountStatus = UiStrings.Get("OpenAiModelsFailed"); }
+        finally { IsOpenAiBusy = false; accountCancellation.Dispose(); accountCancellation = null; }
+    }
+
+    /// <summary>Tests the specifically selected account profile through the production MAF boundary.</summary>
+    [RelayCommand]
+    private async Task TestOpenAiAsync()
+    {
+        if (IsOpenAiBusy) return;
+        IsOpenAiBusy = true;
+        accountCancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        try
+        {
+            if (string.IsNullOrWhiteSpace(OpenAiAccountModel) || !(await accountSession.GetModelsAsync(accountCancellation.Token)).Any(model => model.Slug == OpenAiAccountModel))
+                throw new OpenAiAccountException("OpenAiChooseModel");
+            var connection = new ConnectionDefinition("openai-account", ConnectionCategory.External, "openai-account", UserConfiguration.DefaultExternalEndpoint, true, AuthenticationKind.OpenAiAccount, "openai-account-session");
+            var profile = new ModelProfile("openai-account-default", connection.Id, OpenAiAccountModel, 0.2f, TimeSpan.FromMinutes(2), new Dictionary<string, object?>());
+            var service = new MafTextTransformationService(_ => new AiClientFactory().Create(connection, profile), false, honorConfiguredTimeout: true);
+            await service.TransformAsync(new TextTransformationRequest("Hello.", "Return a short greeting.", new TextTransformationSettings(connection.Endpoint, profile.Model, profile.Temperature, profile.Timeout, 8192, ThinkingMode.Off)), accountCancellation.Token);
+            OpenAiAccountStatus = UiStrings.Get("OpenAiTestSucceeded");
+        }
+        catch (OpenAiAccountException error) { OpenAiAccountStatus = UiStrings.TryGet(error.Message) ?? UiStrings.Get("OpenAiRequestFailed"); }
+        catch { OpenAiAccountStatus = UiStrings.Get("OpenAiRequestFailed"); }
+        finally { IsOpenAiBusy = false; accountCancellation.Dispose(); accountCancellation = null; }
+    }
+
+    /// <summary>Revokes the renewable session where possible and always signs out locally.</summary>
+    [RelayCommand]
+    private async Task SignOutOpenAiAsync()
+    {
+        if (IsOpenAiBusy) return;
+        IsOpenAiBusy = true;
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            bool revoked = await accountSession.SignOutAsync(timeout.Token);
+            OpenAiAccountStatus = UiStrings.Get(revoked ? "OpenAiSignedOut" : "OpenAiLocalSignOut");
+        }
+        catch { OpenAiAccountStatus = UiStrings.Get("OpenAiStorageFailed"); }
+        finally { IsOpenAiBusy = false; }
+    }
 
     public ObservableCollection<string> Models { get; } = [];
     public ObservableCollection<string> NetworkModels { get; } = [];
@@ -123,7 +212,13 @@ public sealed partial class SettingsViewModel : ObservableObject
             NetworkModel = networkProfile?.Model ?? string.Empty;
             PopulateNetworkModels(NetworkModel, []);
             NetworkEnabled = network?.IsEnabled ?? false;
-            ConnectionDefinition? external = configuration.Connections.FirstOrDefault(connection => connection.Category == ConnectionCategory.External);
+            ConnectionDefinition? external = configuration.Connections.FirstOrDefault(connection => connection.Provider == "openai-compatible");
+            ConnectionDefinition? account = configuration.Connections.FirstOrDefault(connection => connection.Provider == "openai-account");
+            OpenAiAccountEnabled = account?.IsEnabled ?? false;
+            OpenAiAccountModel = configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId == account?.Id)?.Model ?? string.Empty;
+            OpenAiAccountModels.Clear();
+            if (!string.IsNullOrWhiteSpace(OpenAiAccountModel)) OpenAiAccountModels.Add(new(OpenAiAccountModel, OpenAiAccountModel));
+            OpenAiAccountStatus = UiStrings.Get(accountSession.StatusKey);
             ModelProfile? externalProfile = external is null ? null : configuration.Profiles.FirstOrDefault(profile => profile.ConnectionId.Equals(external.Id, StringComparison.OrdinalIgnoreCase));
             ExternalEndpoint = string.IsNullOrWhiteSpace(external?.Endpoint) ? UserConfiguration.DefaultExternalEndpoint : external.Endpoint;
             ExternalModel = externalProfile?.Model ?? string.Empty;
@@ -333,7 +428,9 @@ public sealed partial class SettingsViewModel : ObservableObject
                 NormalShortcut,
                 TranslationShortcut,
                 PreferEnglishUi,
-                SelectedLocalizationProfile));
+                SelectedLocalizationProfile,
+                OpenAiAccountEnabled,
+                OpenAiAccountModel));
             try
             {
                 startupRegistration.SetEnabled(StartWithWindows);
@@ -380,7 +477,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         {
             ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
             var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
-            ProfileResolution resolution = resolver.Resolve(SelectedLocalizationProfile);
+            ProfileResolution resolution = resolver.Resolve(SelectedLocalizationProfile, exact: true);
             if (resolution.Kind is ProfileResolutionKind.Failed or ProfileResolutionKind.UserConfirmationRequired
                 || resolution.Profile is null
                 || resolution.Connection is null)
@@ -398,7 +495,8 @@ public sealed partial class SettingsViewModel : ObservableObject
             var service = new MafTextTransformationService(
                 _ => aiClientFactory.Create(connection, profile),
                 connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase),
-                maxOutputTokens: 16_384);
+                maxOutputTokens: connection.Provider == "openai-account" ? null : 16_384,
+                honorConfiguredTimeout: connection.Provider == "openai-account");
             string cachePath = Path.Combine(UserConfiguration.GetUserDataDirectory(), "locales", language + ".json");
             var catalog = new LocalizationCatalog(EnglishStringCatalog.Values);
             var generator = new LocaleCatalogGenerator(catalog);

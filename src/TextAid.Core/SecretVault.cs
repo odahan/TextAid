@@ -38,7 +38,20 @@ public sealed class DpapiSecretVault : ISecretVault
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Windows DPAPI is required for TextAid secrets.");
         Directory.CreateDirectory(directory);
         byte[] protectedBytes = ProtectedData.Protect(Encoding.UTF8.GetBytes(secret), null, DataProtectionScope.CurrentUser);
-        File.WriteAllBytes(GetPath(reference), protectedBytes);
+        string path = GetPath(reference);
+        string temporaryPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllBytes(temporaryPath, protectedBytes);
+            byte[] verified = ProtectedData.Unprotect(File.ReadAllBytes(temporaryPath), null, DataProtectionScope.CurrentUser);
+            if (!CryptographicOperations.FixedTimeEquals(verified, Encoding.UTF8.GetBytes(secret)))
+                throw new CryptographicException("Protected storage verification failed.");
+            File.Move(temporaryPath, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+        }
     }
 
     /// <inheritdoc />

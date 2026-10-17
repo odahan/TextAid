@@ -15,16 +15,18 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
     private readonly int? maxOutputTokens;
     private readonly Action<InferenceDiagnostics>? reportDiagnostics;
     private readonly Action<string>? reportPreview;
+    private readonly bool honorConfiguredTimeout;
 
     /// <summary>Creates the service for a provider whose MAF options are not Ollama-specific.</summary>
     public MafTextTransformationService(Func<TextTransformationSettings, IChatClient> createChatClient, bool isOllamaClient, int? maxOutputTokens = null,
-        Action<InferenceDiagnostics>? reportDiagnostics = null, Action<string>? reportPreview = null)
+        Action<InferenceDiagnostics>? reportDiagnostics = null, Action<string>? reportPreview = null, bool honorConfiguredTimeout = false)
         : this(createChatClient)
     {
         this.isOllamaClient = isOllamaClient;
         this.maxOutputTokens = maxOutputTokens;
         this.reportDiagnostics = reportDiagnostics;
         this.reportPreview = reportPreview;
+        this.honorConfiguredTimeout = honorConfiguredTimeout;
     }
     /// <inheritdoc />
     public async Task<string> TransformAsync(TextTransformationRequest request, CancellationToken cancellationToken)
@@ -35,7 +37,7 @@ public sealed class MafTextTransformationService(Func<TextTransformationSettings
         if (!request.Settings.HasModel) throw new InvalidOperationException("No Ollama model is selected.");
         if (!Uri.TryCreate(request.Settings.Endpoint, UriKind.Absolute, out _)) throw new InvalidOperationException("The Ollama endpoint is invalid.");
 
-        TimeSpan effectiveTimeout = isOllamaClient
+        TimeSpan effectiveTimeout = isOllamaClient || honorConfiguredTimeout
             ? request.Settings.Timeout
             : request.Settings.Timeout < MinimumExternalTimeout
                 ? MinimumExternalTimeout

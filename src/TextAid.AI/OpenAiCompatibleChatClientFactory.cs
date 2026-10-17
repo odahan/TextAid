@@ -71,6 +71,8 @@ public sealed class OpenAiCompatibleChatClientFactory
 
     private string ResolveProtectedSecret(string? reference)
     {
+        if (reference?.StartsWith("openai-account-", StringComparison.OrdinalIgnoreCase) == true)
+            throw new InvalidOperationException("Account sessions cannot be used as API keys.");
         if (string.IsNullOrWhiteSpace(reference) || !secretVault.TryGetSecret(reference, out string secret))
             throw new InvalidOperationException("The External protected credential is not available.");
         return secret;

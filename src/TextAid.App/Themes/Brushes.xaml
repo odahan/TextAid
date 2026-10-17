@@ -18,4 +18,7 @@
     <StaticResource x:Key="FocusBrush" ResourceKey="AccentBrush"/>
     <StaticResource x:Key="ChromeBackgroundBrush" ResourceKey="BackgroundBrush"/>
     <SolidColorBrush x:Key="AppTitleBrush" Color="{StaticResource AppTitle}"/>
+    <SolidColorBrush x:Key="OpenAiAccountBrush" Color="{StaticResource OpenAiAccount}"/>
+    <SolidColorBrush x:Key="TransferBrush" Color="{StaticResource Transfer}"/>
+    <SolidColorBrush x:Key="TransferHoverBrush" Color="{StaticResource TransferHover}"/>
 </ResourceDictionary>

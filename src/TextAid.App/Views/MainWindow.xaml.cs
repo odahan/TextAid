@@ -26,6 +26,7 @@ public partial class MainWindow : Window
         var viewModel = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), () => free(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         DataContext = viewModel;
+        viewModel.RefreshModelChoices(UserConfiguration.LoadConfiguration(), new DpapiSecretVault());
 
         SourceInitialized += (_, _) =>
         {
@@ -44,6 +45,7 @@ public partial class MainWindow : Window
         };
         Closed += (_, _) =>
         {
+            viewModel.ResetModelChoice();
             if (session.State is not InvocationState.Replaced and not InvocationState.Copied) session.State = InvocationState.Cancelled;
             session.Cancellation.Cancel();
             session.Dispose();
@@ -91,6 +93,15 @@ public partial class MainWindow : Window
 
     /// <summary>Shows the deployment category of the provider selected for this invocation.</summary>
     public void SetActiveConnection(ConnectionCategory category) => ((MainViewModel)DataContext).SetActiveConnection(category);
+
+    /// <summary>Shows the exact provider/model that is running.</summary>
+    public void SetActiveConnection(ConnectionDefinition connection, ModelProfile profile) => ((MainViewModel)DataContext).SetActiveConnection(connection, profile);
+
+    /// <summary>Reloads selector choices after a valid configuration change.</summary>
+    public void RefreshModelChoices() => ((MainViewModel)DataContext).RefreshModelChoices(UserConfiguration.LoadConfiguration(), new DpapiSecretVault());
+
+    /// <summary>Clears an unused one-action selection.</summary>
+    public void ResetModelChoice() => ((MainViewModel)DataContext).ResetModelChoice();
 
     /// <summary>Refreshes the action selector after a validated editor save.</summary>
     public void ReloadActions(IReadOnlyList<ActionDefinition> actions) => ((MainViewModel)DataContext).ReloadActions(actions);
@@ -157,6 +168,12 @@ public partial class MainWindow : Window
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (e.PropertyName == nameof(MainViewModel.OutputText) && !session.HasCurrentResult)
+        {
+            MarkdownPreview.Document = null;
+            MarkdownPreview.Visibility = Visibility.Collapsed;
+            PlainTextPreview.Visibility = Visibility.Visible;
+        }
         if (e.PropertyName == nameof(MainViewModel.MarkdownOutputEnabled)
             && sender is MainViewModel { MarkdownOutputEnabled: false })
         {

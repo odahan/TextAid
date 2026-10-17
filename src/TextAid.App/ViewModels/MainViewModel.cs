@@ -19,6 +19,9 @@ public sealed class MainViewModel : ObservableObject
     private IReadOnlyList<LanguageOption> outputLanguages = CreateOutputLanguages();
     private string detectedLanguageName = string.Empty;
     private string? partialOutput;
+    private string? activeProvider;
+    private string? activeModel;
+    private SessionModelChoice? selectedModelChoice;
 
     public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
@@ -37,6 +40,7 @@ public sealed class MainViewModel : ObservableObject
         processPreset = process;
         ReplaceCommand = new RelayCommand(replace, () => CanReplaceResult);
         CopyCommand = new RelayCommand(copy, () => CanUseResult);
+        TransferResultCommand = new RelayCommand(TransferResult, () => CanUseResult);
         ProcessCommand = new RelayCommand(process, () => CanProcess);
         InstructionsCommand = new RelayCommand(instructions, () => !IsTransforming);
         NewCommand = new RelayCommand(reset, () => !IsTransforming);
@@ -47,6 +51,70 @@ public sealed class MainViewModel : ObservableObject
 
     public InvocationSession Session { get; }
     public ObservableCollection<ActionDefinition> Actions { get; }
+    /// <summary>Gets the configured profiles and neutral Default entry for this session.</summary>
+    public ObservableCollection<SessionModelChoice> ModelChoices { get; } = [];
+    public bool ShowModelSelector => ModelChoices.Count > 2;
+    public bool CanSelectModel => !IsTransforming;
+    public SessionModelChoice? SelectedModelChoice
+    {
+        get => selectedModelChoice;
+        set
+        {
+            if (IsTransforming || !SetProperty(ref selectedModelChoice, value)) return;
+            Session.NextProfileId = value?.ProfileId;
+            Session.CancelInputLanguageDetection();
+        }
+    }
+
+    /// <summary>Refreshes local profile choices without making any network request.</summary>
+    public void RefreshModelChoices(ConfigurationSnapshot configuration, ISecretVault vault)
+    {
+        string? previous = selectedModelChoice?.ProfileId;
+        bool wasVisible = ShowModelSelector;
+        ModelChoices.Clear();
+        ModelChoices.Add(new(null, UiStrings.Get("DefaultModelChoice")));
+        foreach (ModelProfile profile in new ProfileResolver(configuration, vault).GetSelectableProfiles())
+        {
+            ConnectionDefinition connection = configuration.Connections.Single(connection => connection.Id == profile.ConnectionId);
+            string type = connection.Provider == "openai-account" ? UiStrings.Get("OpenAiSignInLabel") : connection.Category switch
+            {
+                ConnectionCategory.ThisDeviceOnly => UiStrings.Get("ThisDeviceOnlyTabLabel"),
+                ConnectionCategory.OnPremises => UiStrings.Get("OnPremisesTabLabel"),
+                _ => UiStrings.Get("ApiKeyConnectionLabel")
+            };
+            ModelChoices.Add(new(profile.Id, $"{type} · {profile.Model} ({profile.Id})"));
+        }
+        selectedModelChoice = ShowModelSelector && wasVisible ? ModelChoices.FirstOrDefault(choice => choice.ProfileId == previous) ?? ModelChoices[0] : ModelChoices[0];
+        Session.NextProfileId = selectedModelChoice.ProfileId;
+        OnPropertyChanged(nameof(SelectedModelChoice));
+        OnPropertyChanged(nameof(ShowModelSelector));
+        if (IsTransforming && Session.RunningProfileId is string pinned && !ModelChoices.Any(choice => choice.ProfileId == pinned))
+        {
+            Session.InvalidateResult();
+            ShowFailure(UiStrings.Get("ModelChoiceUnavailable"));
+        }
+    }
+
+    /// <summary>Resets the unused selection without invalidating a successful result or provider indicator.</summary>
+    public void ResetModelChoice()
+    {
+        Session.NextProfileId = null;
+        selectedModelChoice = ModelChoices.FirstOrDefault();
+        OnPropertyChanged(nameof(SelectedModelChoice));
+    }
+
+    private void TransferResult()
+    {
+        if (!Session.TransferResultToInput()) return;
+        partialOutput = null;
+        inputText = Session.InputText;
+        Status = UiStrings.Get("TransferredResultMessage");
+        OnPropertyChanged(nameof(InputText));
+        OnPropertyChanged(nameof(SelectedOutputLanguage));
+        OnPropertyChanged(nameof(Status));
+        UpdateDetectedLanguage();
+        NotifyRequestChanged();
+    }
     public IReadOnlyList<LanguageOption> OutputLanguages => outputLanguages;
     public string SelectedOutputLanguage
     {
@@ -78,6 +146,7 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!SetProperty(ref selectedAction, value)) return;
+            if (IsTransforming) ResetModelChoice();
             Session.InvalidateResult();
             Session.ActionId = value?.Id;
             if (Session.OutputLanguage == "Unchanged")
@@ -95,6 +164,7 @@ public sealed class MainViewModel : ObservableObject
         set
         {
             if (!SetProperty(ref inputText, value)) return;
+            if (IsTransforming) ResetModelChoice();
             Session.SetInputText(value);
             OnPropertyChanged(nameof(SelectedOutputLanguage));
             UpdateDetectedLanguage();
@@ -111,6 +181,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanProcess));
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
@@ -140,7 +212,8 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Gets the deployment category actually selected for the current invocation.</summary>
     public ConnectionCategory? ActiveConnectionCategory => activeConnectionCategory;
     /// <summary>Gets a compact recognizable symbol for the selected deployment category.</summary>
-    public string ActiveConnectionSymbol => activeConnectionCategory switch
+    public bool IsOpenAiAccountActive => activeProvider == "openai-account";
+    public string ActiveConnectionSymbol => IsOpenAiAccountActive ? "✦" : activeConnectionCategory switch
     {
         ConnectionCategory.ThisDeviceOnly => "⌂",
         ConnectionCategory.OnPremises => "⌁",
@@ -148,11 +221,12 @@ public sealed class MainViewModel : ObservableObject
         _ => string.Empty
     };
     /// <summary>Gets accessible localized text describing the selected deployment category.</summary>
-    public string ActiveConnectionLabel => activeConnectionCategory switch
+    public string ActiveConnectionLabel => $"{(IsOpenAiAccountActive ? UiStrings.Get("OpenAiSignInLabel") : CategoryLabel)} · {activeModel}";
+    private string CategoryLabel => activeConnectionCategory switch
     {
         ConnectionCategory.ThisDeviceOnly => UiStrings.Get("ThisDeviceOnlyIndicatorLabel"),
         ConnectionCategory.OnPremises => UiStrings.Get("OnPremisesIndicatorLabel"),
-        ConnectionCategory.External => UiStrings.Get("ExternalIndicatorLabel"),
+        ConnectionCategory.External => UiStrings.Get("ApiKeyConnectionLabel"),
         _ => string.Empty
     };
     public string ActiveConnectionActivityLabel => activeConnectionCategory switch
@@ -168,6 +242,7 @@ public sealed class MainViewModel : ObservableObject
     public bool CanProcess => !IsTransforming && !string.IsNullOrWhiteSpace(InputText) && SelectedAction is not null;
     public IRelayCommand ReplaceCommand { get; }
     public IRelayCommand CopyCommand { get; }
+    public IRelayCommand TransferResultCommand { get; }
     public IRelayCommand ProcessCommand { get; }
     public IRelayCommand InstructionsCommand { get; }
     public IRelayCommand NewCommand { get; }
@@ -220,6 +295,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Disables result actions and shows a safe-failure message.</summary>
     public void ShowFailure(string message)
     {
+        ResetModelChoice();
         partialOutput = null;
         Session.State = InvocationState.Failed;
         Status = message;
@@ -231,6 +307,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanProcess));
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
@@ -241,6 +319,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Publishes the completed local transformation to the preview.</summary>
     public void ShowResult(string output)
     {
+        ResetModelChoice();
         partialOutput = null;
         Status = Session.SourceWindow == 0
             ? UiStrings.Get("ReviewResultCopyMessage")
@@ -253,6 +332,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanProcess));
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
@@ -263,6 +344,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Clears the current result and prepares a safe manual-input session.</summary>
     public void ResetForNewInput()
     {
+        ResetModelChoice();
         Session.ResetForNewInput();
         inputText = string.Empty;
         UpdateDetectedLanguage();
@@ -280,6 +362,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanProcess));
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ProcessCommand.NotifyCanExecuteChanged();
         InstructionsCommand.NotifyCanExecuteChanged();
         NewCommand.NotifyCanExecuteChanged();
@@ -290,6 +374,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Displays an isolated Free input in the session without retaining a replacement target.</summary>
     public void SetFreeInput(string input)
     {
+        ResetModelChoice();
         Session.StartFreeInput(input);
         inputText = input;
         UpdateDetectedLanguage();
@@ -301,6 +386,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanReplaceResult));
         OnPropertyChanged(nameof(CanProcess));
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ReplaceCommand.NotifyCanExecuteChanged();
         ProcessCommand.NotifyCanExecuteChanged();
     }
@@ -318,6 +405,8 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CanProcess));
         ReplaceCommand.NotifyCanExecuteChanged();
         CopyCommand.NotifyCanExecuteChanged();
+        TransferResultCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanSelectModel));
         ProcessCommand.NotifyCanExecuteChanged();
         FreeCommand.NotifyCanExecuteChanged();
         SelectPresetCommand.NotifyCanExecuteChanged();
@@ -350,6 +439,17 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(ActiveConnectionSymbol));
         OnPropertyChanged(nameof(ActiveConnectionLabel));
         OnPropertyChanged(nameof(ActiveConnectionActivityLabel));
+    }
+
+    /// <summary>Records the actual provider and model independently of the transient selector.</summary>
+    public void SetActiveConnection(ConnectionDefinition connection, ModelProfile profile)
+    {
+        activeProvider = connection.Provider;
+        activeModel = profile.Model;
+        SetActiveConnection(connection.Category);
+        OnPropertyChanged(nameof(IsOpenAiAccountActive));
+        OnPropertyChanged(nameof(ActiveConnectionSymbol));
+        OnPropertyChanged(nameof(ActiveConnectionLabel));
     }
 
     private ActionDefinition? FindAction(string? actionId) => Actions.FirstOrDefault(action => action.Id.Equals(actionId, StringComparison.OrdinalIgnoreCase));
@@ -388,6 +488,9 @@ public sealed class MainViewModel : ObservableObject
         return [new LanguageOption("Unchanged", unchanged, unchanged, unchanged), .. LanguageCatalog.Supported];
     }
 }
+
+/// <summary>Represents a transient choice, with null identifying neutral Default routing.</summary>
+public sealed record SessionModelChoice(string? ProfileId, string Label);
 
 /// <summary>Represents one user-configurable one-click action preset.</summary>
 public sealed class ActionPreset(int slot, ActionDefinition? action) : ObservableObject

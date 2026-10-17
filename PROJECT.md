@@ -45,3 +45,7 @@ V1 excludes chat, autonomous agents, RAG, MCP, workflows, conversation memory, t
 - **On-premises:** a user-declared endpoint on an administered network; the application cannot independently verify its ownership or routing.
 - **External:** an Internet-hosted endpoint deliberately enabled by the user.
 - **MAF:** Microsoft Agent Framework, the sole application AI middleware.
+
+## Post-V1 extension — LOT-014
+
+D-046 and [SPEC-014](Specs/014-openai-access-modernization/SPEC-014.md) define the planned “Modernisation accès OpenAI” extension: a fourth account-based OpenAI connection within External, a temporary per-action model override, and explicit result-to-input transfer for successive independent transformations in one session. The existing generic OpenAI-compatible connection remains available. The V1 exclusions and accepted behavior above remain historical; this extension adds no application account system, conversation memory or autonomous workflow. The 1.3.0 implementation candidate is published; automated gates pass and the real-account and visual human gates remain pending.

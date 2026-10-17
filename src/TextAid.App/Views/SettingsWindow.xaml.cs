@@ -30,6 +30,7 @@ public partial class SettingsWindow : Window
             Close();
         };
         Loaded += async (_, _) => await viewModel.InitializeAsync();
+        Closed += (_, _) => viewModel.CancelOpenAiSignIn();
         Loaded += (_, _) => ActivateForUserInput();
         SourceInitialized += (_, _) => WindowsShell.TryEnableDarkCaption(new WindowInteropHelper(this).Handle);
     }

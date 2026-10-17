@@ -16,4 +16,7 @@
     <Color x:Key="Selection">#294F67</Color>
     <Color x:Key="OnAccent">#000000</Color>
     <Color x:Key="AppTitle">#7A68C1</Color>
+    <Color x:Key="OpenAiAccount">#B6A0FF</Color>
+    <Color x:Key="Transfer">#AAB6C5</Color>
+    <Color x:Key="TransferHover">#5CCDF2</Color>
 </ResourceDictionary>

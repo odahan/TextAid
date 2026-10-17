@@ -748,3 +748,27 @@ Olivier requested background preload 30 seconds after startup, retrying Ollama a
 Validation: all 169 Release tests passed (55 AI, 89 Core, 25 Windows). Added coverage for delayed availability retries, cancellation, disabled/unconfigured preload, keep-alive omission, running-model metadata, actual action option serialization, default thinking/context inheritance, Translate override persistence, and invalid context rejection. Sandbox testhost communication failed; the suite passed outside the sandbox. No live idle-latency improvement or UI interaction validation is claimed, and Ollama environment variables and user settings were not modified.
 
 At Olivier's request the version advanced to 1.2.12. After he closed the running app, root publish.ps1 produced the canonical 185,994,422-byte executable. Verified ProductVersion 1.2.12 (with source revision metadata), FileVersion 1.2.12.0, and SHA-256 `1AD24123A7B12C9A2101C9A706C97C6785FAC70F774C10D248BAB635F0AF33FD`. Olivier subsequently requested committing all changes with a detailed message, creating the annotated tag `V1212`, and pushing the release commit and tag. Cache quantization remains deferred at his request. Historical lot and gate states remain unchanged.
+
+## 2026-10-18 — Plan LOT-014, Modernisation accès OpenAI
+
+At Olivier's request, prepared Specs/014-openai-access-modernization/SPEC-014.md, FINDINGS-014.md and GATES-014.md under Pro-Spec 3 revision 2026-09-24.5. The lot adds OpenAI account sign-in beside the compatible API-key connection, same-rank External preference, a distinguishable indicator, explicit result-to-input transfer and a one-action model override with systematic Default reset. Reviewed the TextAid protocol, project rules/decisions, connection/session code and SmallBazar step 08 BIS documentation/protocol/session/Responses implementation. Preserved the reference's useful findings without claiming that its tests validate TextAid.
+
+D-046 records the human-requested prospective scope and narrow routing/session exceptions; PROJECT.md links the planned extension. STATUS.md registers the lot as Planned after creation of its artifacts. All six gates remain TO TEST. No implementation, application build, live sign-in, generation, publication, gate acceptance or closure was performed. CONVERGENCE-014.md is intentionally absent until closure preparation under protocol section 21.1. Next action is human review of the specification and a separate decision to start implementation.
+
+Olivier's drafting clarification is incorporated: every automatic cloud selection prefers sign-in over API-key access, and transfer reuses the result's known language as the new input language without an extra detection request. The specification and transfer gates cover unknown-language/later-edit fallback separately.
+
+## 2026-10-18 — LOT-014 implementation started
+
+Olivier explicitly requested implementation after bootstrap. LOT-013 is closed; LOT-014 occupies the active slot. Read the current official OpenAI registration/session/Responses documentation; implement TextAid-owned registration, MAF transport, transient selection and raw-result transfer. Human gates and distribution eligibility remain live-validation work.
+
+## 2026-10-18 — LOT-014 candidate published
+
+Implemented independent OpenAI account access behind IChatClient/MAF, one-action profile selection and raw-result transfer with inherited language/source-target safety. Release build has zero warnings/errors and all 232 tests pass (98 AI, 103 Core, 31 Windows). G-014-001/002/003/006 are PASS on the source manifest in the lot validation directory. Root publish.ps1 produced FileVersion 1.3.0.0, SHA-256 DBA9E61A8D2E9F07BB5E2BD676720C0F36C8981205318C01BDC656112D794FB7; start.ps1 requested shell launch and the resident candidate was verified. The idle 1.2.13 instance was stopped to release its file lock. G-014-004/005 remain TO TEST, separate-machine portability is deferred, and no closure is inferred. See IMPLEMENTATION-014.md.
+
+## 2026-10-18 — LOT-014 cosmetic selector correction
+
+Olivier reported tests passing and showed the Default choice rendered as the record representation. Replaced DisplayMemberPath with an explicit Label DataTemplate in MainWindow. Release build succeeded without warnings/errors; root publish.ps1 produced FileVersion 1.3.1.0, SHA-256 622E13C1A0FC1C6384ABCC5681225DAF7109E41F5AF97EC82ACC16B0768ABD6A. Functional tests were not rerun for this cosmetic binding change; prior 232-test evidence remains applicable. The app was left stopped. Lot closure and human gate verdicts are not inferred from the general test report.
+
+## 2026-10-18 — Selected account model display correction (1.3.2)
+
+Settings / Sign in with OpenAI now uses an explicit DisplayName DataTemplate for the account model ComboBox, including its selected resting display. SelectedValuePath remains Slug, preserving the inference model identity. Release app build: zero warnings/errors. Root publish.ps1 produced FileVersion 1.3.2.0, SHA-256 DA7AF13F2DB14C5B5C1D7EAE19A9BDA71D4FA18806C677C99A2B331A2616ED35. No functional changes or new tests; prior 232-test evidence remains applicable. Build/publication logs and source manifest are retained in validation/ with the 1.3.2 suffix. App left stopped.

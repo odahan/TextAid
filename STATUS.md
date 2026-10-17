@@ -17,12 +17,13 @@
 | LOT-011 | — | [V1.0 — Release qualification](Specs/011-v1-release/SPEC-011.md) | Closed | — | Olivier accepted TOTAL convergence on published V1 candidate SHA-256 `48BDA1471C6971242A60FB2EA1D1DE04AF930D5A2CFAC7A4E9733D70C3D67F8E`; both gates PASS under D-043. The separate-machine check remains deferred under R-012. |
 | LOT-012 | — | [Post-V1 — Language corrections and packs](Specs/012-language-corrections-packs/SPEC-012.md) | Closed | — | Olivier accepted TOTAL convergence on the published 1.1.0 candidate; both gates PASS. See `CONVERGENCE-012.md`. |
 | LOT-013 | — | [Post-V1 — Rendered Markdown preview](Specs/013-markdown-preview/SPEC-013.md) | Closed | — | Olivier accepted TOTAL convergence on the published 1.1.0 candidate; both gates PASS. See `CONVERGENCE-013.md`. |
+| LOT-014 | — | [Modernisation accès OpenAI](Specs/014-openai-access-modernization/SPEC-014.md) | In-progress | — | Implementation started on Olivier's explicit 2026-10-18 request; automated and human gates pending. |
 
 ## Recovery summary
 
 LOT-001 through LOT-009 and LOT-011 through LOT-013 are Closed with TOTAL convergence; LOT-010 is Closed with PARTIAL convergence under D-041. Their accepted results are identified by their respective `CONVERGENCE-xxx.md` artifacts. The accepted LOT-013 baseline EXE was `src/TextAid.App/bin/Publish/TextAid.exe`, version 1.1.0, SHA-256 `F3D9715551624D3A382DD351CFD5C1EF511F3A35BC87479DE2563D344A923E7A`. Its separate-machine check remains deferred under R-012. The active behavior includes Choose (`Ctrl+C`, then `C`), Translate (`Ctrl+C`, then `T`), safe Replace/Copy, configurable actions, profiles, Settings, localization, the optional OpenAI-compatible External provider, a per-user Windows startup option, personal UI-translation corrections, validated offline language packs, and a native inert Markdown review preview. In restricted workspaces, use the project-local `NUGET_SCRATCH` procedure in `AGENTS.md` and `README.md` before restore/build/test; `publish.ps1` applies it automatically.
 
-Current state: LOT-013 is Closed with TOTAL convergence following Olivier's acceptance of the rendered Markdown preview and global English-reset workflow. The published 1.1.0 candidate is the current baseline; its separate-machine portability check remains explicitly deferred. No next lot is planned. F-006-002 remains resolved by the completed language workflow, F-009-001 is resolved by the DPAPI-first External authentication route, and the deferred LOT-010 VS Code and DPI/multi-monitor checks remain recorded as residual work.
+Current state: LOT-014 is In-progress following Olivier's explicit implementation request on 2026-10-18. The published 1.3.2 candidate implements the fourth connection, transient profile selector and raw-result transfer. Four automatic gates PASS; G-014-004/005 require named real-account and visual human validation. Earlier accepted lots and maintenance results remain historical evidence.
 
 ## Corrective maintenance — 2026-10-04
 
@@ -52,3 +53,15 @@ Validation and remaining compatibility coverage:
 - Olivier also confirmed on 2026-10-17 that Replace still works in the Codex input area with 1.2.13, providing a live non-regression check in a previously working application. This does not establish the target control's UI technology.
 - The native regression test confirms the forced top-level focus defect; all 173 Release tests pass.
 - A fresh live WPF comparison and a second WinUI application check have not been recorded. Application validation currently covers smalBazar and the Codex input area.
+
+## Active extension — 2026-10-18
+
+LOT-014 is In-progress. Result: src/TextAid.App/bin/Publish/TextAid.exe, FileVersion 1.3.0.0, SHA-256 DBA9E61A8D2E9F07BB5E2BD676720C0F36C8981205318C01BDC656112D794FB7. Release build: zero warnings/errors; 232 tests pass. G-014-001/002/003/006 PASS against validation/SOURCE-014.sha256; G-014-004/005 remain TO TEST. Implementation mapping, official contract review, logs and a concrete human walkthrough are in Specs/014-openai-access-modernization/IMPLEMENTATION-014.md. The EXE was launched via start.ps1 and observed resident; Olivier then reported it closed and the process check confirmed it stopped. No account credentials were imported. Remaining work: real Windows account/MFA/permission/inference/restart/sign-out journey and visual/keyboard/transfer/selector acceptance. Separate-machine portability is DEFERRED. Next action: Olivier evaluates the published candidate for the two HUMAN gates; preserve the In-progress state until those decisions and later closure acceptance. No implementation blocker is asserted.
+
+## Cosmetic follow-up — 2026-10-18
+
+Olivier reports the functional tests pass. Corrected the selector to display only Label, including Default. Current canonical executable: FileVersion 1.3.1.0, SHA-256 622E13C1A0FC1C6384ABCC5681225DAF7109E41F5AF97EC82ACC16B0768ABD6A; Release build zero warnings/errors and canonical publication succeeded. See F-014-007 and IMPLEMENTATION-014.md. Functional gate evidence remains applicable; G-014-006 records the replacement candidate and preserves its prior evaluation. G-014-004/005 still await an explicit named gate verdict; LOT-014 remains In-progress. The app was left stopped.
+
+## Settings cosmetic follow-up — 2026-10-18
+
+Settings / Sign in with OpenAI now uses an explicit DisplayName DataTemplate for the account model ComboBox, including its selected resting display. SelectedValuePath remains Slug, preserving the inference model identity. Release app build: zero warnings/errors. Root publish.ps1 produced FileVersion 1.3.2.0, SHA-256 DA7AF13F2DB14C5B5C1D7EAE19A9BDA71D4FA18806C677C99A2B331A2616ED35. No functional changes or new tests; prior 232-test evidence remains applicable. Build/publication logs and source manifest are retained in validation/ with the 1.3.2 suffix. App left stopped. LOT-014 remains In-progress; human gate verdicts and closure remain pending.

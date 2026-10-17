@@ -1,0 +1,11 @@
+  Identification des projets à restaurer...
+  Restauration effectuée de E:\TextAid\src\TextAid.Platform.Windows\TextAid.Platform.Windows.csproj (en 157 ms).
+  Restauration effectuée de E:\TextAid\src\TextAid.Core\TextAid.Core.csproj (en 157 ms).
+  Restauration effectuée de E:\TextAid\src\TextAid.AI\TextAid.AI.csproj (en 163 ms).
+  Restauration effectuée de E:\TextAid\src\TextAid.App\TextAid.App.csproj (en 163 ms).
+  TextAid.Core -> E:\TextAid\src\TextAid.Core\bin\Release\net10.0\TextAid.Core.dll
+  TextAid.AI -> E:\TextAid\src\TextAid.AI\bin\Release\net10.0\TextAid.AI.dll
+  TextAid.Platform.Windows -> E:\TextAid\src\TextAid.Platform.Windows\bin\Release\net10.0-windows\TextAid.Platform.Windows.dll
+  TextAid.App -> E:\TextAid\src\TextAid.App\bin\Release\net10.0-windows\win-x64\TextAid.dll
+  TextAid.App -> E:\TextAid\src\TextAid.App\bin\Publish\
+Published: E:\TextAid\src\TextAid.App\bin\Publish\TextAid.exe

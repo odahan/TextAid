@@ -15,7 +15,9 @@ public enum AuthenticationKind
     /// <summary>Represents an earlier environment-based configuration and is rejected for new External connections.</summary>
     BearerFromEnvironment,
     /// <summary>Retains the DPAPI-backed credential option introduced for existing user configurations.</summary>
-    ApiKey
+    ApiKey,
+    /// <summary>Uses a separately protected OpenAI public-client session.</summary>
+    OpenAiAccount
 }
 
 /// <summary>Describes one configured provider endpoint without retaining its secret.</summary>
