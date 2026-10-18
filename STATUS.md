@@ -65,3 +65,7 @@ Olivier reports the functional tests pass. Corrected the selector to display onl
 ## Settings cosmetic follow-up — 2026-10-18
 
 Settings / Sign in with OpenAI now uses an explicit DisplayName DataTemplate for the account model ComboBox, including its selected resting display. SelectedValuePath remains Slug, preserving the inference model identity. Release app build: zero warnings/errors. Root publish.ps1 produced FileVersion 1.3.2.0, SHA-256 DA7AF13F2DB14C5B5C1D7EAE19A9BDA71D4FA18806C677C99A2B331A2616ED35. No functional changes or new tests; prior 232-test evidence remains applicable. Build/publication logs and source manifest are retained in validation/ with the 1.3.2 suffix. App left stopped. LOT-014 remains In-progress; human gate verdicts and closure remain pending.
+
+## Website follow-up — 2026-10-18
+
+The English website sources in site/ now explain LOT-014 features and include Olivier's 07/08 captures. Local HTML links, fragments, images and screenshot dimensions pass validation; browser desktop/mobile rendering remains unverified because the automation runtime could not initialize. Remaining website work: visual review and upload the contents of site/ through the existing hosting workflow. The Windows candidate remains 1.3.2; app gate states and LOT-014 In-progress status are unchanged.

@@ -92,6 +92,7 @@ figcaption{color:var(--muted);font-size:.87rem;margin-top:12px}
 .mini-grid .panel{padding:19px}
 .figure{margin:25px 0}
 .figure img{box-shadow:none}
+.figure-settings{max-width:586px;margin-left:auto;margin-right:auto}
 table{width:100%;border-collapse:collapse;margin:20px 0;font-size:.94rem}
 th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:11px 12px}
 th{color:var(--text);background:var(--surface2)}

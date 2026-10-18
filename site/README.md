@@ -16,30 +16,32 @@ The site uses the actual `site/images/Logo-final.png` asset for branding and the
 
 | Page | Purpose and content |
 | --- | --- |
-| `index.html` | Product introduction: what TextAid does, the three AI connection locations (device, administered network, external service), a short visual example, and clear links to the guide. |
+| `index.html` | Product introduction: what TextAid does, the three AI connection locations (device, administered network, external service), OpenAI sign-in, temporary model selection, result transfer, and clear links to the guide. |
 | `features.html` | Short use cases for correcting, rewriting, generating, summarizing, and translating text; explain Choose and quick Translate at a glance. Each use case links to the relevant guide page. |
 | `guide.html` | Guide landing page and reading path. State the prerequisite (configure a connection and model) in one short callout, linking to `guide-settings.html`. |
 | `guide-first-result.html` | First success with `Ctrl+C`, then `C`: select text, choose an action, process, inspect the preview, Replace/Copy/Cancel. Introduce the main window only as needed. |
 | `guide-quick-translate.html` | `Ctrl+C`, then `T`: automatic initial translation, destination language, changing destination and translating again, reviewing the result. Link to shortcut settings. |
-| `guide-workspace.html` | Daily use: edit captured text, choose action/output language, use the four presets, Free input, one-off Instructions, New, and Markdown preview. |
+| `guide-workspace.html` | Daily use: edit captured text, choose action/output language, choose a model for one action, transfer a completed result with its known language, use presets, Free input, Instructions, New, and Markdown preview. |
 | `guide-actions.html` | Compact inventory of supplied actions, default preset assignments, preset reassignment, and action creation/editing/enabling/deletion, with one small custom-action example. |
-| `guide-settings.html` | Detailed configuration placed late in the guide: device/network/external connections, model profiles, preferred translation language, shortcuts, Windows startup, and diagnostic logs. |
+| `guide-settings.html` | Four connection types within three deployment categories, including browser OpenAI sign-in, authorization/model selection/test/sign-out, independent compatible API-key access, profiles, language preferences, shortcuts, startup, and logs. |
 | `guide-interface-language.html` | Interface language versus output language, generation and review of UI translations, personal corrections, language-pack import/export, and a short troubleshooting section. |
 
 The guide should be concise and task-oriented. The discovery pages should present capabilities without duplicating the procedures. Navigation and examples should use the exact English labels displayed by the application.
 
 ## Image location and names
 
-The **six supplied captures** live directly in `site/images/`. The old files in `assets/Screenshots/` are not used.
+The **eight supplied captures** live directly in `site/images/`. The old files in `assets/Screenshots/` are not used. The 07 and 08 captures supplied for the LOT-014 update show the current main workspace and OpenAI account Settings; earlier captures remain useful for their specific tasks.
 
 | File | What to capture | Used on |
 | --- | --- | --- |
-| `01-choose-result.png` | The complete TextAid main window after **Correct** has processed manually entered text in Choose mode. Replace is disabled because there is no captured source selection; Copy remains available. This is the primary product image. | Home, features, first result, workspace |
+| `01-choose-result.png` | TextAid after **Correct** has processed manually entered text. Replace is disabled because there is no captured source selection; Copy remains available. | Features, first result |
 | `02-quick-translate.png` | The complete TextAid main window after `Ctrl+C`, then `T` has translated a short French passage into English. Keep the selected destination language visible. | Features, quick Translate |
 | `03-actions-editor.png` | **Actions** window with a non-reserved action selected, so its name, profile, output language, instruction option, and prompt are visible. A harmless example custom action is ideal. | Actions guide |
 | `04-settings-local.png` | **Settings → This device only** with a working local connection and a model selected. Show the tab name, connection status, model, and Save button. | Settings guide |
 | `05-settings-language.png` | **Settings → Language** with application language, preferred translation language, and both shortcut fields visible. Scroll or enlarge the window enough to show them together if possible. | Quick Translate, settings, interface language |
 | `06-translation-review.png` | **Translation review** with a few translated rows, one selected row, and the personal correction plus Import/Export language pack controls visible. | Interface language guide |
+| `07-DefaultModel.png` | Current full workspace with a completed summary, the selector on **Default**, and the filled left-pointing transfer triangle between input and preview. | Home, features, workspace |
+| `08-SignInOpenAI.png` | **Settings → Sign in with OpenAI**, with Active selected, verified plan usage permission and a selected model, without personal information. | Features, settings |
 
 ### Capture guidance
 
@@ -58,10 +60,18 @@ These are useful if easy to obtain, but the site can be completed without them:
 
 | File | What it would clarify |
 | --- | --- |
-| `07-preset-assignment.png` | The menu opened by a preset's gear button, showing how an action is assigned to one of the four buttons. |
-| `08-settings-network.png` | The On-premises settings tab, with a harmless example address and no secret. |
-| `09-settings-external.png` | The External settings tab, with no API key visible. |
+| `09-preset-assignment.png` | The menu opened by a preset's gear button, showing how an action is assigned to one of the four buttons. |
+| `10-settings-network.png` | The On-premises settings tab, with a harmless example address and no secret. |
+| `11-settings-external.png` | The External settings tab, with no API key visible. |
 
 ## Preview and publish
 
 Open `site/index.html` in a browser to preview the site. Upload the **contents** of `site/` to the target web directory, preserving the filenames and the `images/` folder. Every page, stylesheet, and image uses a relative URL, so the site works at a domain root or in a subdirectory. Update the application's About-box URL separately after the final public URL is known.
+
+## LOT-014 content update — 2026-10-18
+
+The English site now documents the 1.3.2 feature set: OpenAI account sign-in alongside compatible API-key access, External preference and actual-provider indicators, neutral Default and a one-action model override, and explicit result transfer with known language and preserved replacement target. It includes the supplied 07/08 screenshots unchanged. Quick Translate distinguishes uncertain language detection from an identified third language and explains how transfer changes the current input. The interface-language guide clarifies the independently selected generation profile and stale-cache fallback.
+
+Screenshot model names illustrate a configured account and do not promise model availability. Site content changes do not constitute lot closure or a human gate verdict. Publication remains the existing static-folder upload workflow.
+
+Validation: all nine HTML pages passed local link/asset and fragment checks (212 references), image alt-text checks and native screenshot-dimension checks (14 screenshot uses). Screenshot dimensions were corrected where older declarations did not match the supplied files. The new captures were visually inspected. Browser rendering could not be checked because the browser automation runtime failed to initialize; desktop/mobile visual QA remains to be performed. No .NET build is needed for these static content changes.
