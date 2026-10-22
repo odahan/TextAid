@@ -205,16 +205,16 @@
                     <Button Content="{DynamicResource InstructionsLabel}" Command="{Binding InstructionsCommand}" MinWidth="106" Margin="0,0,8,0"/>
                     <Button Content="{DynamicResource ProcessLabel}" Command="{Binding ProcessCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96" Margin="0,0,8,0"/>
                     <Button Content="{DynamicResource CancelLabel}" Command="{Binding CancelCommand}" MinWidth="96" Margin="0,0,8,0"/>
-                    <Button Command="{Binding CopyCommand}" MinWidth="96" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource CopyLabel}" AutomationProperties.AcceleratorKey="Ctrl+Shift+C" ToolTip="Ctrl+Shift+C">
+                    <Button Command="{Binding CopyCommand}" ContentTemplate="{x:Null}" MinWidth="96" Margin="0,0,8,0" AutomationProperties.Name="{DynamicResource CopyLabel}" AutomationProperties.AcceleratorKey="Ctrl+Shift+C" ToolTip="Ctrl+Shift+C">
                         <StackPanel>
-                            <TextBlock Text="{DynamicResource CopyLabel}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Ctrl+Shift+C" FontSize="10" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource CopyLabel}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ctrl+Shift+C" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="10" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ReplaceCommand}" Style="{StaticResource PrimaryButton}" MinWidth="96" AutomationProperties.Name="{DynamicResource ReplaceLabel}" AutomationProperties.AcceleratorKey="Ctrl+Enter" ToolTip="Ctrl+Enter">
+                    <Button Command="{Binding ReplaceCommand}" ContentTemplate="{x:Null}" Style="{StaticResource PrimaryButton}" MinWidth="96" AutomationProperties.Name="{DynamicResource ReplaceLabel}" AutomationProperties.AcceleratorKey="Ctrl+Enter" ToolTip="Ctrl+Enter">
                         <StackPanel>
-                            <TextBlock Text="{DynamicResource ReplaceLabel}" HorizontalAlignment="Center"/>
-                            <TextBlock Text="Ctrl+Enter" FontSize="10" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource ReplaceLabel}" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ctrl+Enter" Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" FontSize="10" HorizontalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
