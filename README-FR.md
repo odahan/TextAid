@@ -26,6 +26,7 @@ TextAid capture le texte sélectionné dans une autre application Windows, lui a
 - Identifiez la langue capturée par un appel IA asynchrone sur les deux raccourcis, sans bloquer l’interface. La réponse est réutilisée tant que le texte ne change pas ; un texte ambigu demande une destination de traduction explicite.
 - Reformulez, corrigez, traduisez, résumez, raccourcissez, développez, simplifiez, changez le ton, rendez le texte plus naturel ou créez des actions personnalisées déclaratives.
 - Prévisualisez les résultats Markdown bruts ou mis en forme dans une interface Windows sombre.
+- Dans la fenêtre de résultat, utilisez `Ctrl+Maj+C` pour copier le résultat complet ou `Ctrl+Entrée` pour remplacer la sélection d’origine. Les actions se déclenchent au relâchement des touches si un résultat valide est disponible ; le remplacement nécessite aussi une fenêtre source capturée. `Ctrl+C` conserve son comportement habituel sur le texte sélectionné.
 - Conservez par défaut les échanges avec le modèle en local, avec une configuration explicite pour les fournisseurs sur le réseau interne ou externes.
 - Exécutez l’application sous la forme d’un exécutable Windows x64 autonome ; la version publiée ne nécessite pas l’installation du runtime .NET.
 

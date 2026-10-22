@@ -28,3 +28,4 @@ The older `59204A2B…D224D0D` candidate remains untested on a second machine; t
 
 | LOT-014 cosmetic candidate (1.3.1) | `622E13C1A0FC1C6384ABCC5681225DAF7109E41F5AF97EC82ACC16B0768ABD6A` | DEFERRED | Published 2026-10-18 with root publish.ps1. No separate clean Windows x64 machine check; app left stopped. |
 | LOT-014 cosmetic candidate (1.3.2) | `DA7AF13F2DB14C5B5C1D7EAE19A9BDA71D4FA18806C677C99A2B331A2616ED35` | DEFERRED | Published 2026-10-18; separate-machine check not performed. |
+| Result shortcuts (1.3.3 / V133) | Version 1.3.3, tag `V133`, canonical `src/TextAid.App/bin/Publish/TextAid.exe` | DEFERRED | 2026-10-23: separate clean Windows x64 machine unavailable. Launch the final EXE alone and check About when a machine is available; record its SHA-256 and outcome here. Canonical publication follows the source commit/tag and push as requested. |

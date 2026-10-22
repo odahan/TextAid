@@ -17,6 +17,8 @@ public partial class MainWindow : Window
 {
     private readonly Action showApplicationMenu;
     private readonly InvocationSession session;
+    private ICommand? pendingResultCommand;
+    private Key pendingResultKey;
 
     public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, Action<MainWindow, InvocationSession> free, string status, bool isFullLogActive, bool isUiTranslationRequired)
     {
@@ -39,10 +41,9 @@ public partial class MainWindow : Window
             WindowsShell.CenterWindowOnSource(new WindowInteropHelper(this).Handle, session.SourceWindow, Width, Height);
             ActivateForUserInput();
         };
-        PreviewKeyDown += (_, args) =>
-        {
-            if (args.Key == Key.Escape) Close();
-        };
+        PreviewKeyDown += OnPreviewKeyDown;
+        PreviewKeyUp += OnPreviewKeyUp;
+        Deactivated += (_, _) => pendingResultCommand = null;
         Closed += (_, _) =>
         {
             viewModel.ResetModelChoice();
@@ -50,6 +51,43 @@ public partial class MainWindow : Window
             session.Cancellation.Cancel();
             session.Dispose();
         };
+    }
+
+    /// <summary>Captures result shortcuts before text editors handle them, preserving ordinary Ctrl+C.</summary>
+    private void OnPreviewKeyDown(object sender, KeyEventArgs args)
+    {
+        if (args.Key == Key.Escape)
+        {
+            pendingResultCommand = null;
+            Close();
+            return;
+        }
+
+        MainViewModel viewModel = (MainViewModel)DataContext;
+        ICommand? command = (args.Key, Keyboard.Modifiers) switch
+        {
+            (Key.C, ModifierKeys.Control | ModifierKeys.Shift) => viewModel.CopyCommand,
+            (Key.Enter, ModifierKeys.Control) => viewModel.ReplaceCommand,
+            _ => null
+        };
+        if (command is null) return;
+
+        args.Handled = true;
+        if (args.IsRepeat) return;
+        pendingResultCommand = command.CanExecute(null) ? command : null;
+        pendingResultKey = args.Key;
+    }
+
+    /// <summary>Runs a result action once all shortcut keys are released, before returning focus to the source.</summary>
+    private void OnPreviewKeyUp(object sender, KeyEventArgs args)
+    {
+        if (pendingResultCommand is null) return;
+        if (args.Key == pendingResultKey) args.Handled = true;
+        if (Keyboard.IsKeyDown(pendingResultKey) || Keyboard.Modifiers != ModifierKeys.None) return;
+
+        ICommand command = pendingResultCommand;
+        pendingResultCommand = null;
+        if (command.CanExecute(null)) command.Execute(null);
     }
 
     /// <summary>Shows a safe operation failure and leaves only cancellation available.</summary>

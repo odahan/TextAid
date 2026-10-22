@@ -18,6 +18,7 @@ TextAid captures selected text from another Windows application, applies one con
 - Identify the captured language through an asynchronous AI request on both shortcuts, without blocking the interface. Reuse the response until the text changes; ambiguous input requires an explicit translation destination.
 - Rewrite, correct, translate, summarize, shorten, expand, simplify, change tone, humanize, or create declarative custom actions.
 - Preview raw or rendered Markdown results in a dark Windows interface.
+- In the result window, use `Ctrl+Shift+C` to copy the full result or `Ctrl+Enter` to replace the original selection. Actions run when the shortcut keys are released and a valid result is available; replacement also requires a captured source window. `Ctrl+C` keeps its usual text-selection behavior.
 - Keep model traffic local by default, with clear configuration for on-premises or external providers.
 - Run as a self-contained Windows x64 executable; no .NET runtime is required for the published application.
 
