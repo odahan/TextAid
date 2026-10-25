@@ -30,6 +30,8 @@ Every action, including Translate, defaults to Thinking Off. The Actions editor 
 
 Safe Debug records preload events, requested and loaded context, model and GPU memory allocation, GPU memory share, and the retention expiry as Unix seconds, alongside inference timing metrics. GPU memory share describes allocation, not live GPU utilization. No diagnostic log is created with Debug off.
 
+Shortcut detection verifies Windows modifier state at both sequence keys and clears stale observed modifiers. Keep Ctrl held throughout `Ctrl+C+C` or `Ctrl+C+T`; releasing or changing a modifier cancels the pending sequence. Software-injected keyboard input cannot activate a shortcut. With Debug enabled, `TextAid.debug.log` in `%LOCALAPPDATA%\TextAid` records `shortcut-sequence-started`, `shortcut-activated`, `shortcut-modifiers-resynchronized`, and injected input rejected during a pending sequence. These targeted events include virtual key, scan code, hook flags, native input timestamp, left/right Ctrl state, and observed/Windows/verified modifier masks (Ctrl=1, Shift=2, Alt=4, Win=8). Full log is not required, and ordinary typing is not continuously logged. Use **Open debug-log folder** in Settings to find the file; each new debug session replaces it.
+
 ## Requirements
 
 - Windows x64

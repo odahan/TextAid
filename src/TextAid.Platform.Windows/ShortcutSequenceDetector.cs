@@ -10,6 +10,9 @@ public sealed class ShortcutSequenceDetector
     private readonly HashSet<int> downKeys = [];
     private DateTimeOffset? firstPressedAt;
 
+    /// <summary>Gets whether the first shortcut key has armed a pending sequence.</summary>
+    public bool IsPending => firstPressedAt is not null;
+
     /// <summary>Creates a detector for a persisted TextAid shortcut such as Ctrl+C+T.</summary>
     public ShortcutSequenceDetector(string shortcut, TimeSpan maximumDelay)
     {
@@ -34,6 +37,9 @@ public sealed class ShortcutSequenceDetector
 
     /// <summary>Releases a key so key-repeat messages cannot complete a sequence.</summary>
     public void KeyUp(int key) => downKeys.Remove(key);
+
+    /// <summary>Cancels a partial gesture when modifiers or input provenance change.</summary>
+    public void CancelPendingSequence() => Reset();
 
     private void Reset() => firstPressedAt = null;
 

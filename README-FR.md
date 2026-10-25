@@ -8,6 +8,8 @@ Toutes les actions, traduction comprise, utilisent Thinking Off par défaut. L'�
 
 Le mode Debug consigne les étapes du préchargement, les contextes demandé et chargé, la mémoire du modèle et la mémoire GPU, la part de mémoire sur GPU et l'échéance de conservation en secondes Unix, en plus des mesures de durée d'inférence. La part de mémoire GPU indique une allocation, pas l'utilisation instantanée du GPU. Aucun log n'est créé lorsque Debug est désactivé.
 
+La détection des raccourcis vérifie l'état des modificateurs auprès de Windows sur les deux frappes et supprime les états mémorisés devenus périmés. Garder Ctrl enfoncé pendant toute la séquence `Ctrl+C+C` ou `Ctrl+C+T` : relâcher ou changer un modificateur annule la séquence. Les frappes injectées par un logiciel ne peuvent pas activer un raccourci. Avec Debug activé, le fichier `%LOCALAPPDATA%\TextAid\TextAid.debug.log` contient les événements `shortcut-sequence-started`, `shortcut-activated`, `shortcut-modifiers-resynchronized` et les rejets de frappes injectées pendant une séquence. Ces traces ciblées indiquent le code de touche, le scan code, les indicateurs du hook, l'horodatage natif, l'état de Ctrl gauche/droit et les masques des modificateurs observés, Windows et vérifiés (Ctrl=1, Shift=2, Alt=4, Win=8). Full log n'est pas nécessaire et la saisie ordinaire n'est pas enregistrée en continu. Le bouton d'ouverture du dossier de debug dans les paramètres permet de retrouver le fichier ; chaque nouvelle session de debug le remplace.
+
 [English](README.md)
 
 ![Logo TextAid](assets/Logo-final.png)

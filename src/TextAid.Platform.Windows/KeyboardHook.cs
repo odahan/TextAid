@@ -13,7 +13,8 @@ public sealed class KeyboardHook : IDisposable
     private const int WmSysKeyUp = 0x0105;
     private readonly ShortcutSequenceDetector normalDetector;
     private readonly ShortcutSequenceDetector translationDetector;
-    private readonly HashSet<int> activeModifiers = [];
+    private readonly KeyboardModifierState modifierState = new();
+    private static readonly int[] ModifierKeys = [0x10, 0xA0, 0xA1, 0x11, 0xA2, 0xA3, 0x12, 0xA4, 0xA5, 0x5B, 0x5C];
     private readonly HashSet<int> suppressedKeys = [];
     private readonly HookProcedure callback;
     private nint handle;
@@ -33,31 +34,85 @@ public sealed class KeyboardHook : IDisposable
     /// <summary>Raised after a double-copy gesture and indicates whether its first copy changed the clipboard.</summary>
     public event Action<nint, bool, InvocationShortcut>? Triggered;
 
+    /// <summary>Reports targeted shortcut diagnostics; subscribers must defer slow work outside the hook.</summary>
+    public event Action<KeyboardShortcutDiagnostic>? Diagnostic;
+
     private nint OnKeyboard(int code, nint message, nint data)
     {
         if (code >= 0)
         {
             int key = Marshal.ReadInt32(data);
+            int scanCode = Marshal.ReadInt32(data, 4);
+            int flags = Marshal.ReadInt32(data, 8);
+            uint inputTime = unchecked((uint)Marshal.ReadInt32(data, 12));
+            bool isDown = message == WmKeyDown || message == WmSysKeyDown;
+            bool isUp = message == WmKeyUp || message == WmSysKeyUp;
+            if (!isDown && !isUp) return CallNextHookEx(handle, code, message, data);
+            if ((flags & 0x12) != 0)
+            {
+                if (normalDetector.IsPending || translationDetector.IsPending)
+                {
+                    IReadOnlySet<int> windowsKeys = ReadWindowsModifiers();
+                    Diagnostic?.Invoke(new KeyboardShortcutDiagnostic("shortcut-injected-input-rejected", key, scanCode,
+                        flags, inputTime, ModifierMask(modifierState.ActiveModifiers),
+                        ModifierMask(KeyboardModifierState.NormalizeModifiers(windowsKeys)), 0,
+                        windowsKeys.Contains(0xA2), windowsKeys.Contains(0xA3)));
+                }
+                CancelPendingSequences();
+                if (isUp)
+                {
+                    normalDetector.KeyUp(key);
+                    translationDetector.KeyUp(key);
+                    if (suppressedKeys.Remove(key)) return 1;
+                }
+                return CallNextHookEx(handle, code, message, data);
+            }
+
+            bool modifier = KeyboardModifierState.IsModifier(key);
+            if (modifier)
+            {
+                modifierState.Update(key, isDown);
+                CancelPendingSequences();
+            }
             if (message == WmKeyDown || message == WmSysKeyDown)
             {
-                if (IsModifier(key)) activeModifiers.Add(NormalizeModifier(key));
+                if (modifier) return CallNextHookEx(handle, code, message, data);
+                IReadOnlySet<int> windowsModifiers = ReadWindowsModifiers();
+                var verifiedModifiers = KeyboardModifierState.NormalizeModifiers(windowsModifiers);
+                int observedMask = ModifierMask(modifierState.ActiveModifiers);
+                if (modifierState.Reconcile(windowsModifiers))
+                {
+                    CancelPendingSequences();
+                    Report("shortcut-modifiers-resynchronized");
+                }
+                IReadOnlySet<int> activeModifiers = modifierState.ActiveModifiers;
+                if (!activeModifiers.SetEquals(verifiedModifiers))
+                {
+                    CancelPendingSequences();
+                    return CallNextHookEx(handle, code, message, data);
+                }
                 DateTimeOffset now = DateTimeOffset.UtcNow;
                 bool normalTriggered = normalDetector.KeyDown(key, now, activeModifiers);
                 bool translationTriggered = translationDetector.KeyDown(key, now, activeModifiers);
+                if (normalDetector.IsPending || translationDetector.IsPending) Report("shortcut-sequence-started");
                 if (key == 0x43 && !normalTriggered && !translationTriggered) clipboardSequenceBeforeCopy = GetClipboardSequenceNumber();
                 if (normalTriggered || translationTriggered)
                 {
+                    Report("shortcut-activated");
                     nint source = GetForegroundWindow();
                     Triggered?.Invoke(source, GetClipboardSequenceNumber() != clipboardSequenceBeforeCopy, normalTriggered ? InvocationShortcut.Choose : InvocationShortcut.Translate);
                     suppressedKeys.Add(key);
                     return 1;
                 }
+
+                void Report(string stage) => Diagnostic?.Invoke(new KeyboardShortcutDiagnostic(
+                    stage, key, scanCode, flags, inputTime, observedMask, ModifierMask(verifiedModifiers),
+                    ModifierMask(modifierState.ActiveModifiers), windowsModifiers.Contains(0xA2), windowsModifiers.Contains(0xA3)));
             }
             else if (message == WmKeyUp || message == WmSysKeyUp)
             {
                 normalDetector.KeyUp(key);
                 translationDetector.KeyUp(key);
-                if (IsModifier(key)) activeModifiers.Remove(NormalizeModifier(key));
                 if (suppressedKeys.Remove(key)) return 1;
             }
         }
@@ -72,8 +127,25 @@ public sealed class KeyboardHook : IDisposable
 
     private delegate nint HookProcedure(int code, nint message, nint data);
 
-    private static bool IsModifier(int key) => key is 0x10 or 0xA0 or 0xA1 or 0x11 or 0xA2 or 0xA3 or 0x12 or 0xA4 or 0xA5;
-    private static int NormalizeModifier(int key) => key is 0xA0 or 0xA1 ? 0x10 : key is 0xA2 or 0xA3 ? 0x11 : key is 0xA4 or 0xA5 ? 0x12 : key;
+    private void CancelPendingSequences()
+    {
+        normalDetector.CancelPendingSequence();
+        translationDetector.CancelPendingSequence();
+    }
+
+    private static int ModifierMask(IReadOnlySet<int> modifiers) =>
+        (modifiers.Contains(0x11) ? 1 : 0) | (modifiers.Contains(0x10) ? 2 : 0) |
+        (modifiers.Contains(0x12) ? 4 : 0) | (modifiers.Contains(0x5B) ? 8 : 0);
+
+    /// <summary>
+    /// Reads the held-state bit only. The hook runs before Windows updates the current key,
+    /// so this snapshot verifies modifiers on non-modifier input; modifier transitions are tracked separately.
+    /// </summary>
+    private static IReadOnlySet<int> ReadWindowsModifiers() =>
+        ModifierKeys.Where(candidate => (GetAsyncKeyState(candidate) & 0x8000) != 0).ToHashSet();
+
+    [DllImport("user32.dll")]
+    private static extern short GetAsyncKeyState(int key);
 
     [DllImport("user32.dll", SetLastError = true)]
     private static extern nint SetWindowsHookEx(int idHook, HookProcedure procedure, nint module, uint threadId);
@@ -92,3 +164,7 @@ public sealed class KeyboardHook : IDisposable
 
 /// <summary>Identifies the configured invocation route that opened a session.</summary>
 public enum InvocationShortcut { Choose, Translate }
+
+/// <summary>Captures modifier verification at a shortcut boundary without retaining typed text.</summary>
+public sealed record KeyboardShortcutDiagnostic(string Stage, int VirtualKey, int ScanCode, int Flags, uint InputTime,
+    int ObservedModifiers, int WindowsModifiers, int VerifiedModifiers, bool LeftCtrlDown, bool RightCtrlDown);

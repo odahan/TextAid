@@ -792,6 +792,12 @@ public partial class App : Application
     {
         KeyboardHook? previous = hook;
         var replacement = new KeyboardHook(configuration.NormalShortcut, configuration.TranslationShortcut);
+        replacement.Diagnostic += diagnostic => Dispatcher.BeginInvoke(new Action(() => debugLog.Write(diagnostic.Stage,
+            ("virtualKey", diagnostic.VirtualKey), ("scanCode", diagnostic.ScanCode), ("flags", diagnostic.Flags),
+            ("inputTime", diagnostic.InputTime),
+            ("observedModifiers", diagnostic.ObservedModifiers), ("windowsModifiers", diagnostic.WindowsModifiers),
+            ("verifiedModifiers", diagnostic.VerifiedModifiers), ("leftCtrlDown", diagnostic.LeftCtrlDown),
+            ("rightCtrlDown", diagnostic.RightCtrlDown))));
         replacement.Triggered += (source, hasCopiedText, shortcut) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText, shortcut)));
         hook = replacement;
         previous?.Dispose();
