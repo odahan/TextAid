@@ -184,6 +184,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             TextTransformationSettings settings = UserConfiguration.LoadTransformationSettings();
             Endpoint = settings.Endpoint;
             SelectedModel = settings.Model;
+            PopulateLocalModels(SelectedModel, []);
             TemperatureText = settings.Temperature.ToString(CultureInfo.InvariantCulture);
             ContextSizeText = settings.ContextSize.ToString(CultureInfo.InvariantCulture);
             TimeoutSecondsText = ((int)settings.Timeout.TotalSeconds).ToString(CultureInfo.InvariantCulture);
@@ -227,7 +228,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             DebugEnabled = UserConfiguration.LoadDebugMode();
             FullDebugEnabled = UserConfiguration.LoadFullDebugMode();
             StartWithWindows = startupRegistration.IsEnabled();
-            await LoadModelsAsync();
+            if (LocalEnabled) await LoadModelsAsync();
         }
         catch (Exception)
         {
@@ -239,16 +240,17 @@ public sealed partial class SettingsViewModel : ObservableObject
     private async Task LoadModelsAsync()
     {
         IsLoadingModels = true;
+        ConnectionState = ConnectionTestState.Testing;
         try
         {
             IReadOnlyList<string> models = await chatClientFactory.GetLocalModelNamesAsync(Endpoint.Trim(), CancellationToken.None);
-            Models.Clear();
-            foreach (string model in models) Models.Add(model);
+            PopulateLocalModels(SelectedModel, models);
+            ConnectionState = ConnectionTestState.Ready;
             Status = models.Count == 0 ? UiStrings.Get("NoLocalModelsMessage") : UiStrings.Get("ChooseLocalModelMessage");
         }
         catch
         {
-            Models.Clear();
+            ConnectionState = ConnectionTestState.Failed;
             Status = UiStrings.Get("OllamaUnreachableMessage");
         }
         finally { IsLoadingModels = false; }
@@ -271,7 +273,6 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         catch
         {
-            NetworkModels.Clear();
             NetworkConnectionState = ConnectionTestState.Failed;
             Status = UiStrings.Get("NetworkModelsUnavailableMessage");
         }
@@ -348,6 +349,19 @@ public sealed partial class SettingsViewModel : ObservableObject
         }
         ExternalModel = selectedModel;
         OnPropertyChanged(nameof(ExternalModel));
+    }
+
+    /// <summary>Keeps the selected local model visible when model discovery refreshes the bound collection.</summary>
+    private void PopulateLocalModels(string? selectedModel, IEnumerable<string> discoveredModels)
+    {
+        Models.Clear();
+        if (!string.IsNullOrWhiteSpace(selectedModel)) Models.Add(selectedModel);
+        foreach (string model in discoveredModels)
+        {
+            if (!Models.Contains(model, StringComparer.OrdinalIgnoreCase)) Models.Add(model);
+        }
+        SelectedModel = selectedModel;
+        OnPropertyChanged(nameof(SelectedModel));
     }
 
     /// <summary>Keeps a persisted On-premises model visible while merging discovered Ollama model names.</summary>

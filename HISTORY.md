@@ -2,6 +2,13 @@
 
 This record uses concise entries with date, actor, operation, affected artifacts, and outcome. Entries are organized in reverse chronological order by their recorded date; because no time is recorded, the existing relative order is retained within each day. It is not a substitute for `STATUS.md`, `LEDGER.md`, or gate evidence.
 
+## 2026-11-02 — Model selector hardening, version 1.3.5
+
+Actor: Olivier and Codex
+Operation: Investigated the model dropdown reported unusable on a second machine after updating TextAid. Restored the shared WPF ComboBox popup contract (`PART_Popup`), explicit placement and focus behavior, transparent popup rendering, and the configurable dropdown height. Preserved local selection during discovery refresh and existing local/network choices on discovery failure. Disabled automatic local discovery when the local connection is disabled.
+Affected artifacts: `src/TextAid.App/Themes/Controls.xaml`, `src/TextAid.App/ViewModels/SettingsViewModel.cs`, application version, and `tests/TextAid.Platform.Windows.Tests/ModelSelectorTests.cs`.
+Outcome: All 245 Release tests passed (98 AI, 103 Core, 44 Windows), including real WPF popup layout, mouse selection and two-way network-model binding, and failed-discovery preservation. Root `publish.ps1` produced the canonical executable with FileVersion 1.3.5.0 and SHA-256 `980B0DBDB6CE5FD48EFAC25EA4D11DDAAD5D9312976D2149C41861393D0F9A8E`; the background instance was restarted through root `start.ps1`. Olivier confirmed that version 1.3.5 resolves the reported problem on the affected machine and authorized the commit, annotated tag `V135`, push, and GitHub release with the executable. The original failure could not be reproduced on the development machine using the previous version. The shared dropdown template dates to September 29 and the exact regression trigger remains unidentified; the previous working version on the affected machine is unknown.
+
 ## 2026-10-17 — Replace focus correction for MAUI/WinUI compatibility
 
 Actor: Olivier and Codex

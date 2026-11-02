@@ -19,6 +19,12 @@
 | LOT-013 | — | [Post-V1 — Rendered Markdown preview](Specs/013-markdown-preview/SPEC-013.md) | Closed | — | Olivier accepted TOTAL convergence on the published 1.1.0 candidate; both gates PASS. See `CONVERGENCE-013.md`. |
 | LOT-014 | — | [Modernisation accès OpenAI](Specs/014-openai-access-modernization/SPEC-014.md) | In-progress | — | Implementation started on Olivier's explicit 2026-10-18 request; automated and human gates pending. |
 
+## Confirmed model selector correction — 2026-11-02
+
+Version 1.3.5 resolves the reported unusable Ollama model dropdown on the second machine, as confirmed by Olivier. The shared ComboBox template now supplies the WPF popup contract, explicit placement/focus behavior, transparent popup rendering, and a configurable dropdown height. Model discovery preserves existing selections and choices on failure; disabled local connections are no longer queried automatically when Settings opens.
+
+All 245 Release tests passed (98 AI, 103 Core, 44 Windows). Root `publish.ps1` produced `src/TextAid.App/bin/Publish/TextAid.exe`, FileVersion 1.3.5.0, SHA-256 `980B0DBDB6CE5FD48EFAC25EA4D11DDAAD5D9312976D2149C41861393D0F9A8E`. Olivier authorized the release commit, annotated tag `V135`, push, and GitHub release with this binary. The original failure was not reproduced on the development machine with the previous version, so the exact regression trigger remains unknown. Existing lot and gate states remain unchanged.
+
 ## Recovery summary
 
 LOT-001 through LOT-009 and LOT-011 through LOT-013 are Closed with TOTAL convergence; LOT-010 is Closed with PARTIAL convergence under D-041. Their accepted results are identified by their respective `CONVERGENCE-xxx.md` artifacts. The accepted LOT-013 baseline EXE was `src/TextAid.App/bin/Publish/TextAid.exe`, version 1.1.0, SHA-256 `F3D9715551624D3A382DD351CFD5C1EF511F3A35BC87479DE2563D344A923E7A`. Its separate-machine check remains deferred under R-012. The active behavior includes Choose (`Ctrl+C`, then `C`), Translate (`Ctrl+C`, then `T`), safe Replace/Copy, configurable actions, profiles, Settings, localization, the optional OpenAI-compatible External provider, a per-user Windows startup option, personal UI-translation corrections, validated offline language packs, and a native inert Markdown review preview. In restricted workspaces, use the project-local `NUGET_SCRATCH` procedure in `AGENTS.md` and `README.md` before restore/build/test; `publish.ps1` applies it automatically.
