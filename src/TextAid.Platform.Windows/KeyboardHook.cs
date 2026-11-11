@@ -32,7 +32,7 @@ public sealed class KeyboardHook : IDisposable
     }
 
     /// <summary>Raised after a double-copy gesture and indicates whether its first copy changed the clipboard.</summary>
-    public event Action<nint, bool, InvocationShortcut>? Triggered;
+    public event Action<nint, uint?, InvocationShortcut>? Triggered;
 
     /// <summary>Reports targeted shortcut diagnostics; subscribers must defer slow work outside the hook.</summary>
     public event Action<KeyboardShortcutDiagnostic>? Diagnostic;
@@ -100,7 +100,9 @@ public sealed class KeyboardHook : IDisposable
                 {
                     Report("shortcut-activated");
                     nint source = GetForegroundWindow();
-                    Triggered?.Invoke(source, GetClipboardSequenceNumber() != clipboardSequenceBeforeCopy, normalTriggered ? InvocationShortcut.Choose : InvocationShortcut.Translate);
+                    uint clipboardSequence = GetClipboardSequenceNumber();
+                    Triggered?.Invoke(source, clipboardSequence != clipboardSequenceBeforeCopy ? clipboardSequence : null,
+                        normalTriggered ? InvocationShortcut.Choose : InvocationShortcut.Translate);
                     suppressedKeys.Add(key);
                     return 1;
                 }

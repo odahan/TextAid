@@ -82,7 +82,7 @@
                 <Image Grid.Column="2" Source="pack://application:,,,/TextAid;component/Assets/Logo-final.png" Height="80" HorizontalAlignment="Right" Stretch="Uniform" Margin="0,-16,0,0"/>
                 <Button Content="☰" Click="OnShowApplicationMenu" ToolTip="{DynamicResource ApplicationMenuToolTip}" Width="42" Padding="0" HorizontalAlignment="Center" BorderThickness="0" Background="Transparent" VerticalAlignment="Center"/>
             </Grid>
-            <StackPanel Grid.Row="2">
+            <StackPanel Grid.Row="2" IsEnabled="{Binding IsSessionPrepared}">
                 <ComboBox ItemsSource="{Binding ModelChoices}" SelectedItem="{Binding SelectedModelChoice}" IsEnabled="{Binding CanSelectModel}" Visibility="{Binding ShowModelSelector, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.Name="{DynamicResource NextActionModelLabel}" ToolTip="{DynamicResource NextActionModelLabel}" Margin="0,0,0,8">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
@@ -163,7 +163,7 @@
                         <Button Content="{DynamicResource RenderedMarkdownPreviewLabel}" FontWeight="Bold" Click="OnShowRenderedMarkdown" ToolTip="{DynamicResource RenderedMarkdownPreviewToolTip}" MinHeight="0" Padding="5,1"/>
                     </StackPanel>
                 </StackPanel>
-                <TextBox x:Name="InputEditor" Grid.Row="2" Grid.Column="0" Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14" Foreground="{DynamicResource ForegroundMutedBrush}"/>
+                <TextBox x:Name="InputEditor" IsEnabled="{Binding IsSessionPrepared}" Grid.Row="2" Grid.Column="0" Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontSize="14" Foreground="{DynamicResource ForegroundMutedBrush}"/>
                 <Button Grid.Row="2" Grid.Column="1" Command="{Binding TransferResultCommand}" ToolTip="{DynamicResource TransferResultLabel}" AutomationProperties.Name="{DynamicResource TransferResultLabel}" Width="40" Height="48" VerticalAlignment="Center" Padding="0" BorderThickness="0" Background="Transparent">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -192,7 +192,12 @@
                     <ProgressBar Width="180" Height="5" Margin="0,7,10,0" IsIndeterminate="True"/>
                     <TextBlock Text="{Binding ActiveConnectionActivityLabel}" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
                 </StackPanel>
-                <TextBlock MinHeight="22" Text="{Binding Status}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap"/>
+                <Grid MinHeight="22">
+                    <TextBlock Text="{Binding Status}" Foreground="{DynamicResource ForegroundMutedBrush}" TextWrapping="Wrap"/>
+                    <ProgressBar x:Name="CaptureIndicator" Width="100" Height="4" HorizontalAlignment="Left"
+                                 VerticalAlignment="Center" IsIndeterminate="True" Visibility="Hidden"
+                                 AutomationProperties.Name="{DynamicResource CapturedText}"/>
+                </Grid>
             </StackPanel>
             <Grid Grid.Row="6" Margin="0,16,0,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">

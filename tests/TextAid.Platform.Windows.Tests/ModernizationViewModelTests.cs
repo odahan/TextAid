@@ -10,8 +10,9 @@ public sealed class ModernizationViewModelTests
     {
         using var session = new InvocationSession(123, "input");
         int externalCalls = 0;
-        var vm = new MainViewModel(session, BuiltInActionCatalog.Create(), [],
-            () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, "Ready", false, false);
+        var vm = new MainViewModel(session,
+            () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, () => externalCalls++, false);
+        vm.CompleteCapture("input", BuiltInActionCatalog.Create(), [], null, "Ready", failed: false);
         int generation = session.StartNewGeneration();
         Assert.False(vm.TransferResultCommand.CanExecute(null));
         session.TryCompleteGeneration(generation, "# raw\n", "fr");
@@ -32,16 +33,21 @@ public sealed class ModernizationViewModelTests
     {
         using var session = new InvocationSession(0, "input");
         int calls = 0;
-        var vm = new MainViewModel(session, BuiltInActionCatalog.Create(), [], () => { }, () => { }, () => calls++, () => { }, () => { }, () => { }, () => { }, "Ready", false, false);
+        var vm = new MainViewModel(session, () => { }, () => { }, () => calls++, () => { }, () => { }, () => { }, () => { }, false);
+        Assert.False(vm.ProcessCommand.CanExecute(null));
+        Assert.True(vm.CancelCommand.CanExecute(null));
+        vm.CompleteCapture("input", BuiltInActionCatalog.Create(), [], "translate", "Ready", failed: false);
+        Assert.Equal("translate", vm.SelectedAction?.Id);
+        Assert.True(vm.ProcessCommand.CanExecute(null));
         var local = new ConnectionDefinition("local", ConnectionCategory.ThisDeviceOnly, "ollama", "http://127.0.0.1:11434", true, AuthenticationKind.None, null);
         var external = new ConnectionDefinition("external", ConnectionCategory.External, "openai-compatible", "https://example.com", true, AuthenticationKind.None, null);
         var first = new ModelProfile("one", "local", "same-name", 0.2f, TimeSpan.FromMinutes(2), new Dictionary<string, object?>());
         var second = first with { Id = "two", ConnectionId = "external" };
         var config = new ConfigurationSnapshot(1, [local, external], [first], "en", "fr", "Ctrl+C+C", "Ctrl+C+T");
-        vm.RefreshModelChoices(config, new EmptyVault());
+        vm.RefreshModelChoices(config, new ProfileResolver(config, new EmptyVault()).GetSelectableProfiles());
         Assert.False(vm.ShowModelSelector);
         config = config with { Profiles = [first, second] };
-        vm.RefreshModelChoices(config, new EmptyVault());
+        vm.RefreshModelChoices(config, new ProfileResolver(config, new EmptyVault()).GetSelectableProfiles());
         Assert.True(vm.ShowModelSelector);
         Assert.Null(vm.SelectedModelChoice?.ProfileId);
         vm.SelectedModelChoice = vm.ModelChoices[2];
@@ -61,7 +67,7 @@ public sealed class ModernizationViewModelTests
         vm.ShowFailure("failure");
         Assert.Null(session.NextProfileId);
         config = config with { Profiles = [first] };
-        vm.RefreshModelChoices(config, new EmptyVault());
+        vm.RefreshModelChoices(config, new ProfileResolver(config, new EmptyVault()).GetSelectableProfiles());
         Assert.False(vm.ShowModelSelector);
         Assert.Null(session.NextProfileId);
     }

@@ -4,6 +4,23 @@ namespace TextAid.Core.Tests;
 
 public sealed class ConnectionsAndProfilesTests
 {
+    [Theory]
+    [InlineData("selected text", false, 42, InvocationState.Ready)]
+    [InlineData("", false, 0, InvocationState.Ready)]
+    [InlineData(" ", false, 0, InvocationState.Ready)]
+    [InlineData("", true, 0, InvocationState.Failed)]
+    public void InvocationSession_CompleteCapture_OnlyKeepsReplacementTargetForCapturedText(
+        string input, bool failed, int expectedTarget, InvocationState expectedState)
+    {
+        using var session = new InvocationSession((nint)42, string.Empty);
+
+        session.CompleteCapture(input, failed);
+
+        Assert.Equal(input, session.InputText);
+        Assert.Equal((nint)expectedTarget, session.SourceWindow);
+        Assert.Equal(expectedState, session.State);
+    }
+
     [Fact]
     public void InvocationSession_MarkdownOutput_IsDisabledByDefaultAndCanBeEnabled()
     {

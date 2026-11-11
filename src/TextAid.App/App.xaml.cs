@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
 using TextAid.Core;
 using TextAid.AI;
 using TextAid.Platform.Windows;
@@ -29,7 +30,6 @@ public partial class App : Application
     private readonly OllamaChatClientFactory ollamaChatClientFactory = new();
     private readonly AiClientFactory chatClientFactory = new();
     private bool enabled = true;
-    private bool capturing;
     private string? actionsDirectory;
     private string? localeFallbackNotice;
     private bool isUiTranslationRequired;
@@ -189,11 +189,11 @@ public partial class App : Application
         startupNoticeWindow.ShowDialog();
     }
 
-    private async Task CaptureWithFeedbackAsync(nint source, bool hasCopiedText, InvocationShortcut shortcut = InvocationShortcut.Choose)
+    private async Task CaptureWithFeedbackAsync(nint source, uint? clipboardSequence = null, InvocationShortcut shortcut = InvocationShortcut.Choose)
     {
         try
         {
-            await CaptureAsync(source, hasCopiedText, shortcut);
+            await CaptureAsync(source, clipboardSequence, shortcut);
         }
         catch (Exception exception)
         {
@@ -202,57 +202,85 @@ public partial class App : Application
         }
     }
 
-    /// <summary>Opens a transformation session from a verified copy gesture or as an empty manual entry.</summary>
-    private async Task CaptureAsync(nint source, bool hasCopiedText, InvocationShortcut shortcut)
+    /// <summary>Shows the session before applying its clipboard and configuration data.</summary>
+    private async Task CaptureAsync(nint source, uint? clipboardSequence, InvocationShortcut shortcut)
     {
-        if (!enabled || capturing || sessionWindow is not null) return;
-        capturing = true;
+        if (!enabled || sessionWindow is not null) return;
+        long started = Stopwatch.GetTimestamp();
+        var session = new InvocationSession(source, string.Empty);
+        var window = new MainWindow(session, ShowTrayMenu, ReplaceOutput, CopyResult,
+            (owner, invocation) => StartTransformation(owner, invocation), EditInstructions, ResetSession,
+            StartFreeTransformation, isUiTranslationRequired);
+        sessionWindow = window;
+        window.Closed += (_, _) => sessionWindow = null;
+        window.ContentRendered += (_, _) => debugLog.Write("session-first-render",
+            ("elapsedMs", Stopwatch.GetElapsedTime(started).TotalMilliseconds));
+
+        CancellationToken token = session.Cancellation.Token;
+        Task<(string Text, bool Failed)> capture = ReadCapturedTextAsync(clipboardSequence, token);
+        window.Show();
+
         try
         {
-            string? text;
-            bool failed = false;
-            string? failureMessage = null;
-            if (hasCopiedText)
+            var preparation = Task.Run(() =>
             {
-                try { text = await ClipboardReader.ReadUnicodeTextAsync(CancellationToken.None); }
-                catch (InvalidOperationException exception)
-                {
-                    debugLog.WriteException("clipboard-read", exception);
-                    text = string.Empty;
-                    failed = true;
-                    failureMessage = await GetRecoveryMessageAsync(UserFacingFailure.Clipboard);
-                }
-            }
-            else text = string.Empty;
-            debugLog.Write("capture-completed", ("hasCopiedText", hasCopiedText), ("inputLength", text?.Length ?? 0));
-            debugLog.WriteFullText("clipboard-input", text);
-            bool noText = !failed && string.IsNullOrWhiteSpace(text);
-            nint safeSource = noText ? 0 : source;
-            var session = new InvocationSession(safeSource, text ?? string.Empty)
-            {
-                State = failed ? InvocationState.Failed : InvocationState.Ready
-            };
-            string status = failed ? failureMessage! : noText ? (string)FindResource("EnterTextMessage") : (string)FindResource("ReadyToProcessMessage");
-            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-            IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
-            if (shortcut == InvocationShortcut.Translate)
-            {
-                session.ActionId = "translate";
-                status = (string)FindResource("TranslatingCapturedTextMessage");
-            }
-            bool isFullLogActive = UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode();
-            sessionWindow = new MainWindow(session, actions, UserConfiguration.LoadActionPresetIds(), ShowTrayMenu, ReplaceOutput, CopyResult, (window, invocation) => StartTransformation(window, invocation), EditInstructions, ResetSession, StartFreeTransformation, status, isFullLogActive, isUiTranslationRequired);
-            sessionWindow.Closed += (_, _) => sessionWindow = null;
-            sessionWindow.Show();
-            sessionWindow.ActivateForUserInput();
-            if (!failed && !string.IsNullOrWhiteSpace(session.InputText))
-            {
-                ActionDefinition translation = actions.Single(action => action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
-                _ = DetectCapturedLanguageAsync(session, sessionWindow, translation);
-            }
-            if (shortcut == InvocationShortcut.Translate && !failed && !string.IsNullOrWhiteSpace(session.InputText)) StartTransformation(sessionWindow, session);
+                ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+                IReadOnlyList<ActionDefinition> actions = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load();
+                IReadOnlyList<ModelProfile> profiles = new ProfileResolver(configuration, new DpapiSecretVault()).GetSelectableProfiles();
+                return (Configuration: configuration, Actions: actions, Profiles: profiles,
+                    PresetIds: UserConfiguration.LoadActionPresetIds(),
+                    IsFullLogActive: UserConfiguration.LoadDebugMode() && UserConfiguration.LoadFullDebugMode());
+            }, token);
+            await Task.WhenAll(capture, preparation);
+            await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Background, token);
+
+            var (input, failed) = await capture;
+            var prepared = await preparation;
+            bool hasInput = !string.IsNullOrWhiteSpace(input);
+            bool translate = shortcut == InvocationShortcut.Translate;
+            string status = (string)FindResource(failed ? "ClipboardError"
+                : !hasInput ? "EnterTextMessage"
+                : translate ? "TranslatingCapturedTextMessage"
+                : "ReadyToProcessMessage");
+            window.SetFullLogActive(prepared.IsFullLogActive);
+            window.RefreshModelChoices(prepared.Configuration, prepared.Profiles);
+            window.CompleteCapture(input, prepared.Actions, prepared.PresetIds, translate ? "translate" : null, status, failed);
+            debugLog.Write("session-prepared", ("elapsedMs", Stopwatch.GetElapsedTime(started).TotalMilliseconds));
+
+            if (failed || !hasInput) return;
+            ActionDefinition translation = prepared.Actions.Single(action => action.Id.Equals("translate", StringComparison.OrdinalIgnoreCase));
+            if (translate) StartTransformation(window, session, preparedAction: translation);
+            else _ = DetectCapturedLanguageAsync(session, window, translation);
         }
-        finally { capturing = false; }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+        }
+        catch (Exception exception)
+        {
+            debugLog.WriteException("session-preparation", exception);
+            if (token.IsCancellationRequested) return;
+            window.CompleteCapture(string.Empty, [], [], null, (string)FindResource("SessionError"), failed: true);
+        }
+    }
+
+    /// <summary>Captures the verified clipboard contents and records opt-in diagnostics off the UI thread.</summary>
+    private async Task<(string Text, bool Failed)> ReadCapturedTextAsync(uint? clipboardSequence, CancellationToken token)
+    {
+        if (clipboardSequence is not uint sequence) return (string.Empty, false);
+
+        try
+        {
+            string text = await ClipboardReader.ReadUnicodeTextAsync(sequence, token).ConfigureAwait(false) ?? string.Empty;
+            token.ThrowIfCancellationRequested();
+            debugLog.Write("capture-completed", ("hasCopiedText", true), ("inputLength", text.Length));
+            debugLog.WriteFullText("clipboard-input", text);
+            return (text, false);
+        }
+        catch (InvalidOperationException exception)
+        {
+            debugLog.WriteException("clipboard-read", exception);
+            return (string.Empty, true);
+        }
     }
 
     /// <summary>Starts shared language detection using the captured action snapshot without reloading action files.</summary>
@@ -315,13 +343,22 @@ public partial class App : Application
 
     private async Task TransformAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, int generation)
     {
+        CancellationToken token = session.Cancellation.Token;
+        string? pinnedProfileId = session.RunningProfileId;
         try
         {
-            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-            var resolver = new ProfileResolver(configuration, new DpapiSecretVault());
-            ProfileResolution resolution = resolver.Resolve(session.RunningProfileId ?? action.ProfileId, exact: session.RunningProfileId is not null);
+            var (resolver, resolution) = await Task.Run(() =>
+            {
+                ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+                var profileResolver = new ProfileResolver(configuration, new DpapiSecretVault());
+                return (profileResolver, profileResolver.Resolve(pinnedProfileId ?? action.ProfileId, exact: pinnedProfileId is not null));
+            }, token);
+            if (token.IsCancellationRequested || !window.IsLoaded || generation != session.Generation) return;
             resolution = resolution with { Status = LocalizeResolutionStatus(resolution.Status) };
             await TransformWithResolutionAsync(session, window, inputText, action, supplementaryInstructions, resolver, resolution, generation);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
         }
         catch (Exception exception)
         {
@@ -331,12 +368,13 @@ public partial class App : Application
         }
         finally
         {
-            if (generation == session.Generation) window.ResetModelChoice();
+            if (window.IsLoaded && generation == session.Generation) window.ResetModelChoice();
         }
     }
 
     private async Task TransformWithResolutionAsync(InvocationSession session, MainWindow window, string inputText, ActionDefinition action, string? supplementaryInstructions, ProfileResolver resolver, ProfileResolution resolution, int generation)
     {
+        CancellationToken token = session.Cancellation.Token;
         try
         {
             if (resolution.Kind == ProfileResolutionKind.Failed || resolution.Profile is null || resolution.Connection is null)
@@ -361,7 +399,7 @@ public partial class App : Application
 
             window.ShowTransforming((string)FindResource("DetectingInputLanguageMessage"));
             string? detectedInputLanguage = await session.DetectInputLanguageAsync(
-                (input, token) => DetectLanguageWithResolutionAsync(input, resolution, action, token)).WaitAsync(session.Cancellation.Token);
+                (input, detectionToken) => DetectLanguageWithResolutionAsync(input, resolution, action, detectionToken)).WaitAsync(token);
             if (!window.IsLoaded || generation != session.Generation) return;
             if (!session.IsFreeMode && action.IsReserved && session.OutputLanguage.Equals("Unchanged", StringComparison.OrdinalIgnoreCase))
             {
@@ -370,7 +408,8 @@ public partial class App : Application
                     window.ShowFailure((string)FindResource("InputLanguageUndeterminedMessage"));
                     return;
                 }
-                ConfigurationSnapshot routingConfiguration = UserConfiguration.LoadConfiguration();
+                ConfigurationSnapshot routingConfiguration = await Task.Run(UserConfiguration.LoadConfiguration, token);
+                if (token.IsCancellationRequested || !window.IsLoaded || generation != session.Generation) return;
                 session.SelectAutomaticTranslationDestination(
                     detectedInputLanguage, routingConfiguration.UserLanguage, routingConfiguration.PreferredTranslationLanguage);
                 window.RefreshOutputLanguage();
@@ -378,15 +417,17 @@ public partial class App : Application
 
             if (resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly
                 && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase)
-                && await LogModelStateAsync(settings, session.Cancellation.Token) is null)
+                && await LogModelStateAsync(settings, token) is null)
             {
+                token.ThrowIfCancellationRequested();
                 window.ShowTransforming((string)FindResource("WarmingUpLocalModelMessage"));
                 debugLog.Write("local-model-warmup-started", ("model", settings.Model));
-                await ollamaChatClientFactory.WarmupAsync(settings, session.Cancellation.Token);
+                await ollamaChatClientFactory.WarmupAsync(settings, token);
                 debugLog.Write("local-model-warmup-completed", ("model", settings.Model));
-                if (debugLog.Path is not null) await LogModelStateAsync(settings, session.Cancellation.Token);
+                if (debugLog.Path is not null) await LogModelStateAsync(settings, token);
             }
 
+            token.ThrowIfCancellationRequested();
             window.ShowTransforming(resolution.Status);
             debugLog.Write("transformation-started", ("category", resolution.Connection.Category), ("inputLength", inputText.Length));
 
@@ -425,12 +466,8 @@ public partial class App : Application
                     if (window.IsLoaded && generation == session.Generation && session.State == InvocationState.Transforming)
                         window.ShowPartialResult(preview);
                 }), honorConfiguredTimeout: resolution.Connection.Provider == "openai-account");
-            string output = await resolvedTransformationService.TransformAsync(
-                new TextTransformationRequest(
-                    inputText,
-                    instruction,
-                    settings),
-                session.Cancellation.Token);
+            var request = new TextTransformationRequest(inputText, instruction, settings);
+            string output = await Task.Run(() => resolvedTransformationService.TransformAsync(request, token), token);
             string? resultLanguage = outputLanguageCode.Equals("Unchanged", StringComparison.OrdinalIgnoreCase) ? detectedInputLanguage : outputLanguageCode;
             if (!window.IsLoaded || !session.TryCompleteGeneration(generation, output, resultLanguage)) return;
             session.SupplementaryInstructions = null;
@@ -438,9 +475,9 @@ public partial class App : Application
             debugLog.WriteFullText("transformation-output", output);
             window.ShowResult(output);
             if (debugLog.Path is not null && resolution.Connection.Category == ConnectionCategory.ThisDeviceOnly && resolution.Connection.Provider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
-                await LogModelStateAsync(settings, session.Cancellation.Token);
+                await LogModelStateAsync(settings, token);
         }
-        catch (OperationCanceledException) when (session.Cancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             // Closing the session is a normal cancellation path.
             debugLog.Write("transformation-cancelled");
@@ -508,12 +545,17 @@ public partial class App : Application
     }
 
     /// <summary>Starts a user-requested transformation from the editable session input.</summary>
-    private void StartTransformation(MainWindow window, InvocationSession session, bool isFreeInvocation = false)
+    private void StartTransformation(MainWindow window, InvocationSession session, bool isFreeInvocation = false, ActionDefinition? preparedAction = null)
     {
         if (string.IsNullOrWhiteSpace(session.InputText)) return;
         if (!isFreeInvocation) session.UseStandardActionMode();
-        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
-        ActionDefinition? action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load().FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
+        ActionDefinition? action = preparedAction;
+        if (action is null)
+        {
+            ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+            action = new ActionLoader(configuration.Profiles.Select(profile => profile.Id), actionsDirectory).Load()
+                .FirstOrDefault(candidate => candidate.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase));
+        }
         if (action is null)
         {
             window.ResetModelChoice();
@@ -668,7 +710,7 @@ public partial class App : Application
         var translationReview = new MenuItem { Header = Label("TranslationReviewLabel"), Style = itemStyle };
         translationReview.Click += (_, _) => ShowTranslationReview();
         var open = new MenuItem { Header = Label("OpenLabel"), Style = itemStyle };
-        open.Click += (_, _) => _ = CaptureWithFeedbackAsync(0, hasCopiedText: false);
+        open.Click += (_, _) => _ = CaptureWithFeedbackAsync(0);
         var about = new MenuItem { Header = Label("AboutLabel"), Style = itemStyle };
         about.Click += (_, _) => ShowAbout();
         var exit = new MenuItem { Header = Label("ExitLabel"), Style = itemStyle };
@@ -798,7 +840,7 @@ public partial class App : Application
             ("observedModifiers", diagnostic.ObservedModifiers), ("windowsModifiers", diagnostic.WindowsModifiers),
             ("verifiedModifiers", diagnostic.VerifiedModifiers), ("leftCtrlDown", diagnostic.LeftCtrlDown),
             ("rightCtrlDown", diagnostic.RightCtrlDown))));
-        replacement.Triggered += (source, hasCopiedText, shortcut) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, hasCopiedText, shortcut)));
+        replacement.Triggered += (source, clipboardSequence, shortcut) => Dispatcher.BeginInvoke(new Action(() => _ = CaptureWithFeedbackAsync(source, clipboardSequence, shortcut)));
         hook = replacement;
         previous?.Dispose();
     }

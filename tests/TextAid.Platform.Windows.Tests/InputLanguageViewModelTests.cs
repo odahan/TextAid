@@ -17,8 +17,9 @@ public sealed class InputLanguageViewModelTests
                 Dispatcher dispatcher = Dispatcher.CurrentDispatcher;
                 SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(dispatcher));
                 using var session = new InvocationSession(0, "Captured text");
-                var viewModel = new MainViewModel(session, BuiltInActionCatalog.Create(), [],
-                    () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, "Ready", false, false);
+                var viewModel = new MainViewModel(session,
+                    () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, false);
+                viewModel.CompleteCapture("Captured text", BuiltInActionCatalog.Create(), [], null, "Ready", failed: false);
                 var providerResponse = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
                 bool uiTurnRan = false;
                 bool updateOnUi = false;

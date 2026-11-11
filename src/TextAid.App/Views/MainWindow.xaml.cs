@@ -5,6 +5,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 using TextAid.App;
 using TextAid.Core;
 using TextAid.Platform.Windows;
@@ -19,16 +20,22 @@ public partial class MainWindow : Window
     private readonly InvocationSession session;
     private ICommand? pendingResultCommand;
     private Key pendingResultKey;
+    private readonly DispatcherTimer captureIndicatorTimer = new() { Interval = TimeSpan.FromMilliseconds(250) };
 
-    public MainWindow(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, Action<MainWindow, InvocationSession> free, string status, bool isFullLogActive, bool isUiTranslationRequired)
+    public MainWindow(InvocationSession session, Action showApplicationMenu, Action<MainWindow, InvocationSession> replace, Action<MainWindow, InvocationSession> copy, Action<MainWindow, InvocationSession> process, Action<MainWindow, InvocationSession> instructions, Action<MainWindow, InvocationSession> reset, Action<MainWindow, InvocationSession> free, bool isUiTranslationRequired)
     {
         InitializeComponent();
         this.session = session;
         this.showApplicationMenu = showApplicationMenu ?? throw new ArgumentNullException(nameof(showApplicationMenu));
-        var viewModel = new MainViewModel(session, actions, presetActionIds, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), () => free(this, session), Close, status, isFullLogActive, isUiTranslationRequired);
+        var viewModel = new MainViewModel(session, () => replace(this, session), () => copy(this, session), () => process(this, session), () => instructions(this, session), () => reset(this, session), () => free(this, session), Close, isUiTranslationRequired);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         DataContext = viewModel;
-        viewModel.RefreshModelChoices(UserConfiguration.LoadConfiguration(), new DpapiSecretVault());
+        captureIndicatorTimer.Tick += (_, _) =>
+        {
+            captureIndicatorTimer.Stop();
+            CaptureIndicator.Visibility = Visibility.Visible;
+        };
+        captureIndicatorTimer.Start();
 
         SourceInitialized += (_, _) =>
         {
@@ -46,11 +53,22 @@ public partial class MainWindow : Window
         Deactivated += (_, _) => pendingResultCommand = null;
         Closed += (_, _) =>
         {
+            captureIndicatorTimer.Stop();
             viewModel.ResetModelChoice();
             if (session.State is not InvocationState.Replaced and not InvocationState.Copied) session.State = InvocationState.Cancelled;
             session.Cancellation.Cancel();
             session.Dispose();
         };
+    }
+
+    /// <summary>Finishes initialization in the already visible session window.</summary>
+    public void CompleteCapture(string input, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds,
+        string? preferredActionId, string status, bool failed)
+    {
+        captureIndicatorTimer.Stop();
+        CaptureIndicator.Visibility = Visibility.Hidden;
+        ((MainViewModel)DataContext).CompleteCapture(input, actions, presetActionIds, preferredActionId, status, failed);
+        if (IsActive) Keyboard.Focus(InputEditor);
     }
 
     /// <summary>Captures result shortcuts before text editors handle them, preserving ordinary Ctrl+C.</summary>
@@ -136,7 +154,15 @@ public partial class MainWindow : Window
     public void SetActiveConnection(ConnectionDefinition connection, ModelProfile profile) => ((MainViewModel)DataContext).SetActiveConnection(connection, profile);
 
     /// <summary>Reloads selector choices after a valid configuration change.</summary>
-    public void RefreshModelChoices() => ((MainViewModel)DataContext).RefreshModelChoices(UserConfiguration.LoadConfiguration(), new DpapiSecretVault());
+    public void RefreshModelChoices(ConfigurationSnapshot configuration, IReadOnlyList<ModelProfile> profiles) =>
+        ((MainViewModel)DataContext).RefreshModelChoices(configuration, profiles);
+
+    /// <summary>Reloads selector choices from the saved configuration.</summary>
+    public void RefreshModelChoices()
+    {
+        ConfigurationSnapshot configuration = UserConfiguration.LoadConfiguration();
+        RefreshModelChoices(configuration, new ProfileResolver(configuration, new DpapiSecretVault()).GetSelectableProfiles());
+    }
 
     /// <summary>Clears an unused one-action selection.</summary>
     public void ResetModelChoice() => ((MainViewModel)DataContext).ResetModelChoice();

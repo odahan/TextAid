@@ -169,6 +169,14 @@ public sealed class InvocationSession(nint sourceWindow, string inputText) : IDi
     /// <summary>Returns the current input to standard action processing without changing its text.</summary>
     public void UseStandardActionMode() => IsFreeMode = false;
 
+    /// <summary>Completes the capture and clears the replacement target for manual input.</summary>
+    public void CompleteCapture(string input, bool failed)
+    {
+        if (string.IsNullOrWhiteSpace(input)) SourceWindow = 0;
+        SetInputText(input);
+        State = failed ? InvocationState.Failed : InvocationState.Ready;
+    }
+
     /// <summary>Updates the input and cancels any language request associated with its previous value.</summary>
     public void SetInputText(string input)
     {

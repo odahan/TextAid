@@ -23,38 +23,55 @@ public sealed class MainViewModel : ObservableObject
     private string? activeModel;
     private SessionModelChoice? selectedModelChoice;
 
-    public MainViewModel(InvocationSession session, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, string status, bool isFullLogActive, bool isUiTranslationRequired)
+    public MainViewModel(InvocationSession session, Action replace, Action copy, Action process, Action instructions, Action reset, Action free, Action close, bool isUiTranslationRequired)
     {
         Session = session;
         Session.LanguageDetectionChanged += (_, _) => UpdateDetectedLanguage();
         inputText = session.InputText;
         UpdateDetectedLanguage();
-        Actions = new ObservableCollection<ActionDefinition>(actions);
-        Presets = new ObservableCollection<ActionPreset>(Enumerable.Range(1, 4).Select(slot => new ActionPreset(slot, FindAction(presetActionIds.ElementAtOrDefault(slot - 1)))));
-        selectedAction = Actions.FirstOrDefault(action => action.Id.Equals(session.ActionId, StringComparison.OrdinalIgnoreCase)) ?? Actions.FirstOrDefault();
-        Session.ActionId = selectedAction?.Id;
-        if (Session.OutputLanguage == "Unchanged") Session.OutputLanguage = selectedAction?.OutputLanguageDefault ?? "Unchanged";
-        Status = status;
-        this.isFullLogActive = isFullLogActive;
+        Actions = [];
+        Presets = new ObservableCollection<ActionPreset>(Enumerable.Range(1, 4).Select(slot => new ActionPreset(slot, null)));
         this.isUiTranslationRequired = isUiTranslationRequired;
         processPreset = process;
         ReplaceCommand = new RelayCommand(replace, () => CanReplaceResult);
         CopyCommand = new RelayCommand(copy, () => CanUseResult);
         TransferResultCommand = new RelayCommand(TransferResult, () => CanUseResult);
         ProcessCommand = new RelayCommand(process, () => CanProcess);
-        InstructionsCommand = new RelayCommand(instructions, () => !IsTransforming);
-        NewCommand = new RelayCommand(reset, () => !IsTransforming);
-        FreeCommand = new RelayCommand(free, () => !IsTransforming);
+        InstructionsCommand = new RelayCommand(instructions, () => CanEditSession);
+        NewCommand = new RelayCommand(reset, () => CanEditSession);
+        FreeCommand = new RelayCommand(free, () => CanEditSession);
         CancelCommand = new RelayCommand(close);
-        SelectPresetCommand = new RelayCommand<ActionPreset>(SelectPreset, preset => preset?.Action is not null && !IsTransforming);
+        SelectPresetCommand = new RelayCommand<ActionPreset>(SelectPreset, preset => preset?.Action is not null && CanEditSession);
     }
+
+    /// <summary>Applies the prepared capture and enables the session controls.</summary>
+    public void CompleteCapture(string input, IReadOnlyList<ActionDefinition> actions, IReadOnlyList<string> presetActionIds,
+        string? preferredActionId, string status, bool failed)
+    {
+        ReloadActions(actions, preferredActionId);
+        foreach (ActionPreset preset in Presets)
+            preset.Action = FindAction(presetActionIds.ElementAtOrDefault(preset.Slot - 1));
+
+        Session.CompleteCapture(input, failed);
+        inputText = input;
+        Status = status;
+        OnPropertyChanged(nameof(InputText));
+        OnPropertyChanged(nameof(Status));
+        OnPropertyChanged(nameof(IsSessionPrepared));
+        NotifyRequestChanged();
+    }
+
+    /// <summary>Indicates that the capture has finished and the session controls can be used.</summary>
+    public bool IsSessionPrepared => Session.State != InvocationState.Captured;
+
+    private bool CanEditSession => IsSessionPrepared && !IsTransforming;
 
     public InvocationSession Session { get; }
     public ObservableCollection<ActionDefinition> Actions { get; }
     /// <summary>Gets the configured profiles and neutral Default entry for this session.</summary>
     public ObservableCollection<SessionModelChoice> ModelChoices { get; } = [];
     public bool ShowModelSelector => ModelChoices.Count > 2;
-    public bool CanSelectModel => !IsTransforming;
+    public bool CanSelectModel => CanEditSession;
     public SessionModelChoice? SelectedModelChoice
     {
         get => selectedModelChoice;
@@ -67,13 +84,13 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>Refreshes local profile choices without making any network request.</summary>
-    public void RefreshModelChoices(ConfigurationSnapshot configuration, ISecretVault vault)
+    public void RefreshModelChoices(ConfigurationSnapshot configuration, IReadOnlyList<ModelProfile> selectableProfiles)
     {
         string? previous = selectedModelChoice?.ProfileId;
         bool wasVisible = ShowModelSelector;
         ModelChoices.Clear();
         ModelChoices.Add(new(null, UiStrings.Get("DefaultModelChoice")));
-        foreach (ModelProfile profile in new ProfileResolver(configuration, vault).GetSelectableProfiles())
+        foreach (ModelProfile profile in selectableProfiles)
         {
             ConnectionDefinition connection = configuration.Connections.Single(connection => connection.Id == profile.ConnectionId);
             string type = connection.Provider == "openai-account" ? UiStrings.Get("OpenAiSignInLabel") : connection.Category switch
@@ -196,7 +213,7 @@ public sealed class MainViewModel : ObservableObject
         get => detectedLanguageName;
         private set => SetProperty(ref detectedLanguageName, value);
     }
-    public string Status { get; private set; }
+    public string Status { get; private set; } = string.Empty;
     public bool IsFullLogActive
     {
         get => isFullLogActive;
@@ -239,7 +256,7 @@ public sealed class MainViewModel : ObservableObject
     public bool IsTransforming => Session.State == InvocationState.Transforming;
     public bool CanUseResult => Session.HasCurrentResult;
     public bool CanReplaceResult => CanUseResult && Session.SourceWindow != 0;
-    public bool CanProcess => !IsTransforming && !string.IsNullOrWhiteSpace(InputText) && SelectedAction is not null;
+    public bool CanProcess => CanEditSession && !string.IsNullOrWhiteSpace(InputText) && SelectedAction is not null;
     public IRelayCommand ReplaceCommand { get; }
     public IRelayCommand CopyCommand { get; }
     public IRelayCommand TransferResultCommand { get; }
@@ -253,7 +270,7 @@ public sealed class MainViewModel : ObservableObject
     /// <summary>Selects the action assigned to a quick preset.</summary>
     public void SelectPreset(ActionPreset? preset)
     {
-        if (preset?.Action is null || IsTransforming) return;
+        if (preset?.Action is null || !CanEditSession) return;
         SelectedAction = preset.Action;
         processPreset();
     }
@@ -270,10 +287,10 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>Replaces the selectable action set after a validated Actions-page save.</summary>
-    public void ReloadActions(IReadOnlyList<ActionDefinition> actions)
+    public void ReloadActions(IReadOnlyList<ActionDefinition> actions, string? preferredActionId = null)
     {
         ArgumentNullException.ThrowIfNull(actions);
-        string? previousId = SelectedAction?.Id;
+        string? previousId = preferredActionId ?? SelectedAction?.Id;
         Actions.Clear();
         foreach (ActionDefinition action in actions) Actions.Add(action);
         SelectedAction = Actions.FirstOrDefault(action => action.Id.Equals(previousId, StringComparison.OrdinalIgnoreCase)) ?? Actions.FirstOrDefault();

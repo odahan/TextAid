@@ -42,6 +42,10 @@ public sealed class StreamingPreviewTests
         Assert.True(viewModel.ReplaceCommand.CanExecute(null));
     }
 
-    private static MainViewModel CreateViewModel(InvocationSession session) => new(session, BuiltInActionCatalog.Create(), [],
-        () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, "Ready", false, false);
+    private static MainViewModel CreateViewModel(InvocationSession session)
+    {
+        var viewModel = new MainViewModel(session, () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, () => { }, false);
+        viewModel.CompleteCapture(session.InputText, BuiltInActionCatalog.Create(), [], null, "Ready", failed: false);
+        return viewModel;
+    }
 }
